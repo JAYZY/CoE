@@ -1,0 +1,8 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}此处为您的许可证文本
+${licensePrefix}每一行的开头应为 ${licensePrefix}
+<#if licenseLast??>
+${licenseLast}
+</#if>

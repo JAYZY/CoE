@@ -35,6 +35,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Global/IncDefine.o \
+	${OBJECTDIR}/INOUT/FileHelper.o \
+	${OBJECTDIR}/INOUT/Scanner.o \
+	${OBJECTDIR}/INOUT/StreamCell.o \
+	${OBJECTDIR}/INOUT/TokenCell.o \
+	${OBJECTDIR}/LIB/Out.o \
 	${OBJECTDIR}/main.o
 
 
@@ -52,7 +58,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-Wl,-rpath,'.'
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -62,10 +68,40 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/Global/IncDefine.o: Global/IncDefine.cpp
+	${MKDIR} -p ${OBJECTDIR}/Global
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/IncDefine.o Global/IncDefine.cpp
+
+${OBJECTDIR}/INOUT/FileHelper.o: INOUT/FileHelper.cpp
+	${MKDIR} -p ${OBJECTDIR}/INOUT
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/FileHelper.o INOUT/FileHelper.cpp
+
+${OBJECTDIR}/INOUT/Scanner.o: INOUT/Scanner.cpp
+	${MKDIR} -p ${OBJECTDIR}/INOUT
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/Scanner.o INOUT/Scanner.cpp
+
+${OBJECTDIR}/INOUT/StreamCell.o: INOUT/StreamCell.cpp
+	${MKDIR} -p ${OBJECTDIR}/INOUT
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/StreamCell.o INOUT/StreamCell.cpp
+
+${OBJECTDIR}/INOUT/TokenCell.o: INOUT/TokenCell.cpp
+	${MKDIR} -p ${OBJECTDIR}/INOUT
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/TokenCell.o INOUT/TokenCell.cpp
+
+${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
+	${MKDIR} -p ${OBJECTDIR}/LIB
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
+
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:

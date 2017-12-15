@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="Global" displayName="Global" projectFiles="true">
+      <itemPath>Global/IncDefine.cpp</itemPath>
+      <itemPath>Global/IncDefine.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="INOUT" displayName="INOUT" projectFiles="true">
+      <itemPath>INOUT/FileHelper.cpp</itemPath>
+      <itemPath>INOUT/FileHelper.h</itemPath>
+      <itemPath>INOUT/Scanner.cpp</itemPath>
+      <itemPath>INOUT/Scanner.h</itemPath>
+      <itemPath>INOUT/StreamCell.cpp</itemPath>
+      <itemPath>INOUT/StreamCell.h</itemPath>
+      <itemPath>INOUT/TokenCell.cpp</itemPath>
+      <itemPath>INOUT/TokenCell.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="LIB" displayName="LIB" projectFiles="true">
+      <itemPath>LIB/Out.cpp</itemPath>
+      <itemPath>LIB/Out.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="HeaderFiles" displayName="头文件" projectFiles="true">
     </logicalFolder>
     <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
@@ -20,6 +38,10 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="1">
@@ -29,7 +51,47 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <standard>8</standard>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <linkerDynSerch>
+            <pElem>.</pElem>
+          </linkerDynSerch>
+        </linkerTool>
       </compileType>
+      <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/FileHelper.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/FileHelper.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/Scanner.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/Scanner.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/StreamCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/StreamCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/TokenCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
@@ -42,9 +104,15 @@
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -52,7 +120,36 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerDynSerch>
+            <pElem>.</pElem>
+          </linkerDynSerch>
+        </linkerTool>
       </compileType>
+      <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/FileHelper.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/FileHelper.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/Scanner.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/Scanner.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/StreamCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/StreamCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/TokenCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>

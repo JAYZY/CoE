@@ -11,15 +11,11 @@
  * Created on 2017年12月13日, 下午1:50
  */
 
-#include <cstdlib>
+#include "Global/IncDefine.h"
 
 using namespace std;
-
-/*
- * 
- */
-int main(int argc, char** argv) {
-
+ int main(int argc, char** argv) {
+     
     return 0;
 }
 
