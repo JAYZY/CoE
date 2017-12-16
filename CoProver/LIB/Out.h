@@ -14,6 +14,7 @@
 #ifndef OUT_H
 #define OUT_H
 #include <cstdio>
+extern char* ErrStr;
 extern char* ProgName;
 extern int   TmpErrno;
 
@@ -36,18 +37,18 @@ enum class ErrorCodes {
 class Out {
 public:
 
-    static inline void Err(char* arg) {
+    static inline void Err(const char* arg) {
         fprintf(stderr, "%s: %s", ProgName, (arg));
         fflush(stderr);
     }
 
-    static inline void Err(char* arg1, char* arg2) {
+    static inline void Err(const char* arg1, const char* arg2) {
         fprintf(stderr, "%s: %s%s\n", ProgName, (arg1), (arg2));
         fflush(stderr);
     }
 
     __attribute__ ((noreturn))
-    static void SysError(char* message, ErrorCodes ret, ...);
+    static void SysError(const char* message, ErrorCodes ret, ...);
     static void Warning(char* message, ...);
     static void SysWarning(char* message, ...);
     

@@ -16,10 +16,14 @@
 Scanner::Scanner(StreamType type, char *name, bool ignore_comments, char *default_d)
 :source(nullptr),defaultDir(""),format(IOFormat::LOPFormat),accu(""),ignoreComments(ignore_comments),includeKey(nullptr)
 {
-    StreamCell* stream;
-    if( (type==nullptr&& strcmp(name,"-")==0)||(type!=nullptr) )
-    {
-         
+    StreamCell* stream=new StreamCell(type,name,true);
+    if( (type==nullptr&& strcmp(name,"-")==0)||(type!=nullptr) )    {
+        stream->OpenStackedInput(this->source);        
+    }
+    else{
+        assert(type==nullptr);
+        if(FileNameIsAbsoulu)
+        
     }
     
     TokenCell tokSequence[MAXTOKENLOOKAHEAD]; /* Need help? Bozo! */

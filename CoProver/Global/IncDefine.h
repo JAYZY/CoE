@@ -18,7 +18,9 @@
 #include <climits>
 #include <string>
 #include <cstring>
+#include <cassert>
 #include "LIB/Out.h"
+
 
  
 typedef  char* StreamType;

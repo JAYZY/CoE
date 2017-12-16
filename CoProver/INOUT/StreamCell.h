@@ -33,7 +33,9 @@ public:
     StreamCell(StreamType type,char* source,bool fail);
     StreamCell(const StreamCell& orig);
     virtual ~StreamCell();
-private:
+public:
+    int32_t ReadChar();
+    void OpenStackedInput(StreamCell** stack);
 
 };
 

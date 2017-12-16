@@ -13,12 +13,16 @@
 
 #include "Out.h"
 #include <cerrno>
+#include <cstdarg>
+#include <cstdlib>
 char* ProgName = "CoProver";
+
+char* ErrStr=nullptr;
 /* Saving errno from the system call originating it */
 
 int TmpErrno;
 __attribute__ ((noreturn))
-void Out::SysError(char* message, ErrorCodes ret, ...) {
+void Out::SysError(const char* message, ErrorCodes ret, ...) {
     va_list ap;
     va_start(ap, ret);
     fprintf(stderr, "%s: ", ProgName);
@@ -27,7 +31,7 @@ void Out::SysError(char* message, ErrorCodes ret, ...) {
     errno = TmpErrno;
     perror(ProgName);
     va_end(ap);
-    exit(ret);
+    exit((int)ret);
 }
 void Out::Warning(char* message, ...)
 {
