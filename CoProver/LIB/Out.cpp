@@ -12,10 +12,8 @@
  */
 
 #include "Out.h"
-#include <cerrno>
-#include <cstdarg>
-#include <cstdlib>
-char* ProgName = "CoProver";
+
+
 
 char* ErrStr=nullptr;
 /* Saving errno from the system call originating it */
@@ -25,11 +23,11 @@ __attribute__ ((noreturn))
 void Out::SysError(const char* message, ErrorCodes ret, ...) {
     va_list ap;
     va_start(ap, ret);
-    fprintf(stderr, "%s: ", ProgName);
+    fprintf(stderr, "%s: ", Options::ProgName.c_str());
     vfprintf(stderr, message, ap);
     fprintf(stderr, "\n");
     errno = TmpErrno;
-    perror(ProgName);
+    perror(Options::ProgName.c_str());
     va_end(ap);
     exit((int)ret);
 }
@@ -38,7 +36,7 @@ void Out::Warning(char* message, ...)
    va_list ap;
    va_start(ap, message);
 
-   fprintf(stderr, "%s: Warning: ", ProgName);
+   fprintf(stderr, "%s: Warning: ", Options::ProgName.c_str());
    vfprintf(stderr, message, ap);
    fprintf(stderr, "\n");
 
@@ -49,11 +47,11 @@ void Out::SysWarning(char* message, ...)
    va_list ap;
    va_start(ap, message);
 
-   fprintf(stderr, "%s: Warning: ", ProgName);
+   fprintf(stderr, "%s: Warning: ", Options::ProgName.c_str());
    vfprintf(stderr, message, ap);
    fprintf(stderr, "\n");
    errno = TmpErrno;
-   perror(ProgName);
+   perror(Options::ProgName.c_str());
 
    va_end(ap);
 }

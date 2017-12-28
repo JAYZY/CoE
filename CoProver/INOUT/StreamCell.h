@@ -15,29 +15,56 @@
 #define STREAMCELL_H
 #include "Global/IncDefine.h"
 using namespace std;
+
 class StreamCell {
 private:
-    enum {MAXLOOKAHEAD = 64};    
+
+    enum {
+        MAXLOOKAHEAD = 64
+    };
+
+    inline char StreamCurrChar() {
+        return this->buffer[this->current];
+    }
+
+    inline int StreamRealPos(int pos) {
+        return ((pos) % MAXLOOKAHEAD);
+    }
+
 public:
-   StreamCell*      next;
-   string           source;
-   StreamType       streamType; /* Only constant strings allowed here! */
-   long             stringPos;
-   FILE*            file;
-   bool             eofSeen;
-   long             line;
-   long             column;
-   int              buffer[MAXLOOKAHEAD];
-   int              current;
+
+    /******* inline **********/
+    inline char StreamLookChar(int look) {
+        assert(look < MAXLOOKAHEAD);
+        return this->buffer[StreamRealPos(this->current + look)];
+    }
 public:
-    StreamCell(StreamType type,char* source,bool fail);
-    StreamCell(const StreamCell& orig);
+    StreamCell* next;
+    string source;
+    StreamType streamType; /* Only constant strings allowed here! */
+    long stringPos;
+    FILE* file;
+    bool eofSeen;
+    long line;
+    long column;
+    int buffer[MAXLOOKAHEAD];
+    int current;
+    bool isSucc;
+public:
+    StreamCell(StreamType type, const char* source, bool fail);
+    // StreamCell(StreamCell** stack, StreamType type, char* source, bool fail);
+    //StreamCell(const StreamCell& orig);
     virtual ~StreamCell();
 public:
     int32_t ReadChar();
-    void OpenStackedInput(StreamCell** stack);
 
-};
+    char StreamNextChar();
+
+    friend void CloseStackedInput(StreamCell ** stack);
+
+    friend StreamCell* OpenStackedInput(StreamCell ** stack, StreamType type, const char* source,bool fail) ;
+
+    };
 
 #endif /* STREAMCELL_H */
 

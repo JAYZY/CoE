@@ -12,14 +12,15 @@
  */
 
 #include "StreamCell.h"
-#include "INOUT/FileHelper.h"
+#include "FileOp.h"
 /// 根据file name 创建一个文件流, 若 type==nullptr name='-' 表示为标准输入 stdin
 /// \param type 
 /// \param source
 /// \param fail
 
-StreamCell::StreamCell(StreamType type, char* source, bool fail)
+StreamCell::StreamCell(StreamType type, const char* source, bool fail)
 : source(""), streamType(type) {
+    this->isSucc=false;
     //当为一个file,来解析
     if (type == nullptr) {
         if (!source || !strcmp(source, "-")) {
@@ -27,7 +28,7 @@ StreamCell::StreamCell(StreamType type, char* source, bool fail)
             this->file = stdin;
         } else {
             this->source = source;
-            this->file = FileHelper::InputOpen(source, fail);
+            this->file = FileOp::InputOpen(source, fail);
             if (!this->file) {
                 this->source = "";
             }
@@ -42,20 +43,22 @@ StreamCell::StreamCell(StreamType type, char* source, bool fail)
     this->line = 1;
     this->column = 1;
     this->current = 0;
+    this->isSucc=true;
     for (int i = 0; i < MAXLOOKAHEAD; i++) {
         this->buffer[i] = ReadChar();
     }
 }
 
-StreamCell::StreamCell(const StreamCell& orig) {
-}
+
+//StreamCell::StreamCell(const StreamCell& orig) {
+//}
 
 StreamCell::~StreamCell() {
     if (this->streamType == nullptr) {
         if (this->file != stdin) {
             if (fclose(this->file) != 0) {
                 TmpErrno = errno;
-                sprintf(ErrStr, "Cannot close file %s", this->source);
+                sprintf(ErrStr, "Cannot close file %s", this->source.c_str());
                 Out::SysError(ErrStr, ErrorCodes::FILE_ERROR);
             }
         }
@@ -90,10 +93,49 @@ int32_t StreamCell::ReadChar() {
     return ch;
 }
 
-/// 将参数stack 始终置于栈的顶部元素
-/// \param stack
-void StreamCell::OpenStackedInput(StreamCell** stack){
-    this->next=*stack;
-    *stack=this;
+/*-----------------------------------------------------------------------
+//
+// Function: StreamNextChar()
+//
+//   Move the current window on the input stream one character
+//   forward. Return the new CurrChar().
+//
+// Global Variables: -
+//
+// Side Effects    : Reads one character from the input, update the
+//                   stream information about the current position.
+//
+/----------------------------------------------------------------------*/
+
+char StreamCell::StreamNextChar() {
+    if (StreamCurrChar() == '\n') {
+        this->line++;
+        this->column = 1;
+    } else {
+        this->column++;
+    }
+    this->current = StreamRealPos(current + 1);
+    this->buffer[StreamRealPos(current + MAXLOOKAHEAD - 1)] = ReadChar();
+    return (char) StreamCurrChar();
 }
-        
+
+void CloseStackedInput(StreamCell ** stack) {
+    StreamCell* handle;
+
+    assert(*stack);
+    handle = *stack;
+    *stack = handle->next;
+    delete handle;
+    //DestroyStream(handle);
+}
+
+StreamCell* OpenStackedInput(StreamCell ** stack, StreamType type, const char* source,bool fail) {
+    StreamCell* handle = new StreamCell(type, source,fail);
+    if (handle->isSucc) {
+        handle->next = *stack;
+        *stack = handle;
+    }
+    return handle;
+}
+
+

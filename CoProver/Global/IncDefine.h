@@ -25,5 +25,32 @@
  
 typedef  char* StreamType;
 
+/*---------------------------------------------------------------------*/
+/*                          宏定义-两个函数指针                           */
+/*---------------------------------------------------------------------*/
+typedef void (*ObjDelFun)(void *junk);
+
+
+/* 注意这里是一个　联合体．要么存储数字，要么存储指针．
+ * Trick the stupid type concept for polymorphic indices (hashes,trees) with int/pointer type. */
+typedef union int_or_p {
+    long i_val;
+    void *p_val;
+} IntOrP;
+
+/* 指针删除模板 -- 确保每次 delete 后都要==nullptr*/
+template<typename T> inline void DelPtr(T*&p) {
+    if (p) {
+        delete p;
+        p = nullptr;
+    }
+}
+
+template<typename T> inline void DelArrayPtr(T*&p) {
+    delete[] p;
+    p = nullptr;
+}
+
+
 #endif /* INCDEFINE_H */
 

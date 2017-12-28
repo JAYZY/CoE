@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="BASIC" displayName="BASIC" projectFiles="true">
+      <itemPath>SplayTree.h</itemPath>
+      <itemPath>TreeNodeDef.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="CLAUSE" displayName="CLAUSE" projectFiles="true">
+      <itemPath>CLAUSE/Clause.cpp</itemPath>
+      <itemPath>CLAUSE/Clause.h</itemPath>
+      <itemPath>CLAUSE/Formula.cpp</itemPath>
+      <itemPath>CLAUSE/Formula.h</itemPath>
+      <itemPath>CLAUSE/Literal.cpp</itemPath>
+      <itemPath>CLAUSE/Literal.h</itemPath>
+      <itemPath>Prover/Prover.cpp</itemPath>
+    </logicalFolder>
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
+      <itemPath>Global/Environment.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="HEURISTICS" displayName="HEURISTICS" projectFiles="true">
+      <itemPath>HEURISTICS/Options.cpp</itemPath>
+      <itemPath>HEURISTICS/Options.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="INOUT" displayName="INOUT" projectFiles="true">
-      <itemPath>INOUT/FileHelper.cpp</itemPath>
-      <itemPath>INOUT/FileHelper.h</itemPath>
+      <itemPath>INOUT/FileOp.cpp</itemPath>
+      <itemPath>INOUT/FileOp.h</itemPath>
       <itemPath>INOUT/Scanner.cpp</itemPath>
       <itemPath>INOUT/Scanner.h</itemPath>
       <itemPath>INOUT/StreamCell.cpp</itemPath>
@@ -20,8 +38,10 @@
       <itemPath>LIB/Out.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles" displayName="头文件" projectFiles="true">
+      <itemPath>Prover/Prover.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
+      <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
@@ -68,13 +88,33 @@
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="CLAUSE/Clause.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CLAUSE/Formula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Formula.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CLAUSE/Literal.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="INOUT/FileHelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="INOUT/FileHelper.h" ex="false" tool="3" flavor2="0">
+      <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/FileOp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/FileOp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/Scanner.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -91,6 +131,14 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="SplayTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TreeNodeDef.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -126,13 +174,33 @@
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="CLAUSE/Clause.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CLAUSE/Formula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Formula.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CLAUSE/Literal.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="INOUT/FileHelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="INOUT/FileHelper.h" ex="false" tool="3" flavor2="0">
+      <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/FileOp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/FileOp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/Scanner.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -149,6 +217,14 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="SplayTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TreeNodeDef.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>

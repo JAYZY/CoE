@@ -35,12 +35,18 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/CLAUSE/Clause.o \
+	${OBJECTDIR}/CLAUSE/Formula.o \
+	${OBJECTDIR}/CLAUSE/Literal.o \
+	${OBJECTDIR}/Global/Environment.o \
 	${OBJECTDIR}/Global/IncDefine.o \
-	${OBJECTDIR}/INOUT/FileHelper.o \
+	${OBJECTDIR}/HEURISTICS/Options.o \
+	${OBJECTDIR}/INOUT/FileOp.o \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
 	${OBJECTDIR}/LIB/Out.o \
+	${OBJECTDIR}/Prover/Prover.o \
 	${OBJECTDIR}/main.o
 
 
@@ -68,15 +74,40 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/CLAUSE/Clause.o: CLAUSE/Clause.cpp
+	${MKDIR} -p ${OBJECTDIR}/CLAUSE
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Clause.o CLAUSE/Clause.cpp
+
+${OBJECTDIR}/CLAUSE/Formula.o: CLAUSE/Formula.cpp
+	${MKDIR} -p ${OBJECTDIR}/CLAUSE
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Formula.o CLAUSE/Formula.cpp
+
+${OBJECTDIR}/CLAUSE/Literal.o: CLAUSE/Literal.cpp
+	${MKDIR} -p ${OBJECTDIR}/CLAUSE
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Literal.o CLAUSE/Literal.cpp
+
+${OBJECTDIR}/Global/Environment.o: Global/Environment.cpp
+	${MKDIR} -p ${OBJECTDIR}/Global
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/Environment.o Global/Environment.cpp
+
 ${OBJECTDIR}/Global/IncDefine.o: Global/IncDefine.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/IncDefine.o Global/IncDefine.cpp
 
-${OBJECTDIR}/INOUT/FileHelper.o: INOUT/FileHelper.cpp
+${OBJECTDIR}/HEURISTICS/Options.o: HEURISTICS/Options.cpp
+	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/Options.o HEURISTICS/Options.cpp
+
+${OBJECTDIR}/INOUT/FileOp.o: INOUT/FileOp.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/FileHelper.o INOUT/FileHelper.cpp
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/FileOp.o INOUT/FileOp.cpp
 
 ${OBJECTDIR}/INOUT/Scanner.o: INOUT/Scanner.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT
@@ -97,6 +128,11 @@ ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${MKDIR} -p ${OBJECTDIR}/LIB
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
+
+${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
+	${MKDIR} -p ${OBJECTDIR}/Prover
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Prover/Prover.o Prover/Prover.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
