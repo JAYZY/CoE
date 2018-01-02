@@ -14,8 +14,8 @@
 #ifndef TERMCELL_H
 #define TERMCELL_H
 
-#include "BASIC/SplayTree.h"
-#include "INOUT/Scanner.h"
+
+ 
 #include "Sigcell.h"
 #include <stack>
 
@@ -64,6 +64,8 @@ enum class TermProp : int32_t {
     TPPotentialParamod = 131072, /* This position needs to be tried for paramodulation */
     TPPosPolarity = 1 << 18, /* In the term encoding of a formula,this occurs with positive polarity. */
     TPNegPolarity = 1 << 19, /* In the term encoding of a formula,this occurs with negative polarity. */
+    
+    TPShareGround=(TermProp::TPIsShared | TermProp::TPIsGround),
 };
 
 

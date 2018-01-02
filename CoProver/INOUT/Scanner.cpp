@@ -675,6 +675,32 @@ void Scanner::NormalizeFloatRep(string& outFloatRep) {
     outFloatRep = buff;
 
 }
+
+/*****************************************************************************
+ * Parses a (possibly negative) Integer, defined as an optional "-",
+ * followed by a sequence of digits. 
+ * Returns the value or gives an error on overflow. 
+ ****************************************************************************/
+long Scanner::ParseInt() {
+    long value;
+    if (TestInpTok(TokenType::Hyphen)) {
+        NextToken();
+        CheckInpTokNoSkip(TokenType::PosInt);
+        if ((AktToken()->numval - 1) > LONG_MAX) {
+            AktTokenError("Long integer underflow", false);
+        }
+        value = -AktToken()->numval;
+        NextToken();
+    } else {
+        CheckInpTok(TokenType::PosInt);
+        if (AktToken()->numval > LONG_MAX) {
+            AktTokenError("Long integer overflow", false);
+        }
+        value = AktToken()->numval;
+        NextToken();
+    }
+    return value;
+}
 /*****************************************************************************
  * Parse a float in x.yEz format (optional negative and so on...)
  ****************************************************************************/

@@ -139,7 +139,7 @@ private:
 public:
 
     Clause();
-    Clause(Literal* literal_s);
+    Clause(Literal *literal_s);
     //Clause(const Clause& orig);
     virtual ~Clause();
     /*---------------------------------------------------------------------*/

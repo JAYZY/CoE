@@ -41,6 +41,8 @@
     <logicalFolder name="TERMS" displayName="TERMS" projectFiles="true">
       <itemPath>TERMS/Sigcell.cpp</itemPath>
       <itemPath>TERMS/Sigcell.h</itemPath>
+      <itemPath>TERMS/TermBank.cpp</itemPath>
+      <itemPath>TERMS/TermBank.h</itemPath>
       <itemPath>TERMS/TermCell.cpp</itemPath>
       <itemPath>TERMS/TermCell.h</itemPath>
       <itemPath>TERMS/TermCellStore.cpp</itemPath>
@@ -159,6 +161,10 @@
       </item>
       <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="TERMS/TermBank.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermBank.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="TERMS/TermCell.h" ex="false" tool="3" flavor2="0">
@@ -272,6 +278,10 @@
       <item path="TERMS/Sigcell.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermBank.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermBank.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
       </item>

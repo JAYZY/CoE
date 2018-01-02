@@ -144,7 +144,7 @@ public:
         }
     }
 
-/* Skip any expression containing balanced (), [], {}. Print error on missmatch. 
+        /* Skip any expression containing balanced (), [], {}. Print error on missmatch. 
      * Note that no full syntax check is performed, we are only interested in the different braces.*/
 
     void ParseSkipParenthesizedExpr() {
@@ -172,7 +172,7 @@ public:
                 paren_stack.pop_back();
                 IntOrP tmpIner;
                 tmpIner = paren_stack.back();
-                tok =(TokenType)tmpIner.i_val;
+                tok = (TokenType) tmpIner.i_val;
                 switch (tok) {
                     case TokenType::OpenBracket:
                         AcceptInpTok(TokenType::CloseBracket);
@@ -246,6 +246,7 @@ public:
     void NormalizeFloatRep(string& outFloatRep);
 
     long ParseInt();
+    
     double ParseFloat();
     StrNumType ParseNumString();
 

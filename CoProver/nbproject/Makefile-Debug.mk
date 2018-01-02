@@ -48,6 +48,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/LIB/Out.o \
 	${OBJECTDIR}/Prover/Prover.o \
 	${OBJECTDIR}/TERMS/Sigcell.o \
+	${OBJECTDIR}/TERMS/TermBank.o \
 	${OBJECTDIR}/TERMS/TermCell.o \
 	${OBJECTDIR}/TERMS/TermCellStore.o \
 	${OBJECTDIR}/TERMS/TermTree.o \
@@ -144,6 +145,11 @@ ${OBJECTDIR}/TERMS/Sigcell.o: TERMS/Sigcell.cpp
 	${MKDIR} -p ${OBJECTDIR}/TERMS
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/Sigcell.o TERMS/Sigcell.cpp
+
+${OBJECTDIR}/TERMS/TermBank.o: TERMS/TermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermBank.o TERMS/TermBank.cpp
 
 ${OBJECTDIR}/TERMS/TermCell.o: TERMS/TermCell.cpp
 	${MKDIR} -p ${OBJECTDIR}/TERMS

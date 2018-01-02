@@ -12,7 +12,7 @@
  */
 
 #include "Clause.h"
-#include "Global/Environment.h"
+ 
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
 /*---------------------------------------------------------------------*/
@@ -94,6 +94,7 @@ Clause* Clause::ClauseParse() {
 
     Scanner* in = Env::getIn();
     TermBank* t = Env::getTb();
+    
     t->vars->VarBankClearExtNames();
 
     ClauseProp type = ClauseProp::CPTypeAxiom;

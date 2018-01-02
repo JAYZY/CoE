@@ -132,13 +132,13 @@ public:
     //  TermCell* TermEquivCellAlloc(TermCell* source, VarBank_p vars);
 
     /* 插入一个Term　项到　termbank中 */
-    TermCell* TBInsert(TermCell* term, int deref);
+    TermCell* TBInsert(TermCell* term, DerefType deref);
     /* 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0; */
-    TermCell* TBInsertNoProps(TermCell* term, int deref);
+    TermCell* TBInsertNoProps(TermCell* term, DerefType deref);
 
     TermCell* TBInsertOpt(TermCell* term, DerefType deref);
 
-    TermCell* TBInsertRepl(TermCell* term, int deref, TermCell* old, TermCell* repl);
+    TermCell* TBInsertRepl(TermCell* term, DerefType deref, TermCell* old, TermCell* repl);
     /* 插入项t到TermBank 中,判断是否为基项或存在绑定,该方法用于rewrite  */
     TermCell* TBInsertInstantiated(TermCell* term);
 
