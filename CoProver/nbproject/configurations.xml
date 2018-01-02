@@ -2,8 +2,8 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="BASIC" displayName="BASIC" projectFiles="true">
-      <itemPath>SplayTree.h</itemPath>
-      <itemPath>TreeNodeDef.h</itemPath>
+      <itemPath>BASIC/SplayTree.h</itemPath>
+      <itemPath>BASIC/TreeNodeDef.h</itemPath>
     </logicalFolder>
     <logicalFolder name="CLAUSE" displayName="CLAUSE" projectFiles="true">
       <itemPath>CLAUSE/Clause.cpp</itemPath>
@@ -15,6 +15,7 @@
       <itemPath>Prover/Prover.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
+      <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>Global/Environment.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
@@ -37,11 +38,24 @@
       <itemPath>LIB/Out.cpp</itemPath>
       <itemPath>LIB/Out.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="TERMS" displayName="TERMS" projectFiles="true">
+      <itemPath>TERMS/Sigcell.cpp</itemPath>
+      <itemPath>TERMS/Sigcell.h</itemPath>
+      <itemPath>TERMS/TermCell.cpp</itemPath>
+      <itemPath>TERMS/TermCell.h</itemPath>
+      <itemPath>TERMS/TermCellStore.cpp</itemPath>
+      <itemPath>TERMS/TermCellStore.h</itemPath>
+      <itemPath>TERMS/TermTree.cpp</itemPath>
+      <itemPath>TERMS/TermTree.h</itemPath>
+      <itemPath>TERMS/VarBank.cpp</itemPath>
+      <itemPath>TERMS/VarBank.h</itemPath>
+      <itemPath>TERMS/VarHash.cpp</itemPath>
+      <itemPath>TERMS/VarHash.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="HeaderFiles" displayName="头文件" projectFiles="true">
       <itemPath>Prover/Prover.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
-      <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
@@ -57,6 +71,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>问题记录</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -88,6 +103,10 @@
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="BASIC/SplayTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="BASIC/TreeNodeDef.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="CLAUSE/Clause.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
@@ -136,11 +155,33 @@
       </item>
       <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="SplayTree.h" ex="false" tool="3" flavor2="0">
+      <item path="TERMS/Sigcell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TreeNodeDef.h" ex="false" tool="3" flavor2="0">
+      <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermCellStore.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermTree.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/VarBank.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/VarBank.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -158,6 +199,8 @@
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <standard>8</standard>
+          <commandlineTool>g++</commandlineTool>
           <incDir>
             <pElem>.</pElem>
           </incDir>
@@ -174,6 +217,10 @@
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="BASIC/SplayTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="BASIC/TreeNodeDef.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="CLAUSE/Clause.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
@@ -222,11 +269,33 @@
       </item>
       <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="SplayTree.h" ex="false" tool="3" flavor2="0">
+      <item path="TERMS/Sigcell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TreeNodeDef.h" ex="false" tool="3" flavor2="0">
+      <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermCell.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermCellStore.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/TermTree.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/TermTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/VarBank.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/VarBank.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="TERMS/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="TERMS/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

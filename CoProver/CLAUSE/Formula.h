@@ -14,16 +14,27 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 #include "INOUT/Scanner.h"
+#include "Clause.h"
+#include <list>
 class Formula {
 private:
+    list<Clause*> axioms;
     Scanner* in;
+    
 public:
-    Formula(Scanner *_in);
-    Formula(const Formula& orig);
+    Formula();
+    Formula(const Formula& orig);    
     virtual ~Formula();
 private:
     //读取tptp公式集
     void WFormulaTPTPParse();
+public:
+    void ClauseSetInsert(Clause* cla){
+        assert(cla);
+        axioms.push_back(cla);
+        //暂时没有给定子句的评估函数
+    }
+    
 
 };
 

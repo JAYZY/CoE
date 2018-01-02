@@ -11,13 +11,17 @@
 
 #ifndef SPLAYTREE_H
 #define SPLAYTREE_H
-#include "IncDefine.h"
+#include "Global/IncDefine.h"
+#include "TreeNodeDef.h"
+#include <typeinfo>
+#include <iostream>
 
 /*---------------------------------------------------------------------*/
 /*                             模板类-伸展树                             */
 /*---------------------------------------------------------------------*/
 //
-#include <typeinfo>
+
+
 class PTreeCell;
 
 template<typename T>
@@ -109,7 +113,7 @@ private:
     //重载
 
     template<typename V, typename Pred>
-    static T* Splay(T* rootTmp,const V& key, Pred cmpFun) {
+    static T* Splay(T* rootTmp, const V& key, Pred cmpFun) {
         T* left;
         T* right;
         T* tmp;
@@ -232,7 +236,7 @@ public:
             root = newnode;
             return nullptr;
         }
-        root = Splay(root,newnode->key);
+        root = Splay(root, newnode->key);
         int cmp = newnode->CompareObj(root);
         if (cmp < 0) {
             newnode->lson = (root)->lson;
@@ -257,7 +261,7 @@ public:
             root = newnode;
             return nullptr;
         }
-        root = Splay(root,newnode->key, cmpFun);
+        root = Splay(root, newnode->key, cmpFun);
         int cmp = cmpFun(newnode->key, root->key);
         if (cmp < 0) {
             newnode->lson = (root)->lson;
@@ -281,7 +285,7 @@ public:
     template<typename V>
     T* Find(V& key) {
         if (root) {
-            root=Splay(root,key);
+            root = Splay(root, key);
             if (root->Compare(key) == 0) {
                 return root;
             }
@@ -292,7 +296,7 @@ public:
     template<typename V, typename Pred>
     T* Find(V& key, Pred cmpFun) {
         if (root) {
-            root = Splay(root,key, cmpFun);
+            root = Splay(root, key, cmpFun);
             if (cmpFun(root->key, key) == 0) {
                 return root;
             }
@@ -345,12 +349,12 @@ public:
         if (!root) {
             return nullptr;
         }
-        root=Splay(root,key);
+        root = Splay(root, key);
         if (root->Compare(key) == 0) {
             if (!root->lson) {
                 x = root->rson;
             } else {
-                x =Splay(root->lson,key);
+                x = Splay(root->lson, key);
                 x->rson = root->rson;
             }
             T* cell = root;
@@ -370,12 +374,12 @@ public:
         if (!root) {
             return nullptr;
         }
-        root = Splay(root,key, cmpFun);
+        root = Splay(root, key, cmpFun);
         if (cmpFun(root->key, key) == 0) {//error修改if (cmpFun(root, key) == 0)
             if (!root->lson) {
                 x = root->rson;
             } else {
-                x = Splay(root->lson,key, cmpFun);
+                x = Splay(root->lson, key, cmpFun);
                 x->rson = root->rson;
             }
             T* cell = root;
@@ -518,6 +522,27 @@ public:
         return rtnSp;
     }
 
+    template<typename V>
+    bool TreeStore(V& key, IntOrP val1, IntOrP val2) {
+
+        T* handle = new T();
+        handle->key = key;
+        handle->val1 = val1;
+        handle->val2 = val2;
+
+        T* newNode = Insert(handle);
+        if (newNode) {
+            if (typeid (*handle) == typeid (PTreeCell))
+                DelPtr(handle);
+            else if (typeid (*handle) == typeid (StrTreeCell))
+                DelPtr(handle);
+            else
+                TreeCellFree(handle);
+            return false;
+        }
+        return true;
+    }
+
     /***************************************************************************** 
      * 根据　key 生成一个节点，并插入到一棵树中
      ****************************************************************************/
@@ -526,7 +551,7 @@ public:
         T* handle = new T();
         handle->key = key;
 
-      T* newNode = Insert(handle);
+        T* newNode = Insert(handle);
         if (newNode) {
             if (typeid (*handle) == typeid (PTreeCell))
                 DelPtr(handle);
@@ -648,7 +673,7 @@ public:
     }
 
     void Destroy() {
-        if (root) {           
+        if (root) {
             if (typeid (*root) == typeid (PTreeCell))
                 DelPtr(root);
             else

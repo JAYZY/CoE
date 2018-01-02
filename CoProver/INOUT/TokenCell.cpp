@@ -58,7 +58,7 @@
     { TokenType::NoToken, nullptr}
 
 };
-
+bool TokenCell::SigSupportLists=false;
 TokenCell::TokenCell() {
 }
 

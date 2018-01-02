@@ -8,10 +8,11 @@
  */
 #ifndef TREENODEDEF_H
 #define TREENODEDEF_H
-#include "IncDefine.h"
-
+#include "Global/IncDefine.h"
+ 
 //这里的宏定义，定义了指针的大小比较
-//#define PCmp(p1, p2)    (PGreater(p1, p2)-PLesser(p1,p2))   
+//#define PCmp(p1, p2)    (PGreater(p1, p2)-PLesser(p1,p2))  
+
 #define PCmp(p1, p2)    (    ((uintptr_t)p1 > (uintptr_t)p2) - ((uintptr_t)p1 < (uintptr_t)p2))
 /*神奇的代码return 1 if the first one is bigger, 0 if both are equal, and -1 if the second one is bigger.*/
 #define PEqual(p1,p2)   ((uintptr_t)(p1))==((uintptr_t)(p2))
@@ -127,6 +128,7 @@ public:
     inline int Compare(const string& k) {
         return key.compare(k);
     }
+    ~StrTreeCell(){key.shrink_to_fit();}
 };
 typedef StrTreeCell *StrTree_p;
 

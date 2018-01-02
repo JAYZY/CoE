@@ -13,14 +13,16 @@
 
 #include "Scanner.h"
 #include "FileOp.h"
-
+#include "BASIC/TreeNodeDef.h"
+#include "BASIC/SplayTree.h"
+#include <cmath>
 /// 构造函数创建一个扫描器 scanner
 /// \param type 扫描的类型 
 /// \param name 文件名称
 /// \param ignore_comments 是否忽略注释
 /// \param default_d  
 
-Scanner::Scanner(StreamType type, char *name, bool ignore_comments, char *default_dir)
+Scanner::Scanner(StreamType type, const char *name, bool ignore_comments, const char *default_dir)
 : source(nullptr), defaultDir(""), format(IOFormat::LOPFormat), accu(""), ignoreComments(ignore_comments), includeKey(nullptr) {
     StreamCell* stream;
     //文件名称以"-"开头,类型为空指针
@@ -65,7 +67,7 @@ Scanner::Scanner(StreamType type, char *name, bool ignore_comments, char *defaul
         ScanRealToken();
     }
     this->current = 0;
-    this->includePos = nullptr;
+    this->includePos;
 
 }
 
@@ -193,6 +195,36 @@ void Scanner::CheckInpTok(TokenType tokType) {
         string tmp = "";
         TokenCell::DescribeToken(AktToken()->tok, tmp); //得到token的描述
         accu += tmp + " read ";
+        AktTokenError(accu.c_str(), false);
+    }
+}
+
+/***************************************************************************** 
+ * 调用 CheckInpTok()之前,检查如果是 SkipTokens,则给出错误提示.
+ ****************************************************************************/
+void Scanner::CheckInpTokNoSkip(TokenType tokType) {
+    if (AktToken()->skipped) {
+        accu = "";
+        string tmpStr;
+        TokenCell::DescribeToken(tokType, tmpStr);
+        accu += tmpStr + " expected, but ";
+        tmpStr = "";
+        TokenCell::DescribeToken(TokenType::SkipToken, tmpStr);
+        accu += tmpStr + " read ";
+        AktTokenError(accu.c_str(), false);
+    }
+    CheckInpTok(tokType);
+}
+
+/*****************************************************************************
+ * Check AktToken() 是否是一个 identifier with the desired value. Produce error if not. 
+ ****************************************************************************/
+void Scanner::CheckInpId(const string& strId) {
+    if (!TestInpId(strId)) {
+        accu = "Identifier (" + strId + ") expected, but ";
+        string tmpStr;
+        TokenCell::DescribeToken(AktToken()->tok, tmpStr);
+        accu += tmpStr + "('" + AktToken()->literal + "') read ";
         AktTokenError(accu.c_str(), false);
     }
 }
@@ -465,4 +497,368 @@ TokenCell* Scanner::ScanToken() {
     }
     //AktToken()->PrintToken(stdout);
     return AktToken();
+}
+
+/*****************************************************************************
+ * functypes 中的方法     
+ ****************************************************************************/
+FuncSymbType Scanner::FuncSymbParse(string& rtnStrid) {
+
+    FuncSymbType res = FuncSymbType::FSNone;
+    StrNumType numtype;
+
+
+    CheckInpTok(TokenType::FuncSymbStartToken);
+
+    if (TestInpTok(TokenType::FuncSymbToken)) {
+        rtnStrid = AktToken()->literal;
+        if (TestInpTok(TokenType::Identifier)) {
+            if (isupper(AktToken()->literal[0])
+                    || (AktToken()->literal[0] == '_')) {
+                //大写字母 或者 以 "_"开始的符号识别为变元
+                res = FuncSymbType::FSIdentVar;
+            } else {
+                res = FuncSymbType::FSIdentFreeFun;
+            }
+        } else {
+            switch (AktToken()->tok) {
+                case TokenType::SemIdent:
+                    res = FuncSymbType::FSIdentInterpreted;
+                    break;
+                case TokenType::SQString:
+                    res = FuncSymbType::FSIdentFreeFun;
+                    break;
+                case TokenType::String:
+                    res = FuncSymbType::FSIdentObject;
+                    break;
+                default:
+                    assert(false && "Unexpected token in FuncSymbParse()");
+                    break;
+            }
+        }
+        AcceptInpTok(TokenType::FuncSymbToken);
+    } else {
+        CheckInpTok(TokenType::FuncSymbNum);
+        numtype = ParseNumString();
+        switch (numtype) {
+            case StrNumType::SNInteger:
+                NormalizeIntRep(accu);
+                rtnStrid += accu;
+                res = FuncSymbType::FSIdentInt;
+                break;
+            case StrNumType::SNRational:
+                NormalizeRationalRep(accu);
+                rtnStrid += accu;
+                res = FuncSymbType::FSIdentRational;
+                break;
+            case StrNumType::SNFloat:
+                NormalizeFloatRep(accu);
+                rtnStrid += accu;
+                res = FuncSymbType::FSIdentFloat;
+                break;
+            default:
+                assert(false);
+                break;
+        }
+    }
+    return res;
+}
+
+/***************************************************************************** 
+ * Take a string representation of an integer and turn it into a normal form. 
+ * This is done by dropping the optional leading + and all leading zeros 
+ * (except for the case of plain '0', of course). 
+ * 获取整数的字符串形式并将其转换为整数形式,删除+和数字前的若干个0.
+ ****************************************************************************/
+void Scanner::NormalizeIntRep(string& rtnIntRep) {
+
+    string sign, tmp;
+    const char* work = rtnIntRep.c_str();
+    if (*work == '+') {
+        ++work;
+    } else if (*work == '-') {
+        sign = "-";
+        ++work;
+    }
+
+    while (*work == '0') {
+        ++work;
+    }
+    /* Check if there is anything left */
+    if (*work == '\0') {
+        rtnIntRep = "0";
+        //assert(rtnIntRep.empty());
+    } else {
+        tmp += sign;
+        tmp += *work;
+        rtnIntRep = tmp;
+    }
+}
+
+/*****************************************************************************
+ * Take a string representation of an integer and turn it into a normal form. 
+ * This is done by dropping optional leading +es and all leading zeros 
+ * (except for the case of plain '0', of course), and moving any remaining '-' to the very front.
+ * 获取整数的字符串形式并将其转换为整数形式,删除+和数字前的若干个0.
+ ****************************************************************************/
+void Scanner::NormalizeRationalRep(string& rtnIntRep) {
+    bool negative = false;
+    string tmpStr;
+    const char* work = rtnIntRep.c_str();
+    if (*work == '+') {
+        ++work;
+    } else if (*work == '-') {
+        negative = true;
+        ++work;
+    }
+    while (*work == '0') {
+        ++work;
+    }
+    /* Check if there is anything left */
+    if (*work != '/') {
+        while (*work != '/') {
+            tmpStr += *work;
+            ++work;
+        }
+    } else {
+        tmpStr = "";
+    }
+    assert(*work == '/');
+    tmpStr += '/';
+    ++work;
+
+    if (*work == '+') {
+        ++work;
+    } else if (*work == '-') {
+        negative = !negative;
+        ++work;
+    }
+    while (*work == '0') {
+        ++work;
+    }
+    /* Check if there is anything left */
+    if (*work == '\0') {
+        tmpStr = "";
+    } else {
+        while (*work != '\0') {
+            tmpStr += *work;
+            work++;
+        }
+    }
+    rtnIntRep = "";
+    if (negative) {
+        rtnIntRep = '-';
+
+    }
+    rtnIntRep += tmpStr;
+}
+
+/*****************************************************************************
+ * Take a string representation of a floating point number and turn it into a normal form. 
+ * The normal form is whatever sprintf() makes of it. Over- and underflow are accepted and ingnored 
+ * (this is floating point math, after all - what do you expect?). 
+ ****************************************************************************/
+void Scanner::NormalizeFloatRep(string& outFloatRep) {
+    double value;
+    char* endptr;
+    char buff[128];
+    int res;
+    value = strtod(outFloatRep.c_str(), &endptr);
+
+    if (fabs(value) >= 1000.0) {
+        res = snprintf(buff, 128, "%e", value);
+    } else {
+        res = snprintf(buff, 128, "%f", value);
+    }
+    (void) res;
+    assert(res < 128);
+    outFloatRep = buff;
+
+}
+/*****************************************************************************
+ * Parse a float in x.yEz format (optional negative and so on...)
+ ****************************************************************************/
+#ifndef ALLOW_COMMA_AS_DECIMAL_DOT
+#define DECIMAL_DOT TokenType::Fullstop
+#else
+#define DECIMAL_DOT (uint64_t)TokenType::Fullstop|(uint64_t)TokenType::Comma
+#endif
+
+double Scanner::ParseFloat() {
+
+    accu = "";
+    if (TestInpTok(TokenType::SymbToken)) {
+        accu = AktToken()->literal;
+        NextToken();
+        CheckInpTokNoSkip(TokenType::PosInt);
+    } else {
+        CheckInpTok(TokenType::PosInt);
+    }
+    accu += AktToken()->literal;
+    NextToken();
+
+    /* Parsed [-]123 so far */
+    if (TestInpNoSkip() && TestInpTok((TokenType) DECIMAL_DOT)) {
+        accu += '.';
+        AcceptInpTokNoSkip((TokenType) DECIMAL_DOT);
+        accu += AktToken()->literal;
+        AcceptInpTokNoSkip(TokenType::PosInt);
+    }
+
+    /* Parsed -123.1123 so far */
+    if (TestInpNoSkip() && TestInpId("e|E")) {
+        accu += AktToken()->literal;
+        NextToken(); /* Skip E */
+
+        accu += AktToken()->literal;
+        AcceptInpTokNoSkip(TokenType::SymbToken); /* Eat - */
+
+        accu += AktToken()->literal;
+        AcceptInpTokNoSkip(TokenType::PosInt);
+    }
+    errno = 0;
+    double value = strtod(accu.c_str(), nullptr);
+
+    if (errno) {
+        //TmpErrno = errno;
+        AktTokenError("Cannot translate double", true);
+    }
+    return value;
+}
+
+/***************************************************************************** 
+ * Parse a (possibly signed) number (Integer, Rational, or Float) and return the most specific type compatible with it. 
+ * The number is not evaluated, but its ASCII representation is stored in  in->accu.
+ ****************************************************************************/
+StrNumType Scanner::ParseNumString() {
+    StrNumType res = StrNumType::SNInteger;
+    accu = "";
+    if (TestInpTok(TokenType::SymbToken)) {
+        accu += AktToken()->literal;
+        NextToken();
+        CheckInpTokNoSkip(TokenType::PosInt);
+    } else {
+        CheckInpTok(TokenType::PosInt);
+    }
+    accu += AktToken()->literal;
+    NextToken();
+
+    if (TestInpTokNoSkip(TokenType::Slash)) {
+        accu += '/';
+        NextToken();
+
+        if (TestInpTok(TokenType::SymbToken)) {
+            accu += AktToken()->literal;
+            NextToken();
+        }
+        accu += AktToken()->literal;
+        AcceptInpTokNoSkip(TokenType::PosInt);
+        res = StrNumType::SNRational;
+    } else {
+        if (TestInpTokNoSkip(DECIMAL_DOT)
+                && LookToken(1)->TestTok(TokenType::PosInt)
+                &&!LookToken(1)->skipped) {
+            accu += '.';
+            AcceptInpTokNoSkip(DECIMAL_DOT);
+            accu += AktToken()->literal;
+            AcceptInpTokNoSkip(TokenType::PosInt);
+            res = StrNumType::SNFloat;
+        }
+        if (TestInpNoSkip()) {
+            if (TestInpId("e|E")) {
+                accu += "e";
+                NextToken(); /* Skip E */
+                accu += AktToken()->literal;
+                AcceptInpTokNoSkip(TokenType::SymbToken); /* Eat - */
+                accu += AktToken()->literal;
+                AcceptInpTokNoSkip(TokenType::PosInt);
+                res = StrNumType::SNFloat;
+            } else if (TestInpIdNum("e|E")) {
+                accu += AktToken()->literal;
+                AcceptInpTokNoSkip(TokenType::Idnum);
+                res = StrNumType::SNFloat;
+            }
+        }
+    }
+    return res;
+}
+
+/*-----------------------------------------------------------------------
+//
+// Function: ScannerParseInclude()
+//
+//   Parse a TPTP-Style include statement. Return a scanner for the
+//   included file, and put (optional) selected names into
+//   name_selector. If the file name is in skip_includes, skip the
+//   rest and return NULL.
+//
+// Global Variables: -
+//
+// Side Effects    : Reads input.
+//
+/----------------------------------------------------------------------*/
+
+Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, SplayTree<StrTreeCell> &skip_includes) {
+    Scanner* new_scanner = NULL;
+
+    string pos_rep;
+    this->TokenPosRep(pos_rep);
+    this->AcceptInpId("include"); //测试并跳过 include 符号
+    this->AcceptInpTok(TokenType::OpenBracket);
+    this->CheckInpTok(TokenType::SQString);
+
+    string newName = AktToken()->literal;
+
+    if (!skip_includes.Find(newName)) {
+        new_scanner = new Scanner(nullptr, newName.c_str(), this->ignoreComments, this->defaultDir.c_str());
+        new_scanner->ScannerSetFormat(this->format);
+        new_scanner->includePos = pos_rep;
+
+    } else {
+        pos_rep.shrink_to_fit();
+    }
+    newName.shrink_to_fit();
+    this->NextToken();
+
+    if (this->TestInpTok(TokenType::Comma)) {
+
+        IntOrP dummy;
+        dummy.i_val = 0;
+
+        this->NextToken();
+        this->CheckInpTok( (TokenType)((uint64_t)TokenType::NamePosInt | (uint64_t)TokenType::OpenSquare) );
+
+        if (this->TestInpTok(TokenType::NamePosInt)) {
+
+            name_selector.TreeStore(this->AktToken()->literal, dummy, dummy);
+            this->NextToken();
+
+        } else {
+            this->AcceptInpTok(TokenType::OpenSquare);
+            if (!this->TestInpTok(TokenType::CloseSquare)) {
+                name_selector.TreeStore(this->AktToken()->literal, dummy, dummy);
+
+                this->AcceptInpTok(TokenType::NamePosInt);
+                while (this->TestInpTok(TokenType::Comma)) {
+                    this->NextToken();
+
+                    name_selector.TreeStore(this->AktToken()->literal, dummy, dummy);
+
+
+                    this->AcceptInpTok(TokenType::NamePosInt);
+                }
+            } else /* Empty list - insert full dummy */ {
+                dummy.i_val = 1;
+                string tip = "** Not a legal name**";
+                name_selector.TreeStore(tip, dummy, dummy);
+                tip.shrink_to_fit();
+
+            }
+            AcceptInpTok(TokenType::CloseSquare);
+        }
+    }
+    AcceptInpTok(TokenType::CloseBracket);
+    AcceptInpTok(TokenType::Fullstop);
+
+    return new_scanner;
 }

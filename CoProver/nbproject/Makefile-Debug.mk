@@ -47,6 +47,12 @@ OBJECTFILES= \
 	${OBJECTDIR}/INOUT/TokenCell.o \
 	${OBJECTDIR}/LIB/Out.o \
 	${OBJECTDIR}/Prover/Prover.o \
+	${OBJECTDIR}/TERMS/Sigcell.o \
+	${OBJECTDIR}/TERMS/TermCell.o \
+	${OBJECTDIR}/TERMS/TermCellStore.o \
+	${OBJECTDIR}/TERMS/TermTree.o \
+	${OBJECTDIR}/TERMS/VarBank.o \
+	${OBJECTDIR}/TERMS/VarHash.o \
 	${OBJECTDIR}/main.o
 
 
@@ -133,6 +139,36 @@ ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${MKDIR} -p ${OBJECTDIR}/Prover
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Prover/Prover.o Prover/Prover.cpp
+
+${OBJECTDIR}/TERMS/Sigcell.o: TERMS/Sigcell.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/Sigcell.o TERMS/Sigcell.cpp
+
+${OBJECTDIR}/TERMS/TermCell.o: TERMS/TermCell.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCell.o TERMS/TermCell.cpp
+
+${OBJECTDIR}/TERMS/TermCellStore.o: TERMS/TermCellStore.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCellStore.o TERMS/TermCellStore.cpp
+
+${OBJECTDIR}/TERMS/TermTree.o: TERMS/TermTree.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermTree.o TERMS/TermTree.cpp
+
+${OBJECTDIR}/TERMS/VarBank.o: TERMS/VarBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarBank.o TERMS/VarBank.cpp
+
+${OBJECTDIR}/TERMS/VarHash.o: TERMS/VarHash.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarHash.o TERMS/VarHash.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

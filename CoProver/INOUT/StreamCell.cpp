@@ -13,6 +13,8 @@
 
 #include "StreamCell.h"
 #include "FileOp.h"
+
+const StreamType StreamTypeFile = nullptr;
 /// 根据file name 创建一个文件流, 若 type==nullptr name='-' 表示为标准输入 stdin
 /// \param type 
 /// \param source

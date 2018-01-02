@@ -78,8 +78,8 @@ public:
     //
 
     ClauseInfo() {
-        name = "";
-        source = "";
+        name = nullptr;
+        source = nullptr;
         line = -1;
         column = -1;
     }
@@ -127,7 +127,6 @@ class Clause {
 private:
     uint64_t ident; //子句创建时确定的唯一识别子句的id    
     ClauseProp properties; //子句属性
-
     ClauseInfo* info; //子句信息
     Literal* literals; //文字列表
     uint16_t negLitNo; //负文字个数
@@ -160,11 +159,17 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
+   static ClauseProp ClauseTypeParse(Scanner* in, string &legal_types) ;
+    
+    //
     /// 解析成子句
     /// \param in 
     /// \param bank
     /// \return 
-    void ClauseParse(Scanner* in);
+    static Clause* ClauseParse( );
+    
+    
+    
 private:
 
 };

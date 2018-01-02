@@ -21,15 +21,15 @@ enum class TokenType : uint64_t {
     WhiteSpace = 2LL,
     Comment = 4LL,
     Ident = 8LL,
-    Idnum = 16LL,
+    Idnum = 16LL, //"Identifier terminating in a number"
     SemIdent = 32,
-    String = 64,
-    SQString = 128,
-    PosInt = 256,
-    OpenBracket = 512,
-    CloseBracket = 1024,
-    OpenCurly = 2048,
-    CloseCurly = 4096,
+    String = 64, // "String enclosed in double quotes (\"\")"
+    SQString = 128, //"String enclosed in single quote ('')"
+    PosInt = 256, //"Integer (sequence of decimal digits) convertable to an 'unsigned long'"
+    OpenBracket = 512, //(
+    CloseBracket = 1024, //)
+    OpenCurly = 2048, // {
+    CloseCurly = 4096, // } 
     OpenSquare = 8192,
     CloseSquare = 16384,
     LesserSign = 32768,
@@ -51,8 +51,9 @@ enum class TokenType : uint64_t {
     Dollar = (2 * TokenType::Fullstop),
     Slash = (2 * TokenType::Dollar),
     Pipe = (2 * TokenType::Slash),
-    FOFOr = (TokenType::Pipe),
     Ampersand = (2 * TokenType::Pipe),
+
+    FOFOr = (TokenType::Pipe),
     FOFAnd = (TokenType::Ampersand),
     FOFLRImpl = (2 * TokenType::Ampersand),
     FOFRLImpl = (2 * TokenType::FOFLRImpl),
@@ -60,20 +61,46 @@ enum class TokenType : uint64_t {
     FOFXor = (2 * TokenType::FOFEquiv),
     FOFNand = (2 * TokenType::FOFXor),
     FOFNor = (2 * TokenType::FOFNand),
+
+    FOFAssocOp = (TokenType::FOFAnd | TokenType::FOFOr),
+    FOFBinOp = (TokenType::FOFAssocOp | TokenType::FOFLRImpl | TokenType::FOFRLImpl | TokenType::FOFEquiv | TokenType::FOFXor | TokenType::FOFNand | TokenType::FOFNor),
+
     SkipToken = (TokenType::WhiteSpace | TokenType::Comment),
-    Identifier = (TokenType::Ident | TokenType::Idnum)
+    Identifier = (TokenType::Ident | TokenType::Idnum),
+
+    TSTPToken = (TokenType::Identifier | TokenType::PosInt),
+    Name = (TokenType::Identifier | TokenType::String),
+
+    NamePosInt = (TokenType::Name | TokenType::PosInt),
+    NamePosIntSQStr = (TokenType::NamePosInt | TokenType::SQString),
+
+    SymbToken = (TokenType::Hyphen | TokenType::Plus),
+    FuncSymbNum = (TokenType::SymbToken | TokenType::PosInt),
+    FuncSymbToken = (TokenType::Identifier | TokenType::SemIdent | TokenType::SQString | TokenType::String),
+    FuncSymbStartToken = (TokenType::FuncSymbToken | TokenType::FuncSymbNum),
+
+    SigSupportLists = (TokenType::FuncSymbStartToken | TokenType::OpenSquare | TokenType::Mult), //自动插入特殊符号 $nil=3, $cons=4 for list representations 
+    SigNOSupportLists = (TokenType::FuncSymbStartToken | TokenType::Mult) //不支持自动插入特殊符号
+
 };
- typedef struct tokenRepcell {
-        TokenType key;
-        const char* rep;
-    } TokenRepCell;
+
+typedef struct tokenRepcell {
+    TokenType key;
+    const char* rep;
+} TokenRepCell;
+
 class TokenCell {
 private:
-
-   
     const static TokenRepCell token_print_rep[];
 public:
-    /****** inline ******/
+    static bool SigSupportLists;
+    /*---------------------------------------------------------------------*/
+    /*                       Inline  Function                              */
+
+    /*---------------------------------------------------------------------*/
+    static inline TokenType TermStartToken() {
+        return SigSupportLists ? TokenType::SigSupportLists : TokenType::SigNOSupportLists;
+    }
 
     /*****************************************************************************
      * Test whether a given token is of type identifier and is one of a set of possible alternatives. 
@@ -143,6 +170,8 @@ public:
      * The caller has to free the space of this description!
      ****************************************************************************/
     static void DescribeToken(TokenType ttype, string &descirbe);
+
+
 };
 
 #endif /* TOKENCELL_H */
