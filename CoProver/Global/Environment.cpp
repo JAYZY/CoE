@@ -20,7 +20,7 @@ uint64_t Env::global_clause_counter = 0; //全局子句个数,从1开始编号
 IOFormat Env::parseFormat = IOFormat::AutoFormat;
 Scanner* Env::in=nullptr;
 TermBank* Env::termBank=nullptr;
-
+ Sigcell* Env::sig=nullptr;
 Env::Env() {
 }
 

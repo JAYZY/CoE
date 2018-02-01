@@ -39,7 +39,12 @@ TermCellStore::~TermCellStore() {
 /* Insert a term cell into the store.  */
 TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
     TermCell* ret;
-    ret = TermTree::TermTreeInsert(&(store[TermCellHash(term)]), term);
+    FunCode idx=TermCellHash(term);
+    ret = TermTree::TermTreeInsert(&(store[idx]), term);
+    
+//    cout<<"TermCellStore:"<<idx<<" :";
+//    term->TermPrint(stdout,DerefType::DEREF_ALWAYS);
+//    cout<<endl;
     if (!ret) {
         entries++;
         argCount += term->arity;

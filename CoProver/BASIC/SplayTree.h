@@ -200,7 +200,44 @@ public:
     inline bool IsEmpty() {
         return root == nullptr;
     }
-    //4.10 zjadd
+
+    /// 获取所有比ele大的 key>ele.key的节点元素
+    /// \param key 指定的节点ele的key
+    /// \param vect 返回的集合
+
+    template<typename V>
+    void GetAllBigerEle(V key, vector<T*>&vect) {
+        T* ptr = FindByKey(key);
+        if (!ptr) return;
+        ptr = ptr->rson;
+        GetAllEle(ptr, vect);
+    }
+    /// 获取所有比ele小的(key<ele.key)的节点元素
+    /// \param key 指定的节点ele的key
+    /// \param vect 返回的集合
+
+    template<typename V>
+    void GetAllSmallerEle(V key, vector<T*>&vect) {
+        T* ptr = FindByKey(key);
+        if (!ptr) return;
+        ptr = ptr->rson;
+        GetAllEle(ptr, vect);
+    }
+    /// 从小到大取出所有树节点(中序遍历)
+    /// \param ele
+    /// \param vect
+
+    void GetAllEle(T* ele, vector<T*>&vect) {
+        if (!ele)
+            return;
+        if (ele->lson) {
+            GetAllEle(ele->lson, vect);
+        }
+        vect.push_back(ele);
+        if (ele->rson) {
+            GetAllEle(ele->rson, vect);
+        }
+    }
 
     inline void TraverseInit(vector<T*>&vect) {
         T* ptr = root;
@@ -215,16 +252,15 @@ public:
             return nullptr;
         T* ele = vect.back();
         vect.pop_back();
-
         T* handle = ele->rson;
         while (handle != nullptr) {
-
             vect.push_back(handle);
             handle = handle->lson;
         }
         return ele;
 
     }
+
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
@@ -283,11 +319,29 @@ public:
      * 查找 －－基于伸展树的查找
      ****************************************************************************/
     template<typename V>
-    T* Find(V& key) {
+    T* FindByKey(V& key) {
         if (root) {
             root = Splay(root, key);
             if (root->Compare(key) == 0) {
                 return root;
+            }
+        }
+        return nullptr;
+    }
+    /// 查找key节点右分支中值最小的节点.也就是右分支中的最左叶子节点
+    /// \param key
+    /// \return 
+    template<typename V>
+    T* FindNextBigerEle(V& key) {
+
+        if (root) {
+            root = Splay(root, key);
+            if (root->Compare(key) == 0) {
+                T* nextBigerEle = root->rson;
+                while (nextBigerEle->lson) {
+                    nextBigerEle = nextBigerEle->lson;
+                }
+                return nextBigerEle;
             }
         }
         return nullptr;
@@ -333,11 +387,16 @@ public:
     void Print(T* node) {
         if (!node)
             return;
-        cout << node->key << endl;
-        cout << "left->";
-        Print(node->lson);
-        cout << "right->";
-        Print(node->rson);
+        cout << node->key;
+        if (node->lson) {
+            cout << "->left:";
+            Print(node->lson);
+        }
+        if (node->rson) {
+            cout << "->right:";
+            Print(node->rson);
+        }
+        cout << endl;
     }
 
     /*****************************************************************************
@@ -611,7 +670,7 @@ public:
             handle = st.back();
             st.pop_back();
             if (handle) {
-                res = Find(handle->key);
+                res = FindByKey(handle->key);
                 if (res) {//找到了                    
                     break;
                 }

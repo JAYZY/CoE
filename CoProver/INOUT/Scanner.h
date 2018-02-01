@@ -144,35 +144,30 @@ public:
         }
     }
 
-        /* Skip any expression containing balanced (), [], {}. Print error on missmatch. 
+    /* 跳过所有类型的括号
+     * Skip any expression containing balanced (), [], {}. Print error on missmatch. 
      * Note that no full syntax check is performed, we are only interested in the different braces.*/
 
-    void ParseSkipParenthesizedExpr() {
+    inline void ParseSkipParenthesizedExpr() {
 
-        vector<IntOrP> paren_stack;
+        vector<TokenType> paren_stack;
+
         TokenType tok;
-
         TokenType checkOpenToken = (TokenType) ((uint64_t) TokenType::OpenBracket | (uint64_t) TokenType::OpenCurly | (uint64_t) TokenType::OpenSquare);
         TokenType checkCloseToken = (TokenType) ((uint64_t) TokenType::CloseBracket | (uint64_t) TokenType::CloseCurly | (uint64_t) TokenType::CloseSquare);
         CheckInpTok(checkOpenToken);
-
-        //PStackPushInt(paren_stack, in->AktTokenType());
-        IntOrP tmp;
-        tmp.i_val = (uint64_t) AktToken()->tok;
-        paren_stack.push_back(tmp);
+        paren_stack.push_back(AktToken()->tok);
         NextToken();
         while (!paren_stack.empty()) {
             if (TestInpTok(checkOpenToken)) {
-                IntOrP tmpIner;
-                tmpIner.i_val = (uint64_t) AktToken()->tok;
+                TokenType tmpIner = AktToken()->tok;
                 paren_stack.push_back(tmpIner);
                 NextToken();
             } else if (TestInpTok(checkCloseToken)) {
                 //tok = PStackPopInt(paren_stack);
-                paren_stack.pop_back();
-                IntOrP tmpIner;
-                tmpIner = paren_stack.back();
-                tok = (TokenType) tmpIner.i_val;
+
+                tok = paren_stack.back();
+
                 switch (tok) {
                     case TokenType::OpenBracket:
                         AcceptInpTok(TokenType::CloseBracket);
@@ -192,7 +187,8 @@ public:
             }
         }
         //PStackFree(paren_stack);
-        paren_stack.clear();
+        vector<TokenType>().swap(paren_stack);
+
     }
 
 public:
@@ -246,7 +242,7 @@ public:
     void NormalizeFloatRep(string& outFloatRep);
 
     long ParseInt();
-    
+
     double ParseFloat();
     StrNumType ParseNumString();
 

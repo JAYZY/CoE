@@ -31,7 +31,7 @@ enum class EqnProp : uint32_t {
     EPMaxIsUpToDate = 32, /* Orientation status is up to date */
     EPHasEquiv = 64, /* Literal has been used in	 multiset-comparison (and found an equivalent partner) */
     EPIsDominated = 128, /* Literal is dominated by another one */
-    EPDominates = EPIsDominated, /* Double use of this property in potentially maximal or minimal clauses */
+    EPDominates = EqnProp::EPIsDominated, /* Double use of this property in potentially maximal or minimal clauses */
     EPIsUsed = 256, /* For non-injective subsumption and  pattern-generation */
     EPGONatural = 512, /* Set if left side is bigger in the special (total) ground ordering treating variables as small constants */
     EPIsSelected = 1024, /* For selective superpostion */
@@ -44,7 +44,7 @@ enum class EqnProp : uint32_t {
 };
 
 class Literal {
-private:
+public:
     EqnProp properties; /*prositive ,maximal,equational */
     int pos;
     TermCell* lterm; /*左文字*/
@@ -74,6 +74,37 @@ public:
         FlipProp(this->properties, prop);
     }
 
+    inline bool EqnQueryProp(EqnProp prop) {
+        return QueryProp(this->properties, prop);
+    }
+
+    inline bool EqnIsPositive() {
+        return EqnQueryProp(EqnProp::EPIsPositive);
+    }
+
+    inline bool EqnIsNegative() {
+        return !(EqnQueryProp(EqnProp::EPIsPositive));
+    }
+
+    inline bool EqnIsMaximal() {
+        return EqnQueryProp(EqnProp::EPIsMaximal);
+    }
+
+    inline bool EqnIsOriented() {
+        return EqnQueryProp(EqnProp::EPIsOriented);
+    }
+
+    inline bool EqnIsEquLit() {
+        return EqnQueryProp(EqnProp::EPIsEquLiteral);
+    }
+
+    inline bool EqnIsPropFalse() {
+        return ((lterm == rterm) && EqnIsNegative());
+    }
+
+    inline bool EqnIsTrivial() {
+        return this->lterm == this->rterm;
+    }
     /***************************************************************************** 
      * 将文字element 插入到文字pos的后面。Insert the element at the position defined by pos.
      ****************************************************************************/
@@ -108,18 +139,19 @@ public:
      * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
      ****************************************************************************/
     void EqnListParse(TokenType sep) {
-        //TokenType FuncSymbStartToken = Identifier | SemIdent | SQString | String | PosInt | Plus | Hyphen;
-        //TokenType TermStartToken =Clause::SigSupportLists?(FuncSymbStartToken|OpenSquare|Mult):(FuncSymbStartToken|Mult);
+
         Scanner* in = Env::getIn();
         TB_p bank = Env::getTb();
+
         TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
 
         if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
                 ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
                 ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
 
-            //文字解析
+            //单个文字 解析&生成
             this->EqnParse();
+
             Literal* handle = this;
             while (in->TestInpTok(sep)) {
                 in->NextToken();
@@ -133,7 +165,7 @@ public:
     }
 
     /*---------------------------------------------------------------------*/
-    /*                  Member Function-[public]                           */
+    /*                  Member Function-[private]                           */
     /*---------------------------------------------------------------------*/
 private:
 
@@ -150,10 +182,11 @@ private:
     /* Parse a literal without external sign assuming that _all_equational literals are infix. Return sign. 
      * This is for TSTP syntax and E-LOP style.*/
     bool eqn_parse_infix(TermCell* *lref, TermCell* *rref);
-public:
-    // Function: EqnParse()
-    // 过滤EqnParse(Scanner_p in, TB_p bank)
-
+public:    
+    /*---------------------------------------------------------------------*/
+    /*                  Member Function-[public]                           */
+    /*---------------------------------------------------------------------*/
+    //    
     void EqnParse() {
 
         Term_p lt = nullptr, rt = nullptr;
@@ -164,6 +197,7 @@ public:
     void EqnAlloc(Term_p lt, Term_p rt, bool positive) {
 
         TermBank* bank = Env::getTb();
+
         this->pos = 0;
         this->properties = EqnProp::EPNoProps;
 
@@ -171,10 +205,10 @@ public:
             EqnSetProp(EqnProp::EPIsPositive);
         }
         if (rt != bank->trueTerm) {//设置等词属性
-            assert(rt->fCode != (FunCode)DerefType::TRUECODE);
+            assert(rt->fCode != (FunCode) DerefType::TRUECODE);
             EqnSetProp(EqnProp::EPIsEquLiteral);
         } else {//非等词文字
-            
+
             assert(rt->TermCellQueryProp(TermProp::TPPredPos));
 
 
@@ -190,9 +224,9 @@ public:
             printf("\n"); */
 
 
-            assert(bank->sig->SigQueryFuncProp(lt->fCode, FPPredSymbol));
+            assert(Env::getSig()->SigQueryFuncProp(lt->fCode, FPPredSymbol));
             lt->TermCellSetProp(TermProp::TPPredPos);
-            if (bank->sig->SigQueryFuncProp(lt->fCode, FPPseudoPred)) {
+            if (Env::getSig()->SigQueryFuncProp(lt->fCode, FPPseudoPred)) {
                 EqnSetProp(EqnProp::EPPseudoLit);
             }
         }
@@ -206,7 +240,10 @@ public:
         //  printf("\n");
 #endif
     }
-
+/*****************************************************************************
+ * Print a literal in TSTP format.
+ ****************************************************************************/
+void  EqnTSTPPrint(FILE* out, bool fullterms) ;
 };
 
 #endif /* LITERAL_H */

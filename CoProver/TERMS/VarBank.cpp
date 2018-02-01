@@ -143,9 +143,9 @@ FunCode VarBank::VarBankCheckBindings(FILE* out, Sig_p sig) {
                 res++;
                 if (sig) {
                     fprintf(out, "# %ld: ", term->fCode);
-                    term->TermPrint(out, sig, DerefType::DEREF_NEVER);
+                    term->TermPrint(out, DerefType::DEREF_NEVER);
                     fprintf(out, " <--- ");
-                    term->TermPrint(out, sig, DerefType::DEREF_ONCE);
+                    term->TermPrint(out, DerefType::DEREF_ONCE);
                     fprintf(out, "\n");
                 } else {
                     fprintf(out, "# Var%ld <---- %p\n",

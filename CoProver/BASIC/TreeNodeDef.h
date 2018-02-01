@@ -74,7 +74,8 @@ public:
     NumTreeCell(long k) : key(k), lson(nullptr), rson(nullptr) {
         val1.i_val = val2.i_val = 0;
     }
-
+     
+    
     bool operator<(const NumTreeCell& a2)const {
         return key < a2.key;
     }

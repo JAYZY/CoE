@@ -16,6 +16,7 @@
 #include "TermBank.h"
 #include "INOUT/FileOp.h"
 #include "TermCell.h"
+#include "Global/Environment.h"
 
 bool TermBank::TBPrintInternalInfo = false;
 bool TermBank::TBPrintDetails = false;
@@ -24,9 +25,8 @@ bool TermBank::TBPrintDetails = false;
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermBank::TermBank(){
-    //Sig_p sigValue) : sig(sigValue) {
-    //初始化TermBank的时候,插入两个特殊的项 $True $False
+TermBank::TermBank() {
+
 
     //assert(sig);
     inCount = 0;
@@ -42,16 +42,17 @@ TermBank::TermBank(){
     //创建一个特殊TrueTerm 
     TermCell* tmpTerm = new TermCell((FunCode) DerefType::TRUECODE, 0);
     tmpTerm->TermCellSetProp(TermProp::TPPredPos); //默认谓词符号
+
     trueTerm = TBInsert(tmpTerm, DerefType::DEREF_NEVER);
     TermCell::TermFree(tmpTerm); //TermFree(term);
 
     //创建一个特殊FalseTerm 
     tmpTerm = new TermCell((FunCode) DerefType::FLASECODE);
     tmpTerm->TermCellSetProp(TermProp::TPPredPos);
-    falseTerm = TBInsert(tmpTerm,  DerefType::DEREF_NEVER);
+    falseTerm = TBInsert(tmpTerm, DerefType::DEREF_NEVER);
 
     TermCell::TermFree(tmpTerm); //TermFree(term);
-    minTerm = NULL;
+    minTerm = nullptr;
     //freevarsets = NULL;
 }
 
@@ -59,7 +60,7 @@ TermBank::TermBank(const TermBank& orig) {
 }
 
 TermBank::~TermBank() {
-    assert(!sig);
+    //assert(!sig);
 
     /* printf("TBFree(): %ld\n", TermCellStoreNodes(&(junk->term_store)));*/
     termStore.TermCellStoreExit();
@@ -78,12 +79,14 @@ TermBank::~TermBank() {
 /***************************************************************************** 
  * 根据插入顺序输出 -- Print the terms as a dag in the order of insertion.
  ****************************************************************************/
-void TermBank::tb_print_dag(FILE *out, NumTree_p spNode, Sig_p sig) {
+void TermBank::tb_print_dag(FILE *out, NumTree_p spNode) {
+    
     //中序遍历 伸展树 注意.spNode是节点
     if (spNode == nullptr) {
         return;
     }
-    tb_print_dag(out, spNode->lson, sig);
+    
+    tb_print_dag(out, spNode->lson);
 
     TermCell* term = (TermCell*) spNode->val1.p_val;
 
@@ -93,7 +96,7 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode, Sig_p sig) {
         term->VarPrint(out);
     } else {
         string sigName;
-        sig->SigFindName(term->fCode, sigName);
+        Env::getSig()->SigFindName(term->fCode, sigName);
         fputs(sigName.c_str(), out);
         if (!term->IsConst()) {
             assert(term->arity >= 1);
@@ -108,13 +111,13 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode, Sig_p sig) {
             putc(')', out);
         }
         printf("   =   ");
-        term->TermPrint(out, sig,  DerefType::DEREF_NEVER);
+        term->TermPrint(out, DerefType::DEREF_NEVER);
     }
     if (TermBank::TBPrintInternalInfo) {
-        fprintf(out, "\t/*  Properties: %10d */", (int)term->properties);
+        fprintf(out, "\t/*  Properties: %10d */", (int) term->properties);
     }
     fprintf(out, "\n");
-    tb_print_dag(out, spNode->rson, sig);
+    tb_print_dag(out, spNode->rson);
 }
 
 /***************************************************************************** 
@@ -122,7 +125,7 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode, Sig_p sig) {
  ****************************************************************************/
 TermCell* TermBank::tb_subterm_parse(Scanner* in) {
     TermCell* res = TBTermParseReal(in, true);
-
+    Sigcell* sig=Env::getSig();
     if (!res->IsVar()) {
         if (sig->SigIsPredicate(res->fCode)) {//此处有错误
             in->AktTokenError("Predicate used as function symbol in preceeding term", false);
@@ -178,7 +181,7 @@ TermCell* TermBank::TBTermTopInsert(TermCell* t) {
     assert(!t->IsVar());
     TermCell* newTerm = termStore.TermCellStoreInsert(t);
     if (newTerm) /* TermCell node already existed, just add properties */ {
-        newTerm->properties = (TermProp) ((int32_t)newTerm->properties | (int32_t)t->properties)/*& bank->prop_mask*/;
+        newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
         DelPtr(t);
         return newTerm;
     } else {
@@ -220,7 +223,7 @@ TermCell* TermBank::tb_parse_cons_list(Scanner * in, bool isCheckSymbProp) {
 
         while (in->TestInpTok(TokenType::Comma)) {
             in->NextToken();
-            current->fCode =  (FunCode) DerefType::CONSCODE;
+            current->fCode = (FunCode) DerefType::CONSCODE;
             current->arity = 2;
             current->args = new TermCell*[2];
             current->args[0] = TBTermParseReal(in, isCheckSymbProp);
@@ -255,7 +258,7 @@ TermCell* TermBank::tb_termtop_insert(TermCell* t) {
     TermCell* newTerm = termStore.TermCellStoreInsert(t);
 
     if (newTerm) /* Term node already existed, just add properties */ {
-        newTerm->properties = (TermProp) ((int32_t)newTerm->properties | (int32_t)t->properties)/*& bank->prop_mask*/;
+        newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
         DelPtr(t);
         return newTerm;
     } else {
@@ -298,10 +301,10 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
     string errpos;
     /*缩写测试- Test for abbreviation */
     if (in->TestInpTok(TokenType::Mult)) {
-        TermProp  properties = TermProp::TPIgnoreProps;
+        TermProp properties = TermProp::TPIgnoreProps;
         in->NextToken();
         long abbrev = in->ParseInt();
-        if (in->TestInpTok((TokenType)((uint64_t)TokenType::Colon | (uint64_t)TokenType::Slash))) { /* 如果已经存在,则报错 -- This _defines_ the abbrev! */
+        if (in->TestInpTok((TokenType) ((uint64_t) TokenType::Colon | (uint64_t) TokenType::Slash))) { /* 如果已经存在,则报错 -- This _defines_ the abbrev! */
             if (extIndex[abbrev] != nullptr)//[abbrev]  PDArrayElementP(bank->ext_index, abbrev))
             {
                 /* Error: Abbreviation defined twice */
@@ -316,7 +319,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
             }
             in->NextToken();
             handle = TBTermParseReal(in, isCheckSymbProp); /* Elegant, aint it? */
-            if ((uint64_t)properties) {
+            if ((uint64_t) properties) {
                 TBRefSetProp(&handle, properties);
             }
             /* printf("# TermCell %ld = %ld\n", abbrev, handle->entry_no); */
@@ -344,19 +347,19 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
                 handle = vars->Insert(idStr);
             } else {
                 handle = DefaultSharedTermCellAlloc();
-
+                Sigcell* sig = Env::getSig();
                 if (in->TestInpTok(TokenType::OpenBracket)) {
-                    if ((id_type == FuncSymbType::FSIdentInt)&&((int32_t)sig->distinctProps & (int32_t)FPIsInteger)) {
+                    if ((id_type == FuncSymbType::FSIdentInt)&&((int32_t) sig->distinctProps & (int32_t) FPIsInteger)) {
                         in->AktTokenError("Number cannot have argument list(consider --free-numbers)", false);
                     }
-                    if ((id_type == FuncSymbType::FSIdentFloat)&&((int32_t)sig->distinctProps & (int32_t)FPIsFloat)) {
+                    if ((id_type == FuncSymbType::FSIdentFloat)&&((int32_t) sig->distinctProps & (int32_t) FPIsFloat)) {
                         in->AktTokenError("Floating point number cannot have argument list(consider --free-numbers)", false);
                     }
-                    if ((id_type ==  FuncSymbType::FSIdentRational)
+                    if ((id_type == FuncSymbType::FSIdentRational)
                             &&(sig->distinctProps & FPIsRational)) {
                         in->AktTokenError("Rational number cannot have argument list(consider --free-numbers)", false);
                     }
-                    if ((id_type == FuncSymbType::FSIdentObject)&&((int32_t)sig->distinctProps & (int32_t)FPIsObject)) {
+                    if ((id_type == FuncSymbType::FSIdentObject)&&((int32_t) sig->distinctProps & (int32_t) FPIsObject)) {
                         in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
                     }
                     handle->arity = tb_term_parse_arglist(in, &(handle->args), isCheckSymbProp);
@@ -383,7 +386,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
  * Make ref point to a term of the same structure as *ref, but with properties prop set. 
  * Properties do not work for variables! 
  ****************************************************************************/
-void TermBank::TBRefSetProp(TermCell** ref, TermProp  prop) {
+void TermBank::TBRefSetProp(TermCell** ref, TermProp prop) {
     TermCell* term;
 
     assert(!(*ref)->IsVar());
@@ -413,15 +416,15 @@ TermCell* TermBank::DefaultSharedTermCellAlloc(void) {
  * 插入一个Term到　termbank中
  * 输入参数 -- term:插入的Term指针; deref:决定term变元binding遍历的类型
  ****************************************************************************/
-TermCell* TermBank::TBInsert(TermCell* term,  DerefType  deref) {
+TermCell* TermBank::TBInsert(TermCell* term, DerefType deref) {
     assert(term);
     term = TermCell::TermDeref(term, deref); /*根据deref类型,获取term的绑定项*/
     /*非共享term！－This is an unshared　term cell at the　moment, */
     TermCell* t = term->TermEquivCellAlloc(vars); //得到term的副本copy
 
     if (!t->IsVar()) {
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
 
         for (int i = 0; i < t->arity; ++i) {
             t->args[i] = TBInsert(t->args[i], deref);
@@ -435,7 +438,7 @@ TermCell* TermBank::TBInsert(TermCell* term,  DerefType  deref) {
  * 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0;
  * As TBInsert, but will set all properties of the new term to 0 first.
  ****************************************************************************/
-TermCell* TermBank::TBInsertNoProps(TermCell* term,  DerefType deref) {
+TermCell* TermBank::TBInsertNoProps(TermCell* term, DerefType deref) {
     assert(term);
     term = TermCell::TermDeref(term, deref); /*根据deref类型,获取term的绑定项*/
     /*非共享term！－This is an unshared　term cell at the　moment, */
@@ -444,7 +447,7 @@ TermCell* TermBank::TBInsertNoProps(TermCell* term,  DerefType deref) {
     if (!t->IsVar()) {
         t->properties = TermProp::TPIgnoreProps;
         //assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
         for (int i = 0; i < t->arity; ++i) {
             t->args[i] = TBInsertNoProps(t->args[i], deref);
         }
@@ -472,8 +475,8 @@ TermCell* TermBank::TBInsertOpt(TermCell* term, DerefType deref) {
     /* This is an unshared term cell at the moment, */
 
     if (!t->IsVar()) {
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
         for (i = 0; i < t->arity; i++) {
             t->args[i] = TBInsertOpt(t->args[i], deref);
         }
@@ -556,7 +559,7 @@ TermCell* TermBank::TermTopInsert(TermCell* t) {
     TermCell* newTerm = termStore.TermCellStoreInsert(t); //插入新项到 termStore中
 
     if (newTerm) /* TermCell node already existed, just add properties */ {
-        newTerm->properties = (TermProp ) ((int32_t)newTerm->properties | (int32_t)t->properties)/*& bank->prop_mask*/;
+        newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
         DelPtr(t);
         return newTerm;
     } else {
@@ -631,7 +634,7 @@ void TermBank::TBPrintBankInOrder(FILE* out) {
         TermTree::TermTreeTraverseInit(termStore.store[i], splayTree);
     }
 
-    tb_print_dag(out, splayTree.GetRoot(), sig);
+    tb_print_dag(out, splayTree.GetRoot());
     splayTree.Destroy();
 
 }
@@ -654,7 +657,7 @@ void TermBank::TBPrintTermCompact(FILE* out, TermCell* term) {
             fprintf(out, "*%ld:", term->entryNo);
             term->TermCellSetProp(TermProp::TPOutputFlag);
             string name = "";
-            sig->SigFindName(term->fCode, name);
+            Env::getSig()->SigFindName(term->fCode, name);
             fputs(name.c_str(), out);
             if (!term->IsConst()) {
                 fputc('(', out);
@@ -676,7 +679,7 @@ void TermBank::TBPrintTermCompact(FILE* out, TermCell* term) {
 void TermBank::TBPrintTerm(FILE* out, Term_p term, bool fullterms) {
     if (fullterms) {
         //TBPrintTermFull(out, term);
-        term->TermPrint(out, sig, DerefType::DEREF_NEVER);
+        term->TermPrint(out, DerefType::DEREF_NEVER);
         //fprintf(out,"\n");
     } else {
         TBPrintTermCompact(out, term);
@@ -707,8 +710,8 @@ TermCell* TermBank::TBInsertDisjoint(TermCell* term) {
         t = term->TermEquivCellAlloc(vars); /* This is an unshared
                                                    term cell at the
                                                    moment, */
-      //  assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
-       // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
+        //  assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
+        // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
 
         for (i = 0; i < t->arity; i++) {
             t->args[i] = TBInsertDisjoint(t->args[i]);

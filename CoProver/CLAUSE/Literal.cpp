@@ -23,7 +23,7 @@ Literal::~Literal() {
 }
 
 /*---------------------------------------------------------------------*/
-/*                  Member Function-[public]                           */
+/*                  Member Function-[private]                           */
 /*---------------------------------------------------------------------*/
 //   Parse an equation with optional external sign and depending on
 //   wether FOF or CNF is being parsed.
@@ -33,7 +33,7 @@ bool Literal::eqn_parse_real(Term_p *lref, Term_p *rref, bool fof) {
     bool negate = false;
     Scanner* in = Env::getIn();
     TermBank* bank = Env::getTb();
-    //cout<<in->AktToken()->literal;
+
     switch (in->format) {
         case IOFormat::LOPFormat:
             if (in->TestInpTok(TokenType::TildeSign)) {
@@ -60,7 +60,7 @@ bool Literal::eqn_parse_real(Term_p *lref, Term_p *rref, bool fof) {
                 }
             }
 
-            positive = eqn_parse_prefix( lref, rref);
+            positive = eqn_parse_prefix(lref, rref);
 
             break;
         case IOFormat::TSTPFormat:
@@ -68,7 +68,7 @@ bool Literal::eqn_parse_real(Term_p *lref, Term_p *rref, bool fof) {
                 negate = true;
                 in->NextToken();
             }
-            positive = eqn_parse_infix(  lref, rref);
+            positive = eqn_parse_infix(lref, rref);
             break;
         default:
             assert(false && "Format not supported");
@@ -124,7 +124,7 @@ bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
             in->AktTokenError("Individual variable used at predicate position", false);
 
         }
-        bank->sig->SigSetPredicate(lterm->fCode, true);
+         Env::getSig()->SigSetPredicate(lterm->fCode, true);
     }
     *lref = lterm;
     *rref = rterm;
@@ -158,12 +158,13 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
         lterm = bank->trueTerm;
         positive = !positive;
     }
-    TokenType equalToke=(TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);
+    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);
     //bank->sig->SigSetPredicate(lterm->fCode, true);
-    if (!lterm->IsVar() && bank->sig->SigIsPredicate(lterm->fCode)) {
+    Sigcell* sig = Env::getSig();
+    if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) {
         rterm = bank->trueTerm; /* Non-Equational literal */
     } else {
-        if (lterm->IsVar() || bank->sig->SigIsFunction(lterm->fCode)) {
+        if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) {
 
             if (in->TestInpTok(TokenType::NegEqualSign)) {
                 positive = !positive;
@@ -171,31 +172,57 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
             in->AcceptInpTok(equalToke);
             rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
             if (!rterm->IsVar()) {
-                if (bank->sig->SigIsPredicate(rterm->fCode)) {
+                if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
                 }
-                bank->sig->SigSetFunction(rterm->fCode, true);
+                sig->SigSetFunction(rterm->fCode, true);
             }
         } else if (in->TestInpTok(equalToke)) { /* Now both sides must be terms */
-            bank->sig->SigSetFunction(lterm->fCode, true);
+            cout<<"怎么可能"<<endl;
+            sig->SigSetFunction(lterm->fCode, true);
             if (in->TestInpTok(TokenType::NegEqualSign)) {
                 positive = !positive;
             }
             in->AcceptInpTok(equalToke);
             rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
             if (!rterm->IsVar()) {
-                if (bank->sig->SigIsPredicate(rterm->fCode)) {
+                if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
                 }
-                bank->sig->SigSetFunction(rterm->fCode, true);
+                sig->SigSetFunction(rterm->fCode, true);
             }
         } else { /* It's a predicate */
-            rterm = bank->trueTerm; /* Non-Equational literal */
-            bank->sig->SigSetPredicate(lterm->fCode, true);
+           rterm = bank->trueTerm; /* Non-Equational literal */
+            sig->SigSetPredicate(lterm->fCode, true);
         }
     }
     *lref = lterm;
     *rref = rterm;
 
     return positive;
+}
+
+/*---------------------------------------------------------------------*/
+/*                  Member Function-[public]                           */
+/*---------------------------------------------------------------------*/
+/*****************************************************************************
+ * Print a literal in TSTP format.
+ ****************************************************************************/
+void Literal::EqnTSTPPrint(FILE* out, bool fullterms) {
+    if (EqnIsPropFalse()) {
+        fputs("$false", out);
+    } else {
+        if (EqnIsEquLit()) {
+            
+           // bank->TBPrintTerm(out, lterm, fullterms);
+            fprintf(out, "%s", EqnIsNegative() ? "!=" : "=");
+           // bank->TBPrintTerm(out, rterm, fullterms);
+        } else {
+            if (EqnIsNegative()) {
+                fputc('~', out);
+            }
+            Env::getTb()->TBPrintTerm(out,lterm,fullterms);
+           // bank->TBPrintTerm(out, lterm, fullterms);
+        }
+    }
 }

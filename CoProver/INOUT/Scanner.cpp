@@ -835,7 +835,7 @@ Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, Spl
 
     string newName = AktToken()->literal;
 
-    if (!skip_includes.Find(newName)) {
+    if (!skip_includes.FindByKey(newName)) {
         new_scanner = new Scanner(nullptr, newName.c_str(), this->ignoreComments, this->defaultDir.c_str());
         new_scanner->ScannerSetFormat(this->format);
         new_scanner->includePos = pos_rep;

@@ -39,8 +39,7 @@ public:
 
     /* 构建第一个项的hash编码 #define tcs_arity0hash(term) ((term)->fCode) */
     inline FunCode arity0hash(TermCell* term) {
-        return term->fCode;
-        //return term->fCode;
+        return term->fCode;       
     }
 
     /* 构建第二个项的hash编码 #define tcs_arity1hash(term) (tcs_arity0hash(term)^(((intptr_t)(term)->args[0])>>3)) */

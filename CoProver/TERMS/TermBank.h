@@ -27,19 +27,17 @@ private:
     static bool TBPrintDetails;
 public:
     unsigned long inCount; /* TermBank中项个数统计 不需要!!! -- How many terms have been inserted? */
-    Sig_p sig; /* Store sig info */
+    //Sig_p sig; /* Store sig info */
     VarBank* vars; /* 共享变元存储对象 -- Information about (shared) variables */
     TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
     TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
     TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
     unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
-
     SplayTree<PTreeCell>freeVarSets; /*项中的自由变元,不能共享的. Associates a term (or Tformula) with the set of its free variables.
                                         * Only initalized for specific operations and then reset again */
-
-    TermProp garbageState; /* For the mark-and sweep garbage collection. 
-                                  * This is flipped at each sweep,and all new term cell get the new value, 
-                                  * so that marking can be done by flipping in the term cell. */
+    TermProp garbageState; /* For the mark-and sweep garbage collection.
+                            * This is flipped at each sweep,and all new term cell get the new value,
+                            * so that marking can be done by flipping in the term cell. */
 
     /*struct gc_admin_cell *gc;  Higher level code can register garbage collection information here. 
      * This is only a convenience link, memory needs to be managed elsewhere. */
@@ -55,7 +53,7 @@ public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermBank();//Sig_p sig);
+    TermBank(); //Sig_p sig);
     TermBank(const TermBank& orig);
     virtual ~TermBank();
 
@@ -76,11 +74,11 @@ public:
 
     /* 返回项是否为被标注- marked */
     inline bool TBTermCellIsMarked(TermCell* t) {
-        return GiveProps(t->properties, TermProp::TPGarbageFlag) !=  garbageState;
+        return GiveProps(t->properties, TermProp::TPGarbageFlag) != garbageState;
     }
 
     inline void TBPrintTermFull(FILE* out, TermCell* term) {
-        term->TermPrint(out, sig, DerefType::DEREF_NEVER);
+        term->TermPrint(out,DerefType::DEREF_NEVER);
     }
 
     static inline bool TBTermEqual(TermCell* t1, TermCell* t2) {
@@ -91,7 +89,7 @@ private:
     /*---------------------------------------------------------------------*/
     /*                    Member Function[private]                         */
     /*---------------------------------------------------------------------*/
-    void tb_print_dag(FILE *out, NumTree_p spNode, Sig_p sig);
+    void tb_print_dag(FILE *out, NumTree_p spNode );
 
     /* 转换一个子项  i.e. a term which cannot start with a predicate symbol. */
     TermCell* tb_subterm_parse(Scanner* in);
@@ -109,6 +107,7 @@ public:
     /*                          inline Function                            */
     /*---------------------------------------------------------------------*/
     //
+
     inline long TBStorageMEM() {
         return sizeof (TermBank) + sizeof (TermCell) * termStore.entries +
                 termStore.argCount * sizeof (Term_p);

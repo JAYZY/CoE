@@ -24,6 +24,10 @@
       <itemPath>HEURISTICS/Options.cpp</itemPath>
       <itemPath>HEURISTICS/Options.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="Indexing" displayName="Indexing" projectFiles="true">
+      <itemPath>Indexing/TermIndexing.cpp</itemPath>
+      <itemPath>Indexing/TermIndexing.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="INOUT" displayName="INOUT" projectFiles="true">
       <itemPath>INOUT/FileOp.cpp</itemPath>
       <itemPath>INOUT/FileOp.h</itemPath>
@@ -37,6 +41,10 @@
     <logicalFolder name="LIB" displayName="LIB" projectFiles="true">
       <itemPath>LIB/Out.cpp</itemPath>
       <itemPath>LIB/Out.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="PROOF" displayName="PROOF" projectFiles="true">
+      <itemPath>PROOF/ProofControl.cpp</itemPath>
+      <itemPath>PROOF/ProofControl.h</itemPath>
     </logicalFolder>
     <logicalFolder name="TERMS" displayName="TERMS" projectFiles="true">
       <itemPath>TERMS/Sigcell.cpp</itemPath>
@@ -54,12 +62,6 @@
       <itemPath>TERMS/VarHash.cpp</itemPath>
       <itemPath>TERMS/VarHash.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="HeaderFiles" displayName="头文件" projectFiles="true">
-      <itemPath>Prover/Prover.h</itemPath>
-    </logicalFolder>
-    <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
-      <itemPath>main.cpp</itemPath>
-    </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -73,6 +75,8 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>Prover/Prover.h</itemPath>
+    <itemPath>main.cpp</itemPath>
     <itemPath>问题记录</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
@@ -149,9 +153,17 @@
       </item>
       <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -267,9 +279,17 @@
       </item>
       <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>

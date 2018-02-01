@@ -46,7 +46,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() {
+TermCell::TermCell() {    
     properties = TermProp::TPIgnoreProps;
     arity = 0;
     binding = NULL;
@@ -79,7 +79,7 @@ TermCell::TermCell(TermCell& orig) : TermCell() {
     /* All other properties are tied to the specific term! */
     properties = (TermProp) ((int32_t) orig.properties & (int32_t) TermProp::TPPredPos);
     /* As it gets a new id below */
-    this->TermCellDelProp( TermProp::TPOutputFlag);
+    this->TermCellDelProp(TermProp::TPOutputFlag);
     fCode = orig.fCode;
     arity = orig.arity;
     args = orig.TermArgListCopy();
@@ -95,11 +95,12 @@ TermCell::TermCell(TermCell& orig) : TermCell() {
  * [重要方法]-- 根据scanner 创建term
  * Parse a term from the given scanner object into the internal termrepresentation.
  ****************************************************************************/
-TermCell* TermCell::TermParse(Scanner* in, Sig_p sig, VarBank* vars) {
+TermCell* TermCell::TermParse(Scanner* in, VarBank* vars) {
     string idStr;
+    Sig_p sig = Env::getSig();
     TermCell* handle = nullptr;
     if (Sigcell::SigSupportLists && in->TestInpTok(TokenType::OpenSquare)) {
-        handle = parse_cons_list(in, sig, vars);
+        handle = parse_cons_list(in, vars);
     } else {
         FuncSymbType idType;
         if ((idType = TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
@@ -114,7 +115,7 @@ TermCell* TermCell::TermParse(Scanner* in, Sig_p sig, VarBank* vars) {
                     in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
                 }
 
-                handle->arity = TermParseArgList(in, &(handle->args), sig, vars);
+                handle->arity = TermParseArgList(in, &(handle->args), vars);
             } else {
                 handle->arity = 0;
             }
@@ -162,29 +163,29 @@ FuncSymbType TermCell::TermParseOperator(Scanner* in, string&idStr) {
 /***************************************************************************** 
  * Parse a LOP list into an internal $cons list.
  ****************************************************************************/
-TermCell* TermCell::parse_cons_list(Scanner* in, Sigcell* sig, VarBank_p vars) {
+TermCell* TermCell::parse_cons_list(Scanner* in, VarBank_p vars) {
     in->AcceptInpTok(TokenType::OpenSquare);
     TermCell* current = new TermCell();
     if (!in->TestInpTok(TokenType::CloseSquare)) {
-        current->fCode = (FunCode)DerefType::CONSCODE;
+        current->fCode = (FunCode) DerefType::CONSCODE;
         current->arity = 2;
         current->args = new TermCell*[2];
-        current->args[0] = TermCell::TermParse(in, sig, vars);
+        current->args[0] = TermCell::TermParse(in, vars);
         current->args[1] = new TermCell();
         current = current->args[1];
         while (in->TestInpTok(TokenType::Comma)) {
             in->NextToken();
-            current->fCode = (FunCode)DerefType::CONSCODE;
+            current->fCode = (FunCode) DerefType::CONSCODE;
             current->arity = 2;
             current->args = new TermCell*[2];
-            current->args[0] = TermCell::TermParse(in, sig, vars);
+            current->args[0] = TermCell::TermParse(in, vars);
             current->args[0]-> TermCellDelProp(TermProp::TPTopPos);
             current->args[1] = new TermCell();
             current = current->args[1];
         }
     }
     in->AcceptInpTok(TokenType::CloseSquare);
-    current->fCode = (FunCode)DerefType::NILCODE;
+    current->fCode = (FunCode) DerefType::NILCODE;
     return current;
 }
 
@@ -207,7 +208,7 @@ TermCell* TermCell::parse_cons_list(Scanner* in, Sigcell* sig, VarBank_p vars) {
 //
 /----------------------------------------------------------------------*/
 
-int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, Sigcell* sig, VarBank_p vars) {
+int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p vars) {
 
     TermCell* *handle;
     int arity;
@@ -223,7 +224,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, Sigcell* sig
     size = TERMS_INITIAL_ARGS;
     handle = new TermCell*[size]; // (TermCell**)SizeMalloc(size*sizeof(TermCell*));
     arity = 0;
-    handle[arity] = TermCell::TermParse(in, sig, vars);
+    handle[arity] = TermCell::TermParse(in, vars);
     arity++;
     while (in->TestInpTok(TokenType::Comma)) {
         in->NextToken();
@@ -231,7 +232,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, Sigcell* sig
             size += TERMS_INITIAL_ARGS;
             handle = new TermCell*[size]; // (TermCell**)SecureRealloc(handle, size*sizeof(TermCell*));
         }
-        handle[arity] = TermCell::TermParse(in, sig, vars);
+        handle[arity] = TermCell::TermParse(in, vars);
         arity++;
     }
     in-> AcceptInpTok(TokenType::CloseBracket);
@@ -287,10 +288,10 @@ void TermCell::TermTopFree() {
 
 TermCell* TermCell::TermTopCopy(TermCell* source) {
     TermCell* t = new TermCell(source->fCode);
-    
+
     /* All other properties are tied to the specific term! */
-    t->properties = (TermProp) ((int32_t)source->properties & (int32_t)TermProp::TPPredPos);
-    
+    t->properties = (TermProp) ((int32_t) source->properties & (int32_t) TermProp::TPPredPos);
+
     /* As it gets a new id below */
     t->TermCellDelProp(TermProp::TPOutputFlag);
 
@@ -299,7 +300,7 @@ TermCell* TermCell::TermTopCopy(TermCell* source) {
     t->args = source->TermArgListCopy();
     t->lson = nullptr;
     t->rson = nullptr;
-    
+
     return t;
 }
 //变元项输出
@@ -313,12 +314,12 @@ void TermCell::VarPrint(FILE* ot) {
     fprintf(ot, "%c%ld", id, -((fCode - 1) / 2));
 }
 
-void TermCell::TermPrint(FILE* out, Sig_p sig, DerefType deref) {
+void TermCell::TermPrint(FILE* out, DerefType deref) {
     TermCell* term = this;
     assert(term);
-    assert(sig || term->IsVar());
+    // assert(sig || term->IsVar());
 
-    term = TermCell::TermDeref(term,deref);
+    term = TermCell::TermDeref(term, deref);
 
 #ifdef NEVER_DEFINED
     if (TermCellQueryProp(term, TPRestricted)) {
@@ -333,32 +334,32 @@ void TermCell::TermPrint(FILE* out, Sig_p sig, DerefType deref) {
     }
 #endif
     if (Sigcell::SigSupportLists && TermCell::TermPrintLists &&
-            ((term->fCode == (FunCode)DerefType::NILCODE) ||
-            (term->fCode == (FunCode)DerefType::CONSCODE))) {
-        term->print_cons_list(out, sig, deref);
+            ((term->fCode == (FunCode) DerefType::NILCODE) ||
+            (term->fCode == (FunCode) DerefType::CONSCODE))) {
+        term->print_cons_list(out, deref);
     } else {
         if (term->IsVar()) {
             VarPrint(out);
         } else {
             string tmpStr;
-            sig->SigFindName(term->fCode, tmpStr);
+           Env::getSig()->SigFindName(term->fCode, tmpStr);
             fputs(tmpStr.c_str(), out);
             if (!term->IsConst()) {
                 assert(term->args);
-                term->TermPrintArgList(out, term->arity, sig, deref);
+                term->TermPrintArgList(out, term->arity, deref);
             }
         }
     }
 }
 
-void TermCell::TermPrintArgList(FILE* out, int arity, Sig_p sig, DerefType deref) {
+void TermCell::TermPrintArgList(FILE* out, int arity, DerefType deref) {
     assert(arity >= 1);
     putc('(', out);
-    args[0]->TermPrint(out, sig, deref);
+    args[0]->TermPrint(out, deref);
 
     for (int i = 1; i < arity; ++i) {
         putc(',', out);
-        args[i]->TermPrint(out, sig, deref);
+        args[i]->TermPrint(out, deref);
     }
     putc(')', out);
 }
@@ -369,22 +370,22 @@ void TermCell::TermPrintArgList(FILE* out, int arity, Sig_p sig, DerefType deref
 //
 /----------------------------------------------------------------------*/
 
-void TermCell::print_cons_list(FILE* out, Sig_p sig, DerefType deref) {
+void TermCell::print_cons_list(FILE* out, DerefType deref) {
     TermCell* tlist = this;
     assert(Sigcell::SigSupportLists);
     putc('[', out);
-    if (tlist->fCode ==  (FunCode)DerefType::CONSCODE) {
+    if (tlist->fCode == (FunCode) DerefType::CONSCODE) {
         assert(tlist->args);
-        tlist->args[0]->TermPrint(out, sig, deref);
+        tlist->args[0]->TermPrint(out, deref);
         tlist = tlist->args[1];
-        while (tlist->fCode ==(FunCode)DerefType::CONSCODE) {
+        while (tlist->fCode == (FunCode) DerefType::CONSCODE) {
             putc(',', out);
             /* putc(' ', out); */
             assert(tlist->args);
-            tlist->args[0]-> TermPrint(out, sig, deref);
+            tlist->args[0]-> TermPrint(out, deref);
             tlist = tlist->args[1];
         }
-        assert(tlist->fCode ==  (FunCode)DerefType::NILCODE);
+        assert(tlist->fCode == (FunCode) DerefType::NILCODE);
     }
     putc(']', out);
 }
@@ -398,7 +399,7 @@ void TermCell::TermSetProp(DerefType dt, TermProp prop) {
     IntOrP tmp;
     tmp.p_val = this;
     mystack.push(tmp);
-    tmp.i_val = (long)prop;
+    tmp.i_val = (long) prop;
     mystack.push(tmp);
 
     while (!mystack.empty()) {
@@ -411,7 +412,7 @@ void TermCell::TermSetProp(DerefType dt, TermProp prop) {
             tmp.p_val = term->args[i];
             mystack.push(tmp);
             //PStackPushP(stack, term->args[i]);
-            tmp.i_val = (long)dt;
+            tmp.i_val = (long) dt;
             mystack.push(tmp);
             // PStackPushInt(stack, deref);
         }
@@ -433,7 +434,7 @@ void TermCell::TermDelProp(DerefType deref, TermProp prop) {
     tmp.p_val = term;
     myStack.push(tmp);
     //PStackPushP(stack, term);
-    tmp.i_val = (long)deref;
+    tmp.i_val = (long) deref;
     myStack.push(tmp);
     //   PStackPushInt(stack, deref);
 
@@ -444,13 +445,13 @@ void TermCell::TermDelProp(DerefType deref, TermProp prop) {
         //term  = PStackPopP(stack);
         term = (TermCell*) ((IntOrP) myStack.top()).p_val;
         myStack.pop();
-        term = TermCell::TermDeref(term,deref);
-        term->TermCellDelProp( prop );
+        term = TermCell::TermDeref(term, deref);
+        term->TermCellDelProp(prop);
         for (i = 0; i < term->arity; i++) {
             tmp.p_val = term->args[i];
             myStack.push(tmp);
             //PStackPushP(stack, term->args[i]);
-            tmp.i_val =(long)deref;
+            tmp.i_val = (long) deref;
             myStack.push(tmp);
             // PStackPushInt(stack, deref);
         }
@@ -481,7 +482,7 @@ void TermCell::TermVarDelProp(DerefType deref, TermProp prop) {
     myStack.push(tmp);
 
     //PStackPushP(stack, term);
-    tmp.i_val = (long)deref;
+    tmp.i_val = (long) deref;
     myStack.push(tmp);
     //PStackPushInt(stack, deref);
 
@@ -520,7 +521,7 @@ bool TermCell::TermSearchProp(DerefType deref, TermProp prop) {
     IntOrP tmp;
     tmp.p_val = term;
     myStack.push(tmp);
-    tmp.i_val = (long)deref;
+    tmp.i_val = (long) deref;
     myStack.push(tmp);
     while (!myStack.empty()) {
         deref = (DerefType) ((IntOrP) myStack.top()).i_val;
@@ -577,7 +578,7 @@ void TermCell::TermVarSetProp(DerefType deref, TermProp prop) {
             tmp.p_val = term->args[i];
             myStack.push(tmp);
             //PStackPushP(stack, term->args[i]);
-            tmp.i_val = (long)deref;
+            tmp.i_val = (long) deref;
             myStack.push(tmp);
             // PStackPushInt(stack, deref);
         }
@@ -598,7 +599,7 @@ bool TermCell::TermVarSearchProp(DerefType deref, TermProp prop) {
     tmp.p_val = term;
     myStack.push(tmp);
     //PStackPushP(stack, term);
-    tmp.i_val =(long) deref;
+    tmp.i_val = (long) deref;
     myStack.push(tmp);
     //PStackPushInt(stack, deref);
 
@@ -618,7 +619,7 @@ bool TermCell::TermVarSearchProp(DerefType deref, TermProp prop) {
             tmp.p_val = term->args[i];
             myStack.push(tmp);
             //PStackPushP(stack, term->args[i]);
-            tmp.i_val =(long) deref;
+            tmp.i_val = (long) deref;
             myStack.push(tmp);
             // PStackPushInt(stack, deref);
         }
@@ -631,10 +632,9 @@ bool TermCell::TermVarSearchProp(DerefType deref, TermProp prop) {
  * 应该放入 sig.cpp中 Thin wrapper around SigInsertId that also sets corresponding
  * properties for different identifier types.
  ****************************************************************************/
-FunCode TermCell::TermSigInsert(Sig_p sig, const string& name, int arity, bool
-        special_id, FuncSymbType type) {
+FunCode TermCell::TermSigInsert(Sig_p sig, const string& name, int arity, bool special_id, FuncSymbType type) {
     FunCode res;
-
+ 
     res = sig->SigInsertId(name, arity, special_id);
     switch (type) {
         case FuncSymbType::FSIdentInt:
@@ -1097,15 +1097,15 @@ int TermCell::TermStructWeightCompare(TermCell* t1, TermCell* t2) {
 
     assert(t2);
 
-    if (t1->fCode ==  (FunCode)DerefType::TRUECODE) {
+    if (t1->fCode == (FunCode) DerefType::TRUECODE) {
         assert(t1->arity == 0);
-        if (t2->fCode ==(FunCode)DerefType::TRUECODE) {
+        if (t2->fCode == (FunCode) DerefType::TRUECODE) {
             assert(t2->arity == 0);
             return 0;
         }
         return -1;
     }
-    if (t2->fCode == (FunCode)DerefType::TRUECODE) {
+    if (t2->fCode == (FunCode) DerefType::TRUECODE) {
         assert(t2->arity == 0);
         return 1;
     }
@@ -1123,8 +1123,8 @@ int TermCell::TermStructWeightCompare(TermCell* t1, TermCell* t2) {
     }
     for (i = 0; i < t1->arity; i++) {
         subres = (CompareResult) TermCell::TermStructWeightCompare(t1->args[i], t2->args[i]);
-        if ((int)subres>0) {
-            return (int)subres;
+        if ((int) subres > 0) {
+            return (int) subres;
         }
     }
     return 0;

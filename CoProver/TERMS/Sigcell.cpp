@@ -24,7 +24,7 @@ Sigcell::Sigcell() {
 
     alphaRanksValid = false;
     fInfo.reserve(DEFAULT_SIGNATURE_SIZE); //扩大    
-    fInfo.push_back(NULL); // 第一个元素为NULL. 
+    fInfo.push_back(nullptr); // 第一个元素为NULL. 
 
     /* 为fIndex插入１StrTreeCell节点*/
 
@@ -365,7 +365,7 @@ FunCode Sigcell::SigInsertId(const string& name, int ari, bool isSpecialId) {//�
  * 根据元素名称,伸展树进行查找,找到返回元素的索引,否则返回0
  ****************************************************************************/
 FunCode Sigcell::SigFindFCode(const string& name) {
-    StrTree_p entry = fIndex.Find(name);
+    StrTree_p entry = fIndex.FindByKey(name);
     if (entry) {
         return (entry->val1).i_val;
     }

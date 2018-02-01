@@ -25,9 +25,10 @@ Formula::Formula() {
 
             }
             assert(in->TestInpId("input_clause|cnf"));
-            
-            Clause* clause = new Clause();
-            //clause->ClauseParse();
+
+            Clause* clause = Clause::ClauseParse();
+           
+            ClauseSetInsert(clause);
 
             // axioms->ClauseSetInsert(clause);
         }

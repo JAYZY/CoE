@@ -45,7 +45,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
+	${OBJECTDIR}/Indexing/TermIndexing.o \
 	${OBJECTDIR}/LIB/Out.o \
+	${OBJECTDIR}/PROOF/ProofControl.o \
 	${OBJECTDIR}/Prover/Prover.o \
 	${OBJECTDIR}/TERMS/Sigcell.o \
 	${OBJECTDIR}/TERMS/TermBank.o \
@@ -131,10 +133,20 @@ ${OBJECTDIR}/INOUT/TokenCell.o: INOUT/TokenCell.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/TokenCell.o INOUT/TokenCell.cpp
 
+${OBJECTDIR}/Indexing/TermIndexing.o: Indexing/TermIndexing.cpp
+	${MKDIR} -p ${OBJECTDIR}/Indexing
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/TermIndexing.o Indexing/TermIndexing.cpp
+
 ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${MKDIR} -p ${OBJECTDIR}/LIB
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
+
+${OBJECTDIR}/PROOF/ProofControl.o: PROOF/ProofControl.cpp
+	${MKDIR} -p ${OBJECTDIR}/PROOF
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PROOF/ProofControl.o PROOF/ProofControl.cpp
 
 ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${MKDIR} -p ${OBJECTDIR}/Prover

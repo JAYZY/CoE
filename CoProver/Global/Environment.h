@@ -10,12 +10,14 @@
 #include "IncDefine.h"
 #include "INOUT/Scanner.h"
 #include "TERMS/TermBank.h"
+
 class Env {
 private:
 
     static Scanner* in;
     static IOFormat parseFormat;
     static TermBank* termBank; // 全局唯一一个项bank 存储共享 term
+    static Sigcell* sig; // 全局唯一一个sig 存储项相关的符号
 public:
     static uint64_t global_clause_counter;
 
@@ -27,11 +29,12 @@ public:
     Env();
     virtual ~Env();
 public:
-    
+
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
     //
+
     static void iniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
         in = new Scanner(type, name, ignore_comments, default_dir);
         in->ScannerSetFormat(parseFormat);
@@ -44,13 +47,20 @@ public:
         assert(in);
         return in;
     }
-    static TermBank* getTb(){
-        if(!termBank)
-            termBank=new TermBank();
+
+    static TermBank* getTb() {
+        if (!termBank)
+            termBank = new TermBank();
         assert(termBank);
         return termBank;
     }
 
+    static Sigcell* getSig() {
+        //初始化TermBank的时候,插入两个特殊的项 $True $False
+        if (!sig)
+            sig = new Sigcell();
+        return  sig;
+    }
 
 private:
 
@@ -67,7 +77,7 @@ static inline double cpuTime(void) {
 }
 
 static inline void paseTime(const char* tip, double initial_time) {
-    printf("|  %s time:           %12.2f s                 |\n", tip, cpuTime() - initial_time);
+    printf("|  %stime:           %12.2f s                 |\n", tip, cpuTime() - initial_time);
 
 }
 #endif /* ENVIRONMENT_H */

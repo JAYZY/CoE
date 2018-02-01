@@ -52,8 +52,9 @@
         <runcommandpicklist>
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -73,8 +74,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_source_dirs" value="."/>
@@ -112,8 +111,9 @@
         <runcommandpicklist>
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

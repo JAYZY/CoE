@@ -29,10 +29,19 @@ private:
     //读取tptp公式集
     void WFormulaTPTPParse();
 public:
+    inline list<Clause*>&getAxioms(){return axioms;}
     void ClauseSetInsert(Clause* cla){
         assert(cla);
         axioms.push_back(cla);
         //暂时没有给定子句的评估函数
+    }
+    void printClas(){
+        for(auto cla:axioms)
+        {
+            cla->ClausePrint(stdout,true);
+            printf("\n");
+        }
+        
     }
     
 

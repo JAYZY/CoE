@@ -16,53 +16,77 @@
 #include "CLAUSE/Clause.h"
 #include "Global/Environment.h"
 #include "BASIC/SplayTree.h"
+#include "CLAUSE/Formula.h"
+#include "PROOF/ProofControl.h"
 #include <iostream>
 #include <set>
+#include <map>
 using namespace std;
 
 int main(int argc, char** argv) {
 
-
-
-
+    //初始化全局扫描器Scanner
     Env::iniScanner(nullptr, argv[1], true, nullptr);
-    
-
 
     //生成子句
     double initial_time = cpuTime();
+    Formula* formula = new Formula();
+    formula->printClas();
 
-
-
-
-
-    StrTree_p s;
-    SplayTree<StrTreeCell> root;
-    for (int i = 0; i < 10000000; i++) {
-        s = new StrTreeCell();
-        s->key = to_string(i);
-        root.Insert(s);
-    }
-    printf("|  Parse time:           %12.2f s                                       |\n", cpuTime() - initial_time);
-
+    paseTime("GenFormula_", initial_time);
     initial_time = cpuTime();
+    
+    ProofControl* proofCtr = new ProofControl(formula->getAxioms());
+    //开始浸透算法
+    proofCtr->Saturate();
+    paseTime("Saturate_", initial_time);
 
-    root.Find("26666");
-    paseTime("sFind-Parse", initial_time);
+    //ti.PrintTree();
+    //    for (TermCell* term : tb->termStore.store) {
+    //        if (term) {
+    //            cout<<term->fCode<<":";
+    //            cout<<Env::getSig()->fInfo[term->fCode]->name<<endl;
+    //            //tb->TBPrintTerm(stdout,term,true);
+    //            //term->TermPrint(stdout,DerefType::DEREF_ALWAYS);
+    //            //cout << endl;                        
+    //        }
+    //    }
+    //Env::getSig()->SigPrint(stdout);
+    //tb->TBPrintBankInOrder(stdout);
+    // cout<< ((int)FPPredSymbol | (int)FPInterpreted)<<endl;
 
 
-    initial_time = cpuTime();
-    set<string> r;
-    for (int i = 0; i < 10000000; i++) {
-
-        r.insert(to_string(i));
-    }
-
-    paseTime("Parse", initial_time);
-
-    initial_time = cpuTime();
-    r.find("26666");
-    paseTime("setF-Parse", initial_time);
+    //
+    //    StrTree_p s;
+    //    SplayTree<StrTreeCell> root;
+    //    int size=10000000;
+    //    for (int i = 0; i < size; i++) {
+    //        s = new StrTreeCell();
+    //        s->key = to_string(i);
+    //        s->val1.i_val=i;
+    //        root.Insert(s);
+    //    }
+    //    printf("|  Parse time:           %12.2f s                                       |\n", cpuTime() - initial_time);
+    //
+    //    initial_time = cpuTime();
+    //
+    //    root.Find("26666");
+    //    paseTime("sFind-Parse", initial_time);
+    //
+    //
+    //    initial_time = cpuTime();
+    //    map<string,int> r;
+    //   
+    //    for (int i = 0; i < size; i++) {
+    //
+    //        r[to_string(i)]=i;
+    //    }
+    //
+    //    paseTime("Parse", initial_time);
+    //
+    //    initial_time = cpuTime();
+    //    r.find("26666");
+    //    paseTime("setF-Parse", initial_time);
 
 
     return 0;

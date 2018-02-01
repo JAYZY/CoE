@@ -17,6 +17,8 @@
 
 /* zj新增方法:遍历TermTree 将结点放入一个新的树中 */
 void TermTree::TermTreeTraverseInit(TermCell* t, SplayTree<NumTreeCell>&sTree) {
+    if(t==nullptr) return;
+         
     vector<TermCell*> st;
     st.push_back(t);
     while (!st.empty()) {
@@ -26,9 +28,10 @@ void TermTree::TermTreeTraverseInit(TermCell* t, SplayTree<NumTreeCell>&sTree) {
         newNode->key = t->entryNo;
         newNode->val1.p_val = t;
         sTree.Insert(newNode);
-        if (t) {
+        if (t->lson) {
+            
             st.push_back(t->lson);
-            st.push_back(t->rson);
+            //st.push_back(t->rson);
         }
     }
     vector<TermCell*>().swap(st);
@@ -46,8 +49,8 @@ TermCell* TermTree::SplayTermTree(TermCell* tree, TermCell* splay) {
     }
     TermCell* tmp;
     TermCell newTerm;
-    newTerm.lson = NULL;
-    newTerm.rson = NULL;
+    newTerm.lson = nullptr;
+    newTerm.rson = nullptr;
     TermCell* left = &newTerm;
     TermCell* right = &newTerm;
 
@@ -191,7 +194,7 @@ TermCell* TermTree::TermTreeFind(TermCell* *root, TermCell* key) {
             return *root;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /*-----------------------------------------------------------------------
@@ -200,7 +203,7 @@ TermCell* TermTree::TermTreeFind(TermCell* *root, TermCell* key) {
 //
 //   Insert a term with valid subterm pointers into the termtree. If
 //   the entry already exists, return pointer to existing entry as
-//   usual, otherwise return NULL.
+//   usual, otherwise return nullptr.
 //
 // Global Variables: -
 //
@@ -210,11 +213,13 @@ TermCell* TermTree::TermTreeFind(TermCell* *root, TermCell* key) {
 
 TermCell* TermTree::TermTreeInsert(TermCell* *root, TermCell* newTerm) {
     int cmpres;
+
     if (!*root) {
-        newTerm->lson = newTerm->rson = NULL;
+        newTerm->lson = newTerm->rson = nullptr;
         *root = newTerm;
-        return NULL;
+        return nullptr;
     }
+
     *root = SplayTermTree(*root, newTerm);
 
     cmpres = TermTopCompare(newTerm, *root);
@@ -222,15 +227,15 @@ TermCell* TermTree::TermTreeInsert(TermCell* *root, TermCell* newTerm) {
     if (cmpres < 0) {
         newTerm->lson = (*root)->lson;
         newTerm->rson = *root;
-        (*root)->lson = NULL;
+        (*root)->lson = nullptr;
         *root = newTerm;
-        return NULL;
+        return nullptr;
     } else if (cmpres > 0) {
         newTerm->rson = (*root)->rson;
         newTerm->lson = *root;
-        (*root)->rson = NULL;
+        (*root)->rson = nullptr;
         *root = newTerm;
-        return NULL;
+        return nullptr;
     }
     return *root;
 }
@@ -252,7 +257,7 @@ TermCell* TermTree::TermTreeExtract(TermCell* *root, TermCell* key) {
     TermCell* x;
 
     if (!(*root)) {
-        return NULL;
+        return nullptr;
     }
     *root = SplayTermTree(*root, key);
     if (TermTopCompare(key, (*root)) == 0) {
@@ -263,11 +268,11 @@ TermCell* TermTree::TermTreeExtract(TermCell* *root, TermCell* key) {
             x->rson = (*root)->rson;
         }
         TermCell* cell = *root;
-        cell->lson = cell->rson = NULL;
+        cell->lson = cell->rson = nullptr;
         *root = x;
         return cell;
     }
-    return NULL;
+    return nullptr;
 }
 
 /*-----------------------------------------------------------------------

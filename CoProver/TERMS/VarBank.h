@@ -8,7 +8,7 @@
 
 #ifndef VARBANK_H
 #define VARBANK_H
- 
+
 //#include "Sigcell.h"
 #include "TermCell.h"
 //class TermCell;
@@ -28,6 +28,7 @@ public:
     /*                    　inline　 Function   　                          */
     /*---------------------------------------------------------------------*/
     //
+
     inline FunCode VarBankGetVCount() {
         return vCount;
     };
@@ -36,24 +37,24 @@ public:
         vCount = varCount;
     };
 
-     TermCell* FindByFCode(FunCode idx) {
+    TermCell* FindByFCode(FunCode idx) {
         assert(idx < 0);
-        FunCode id=-idx;
+        FunCode id = -idx;
         if (!(id < vctFCodes.size())) {
-            int s=vctFCodes.size();
-            for(int i=s;i<=id;++i)
+            int s = vctFCodes.size();
+            for (int i = s; i <= id; ++i)
                 vctFCodes.push_back(nullptr);
-                //    vctFCodes.resize(id+1);            
+            //vctFCodes.resize(id+1);            
         }
         return vctFCodes[id];
     };
 
     inline TermCell* VarBankExtNameFind(const string& name) {
-        StrTree_p entry = extIndex.Find(name);
+        StrTree_p entry = extIndex.FindByKey(name);
         if (entry) {
             return (TermCell*) entry->val1.p_val;
         }
-        return NULL;
+        return nullptr;
     };
 
     inline void VarBankClearExtNamesNoReset() {
@@ -77,6 +78,7 @@ public:
 
     /* Delete the given properties in all variables. */
     void VarBankVarsDelProp(TermProp prop);
+
     /* 根据编码插入一个变元项到varBanks中－查找变元项编码fCode 存在返回varTerm的指针．
      * 否则，构造新的变元项插入到varBank中 */
     TermCell* Insert(FunCode fCode);
@@ -90,9 +92,17 @@ public:
     TermCell* VarBankGetFreshVar();
 
     TermCell* TermEquivCellAlloc(TermCell* term);
+    
     long VarBankCheckBindings(FILE* out, Sigcell* sig);
+    
     Term_p VarBankFCodeAssertAlloc(FunCode f_code);
+    
     Term_p VarBankFCodeFind(FunCode f_code);
+    
+    void print(){
+        extIndex.Print();
+    }
+    
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/

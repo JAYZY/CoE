@@ -22,6 +22,7 @@ class Options {
 public:
     static IOFormat OutputFormat; //文件输出格式
     static std::string ProgName;
+    static uint32_t step_limit; //运行总次数
     Options();
     Options(const Options& orig);
     virtual ~Options();

@@ -25,8 +25,11 @@ using namespace std;
 enum class ClauseProp {
     CPIgnoreProps = 0, /* For masking propertiesout */
     CPInitial = 1, /* Initial clause */
-    CPInputClause = 2 * ClauseProp::CPInitial, /* _Really_ initial clause in TSTP sense */
-    CPIsProcessed = 2 * ClauseProp::CPInputClause, /* Clause has been processed previously */
+
+    CPInputFormula = 2 * ClauseProp::CPInitial, /* _Really_ initial clause in TSTP sense */
+
+    CPIsProcessed = 2 * ClauseProp::CPInputFormula, /* Clause has been processed previously */
+
     CPIsOriented = 2 * ClauseProp::CPIsProcessed, /* Term and literal comparisons are up to date */
     CPIsDIndexed = 2 * ClauseProp::CPIsOriented, /* Clause is in the demod_index of its set */
     CPIsSIndexed = 2 * ClauseProp::CPIsDIndexed, /* Clause is in the fvindex of its set */
@@ -146,30 +149,73 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
-
-    inline void getWeight(uint64_t value) {
+    inline Literal* Lits(){return literals;}
+    inline void GetWeight(uint64_t value) {
         assert(value>-1);
         weight = value;
     }
 
-    uint64_t getWeight() {
+    uint64_t GetWeight() {
         return weight;
     }
+    inline int LitsNumber() {
+        return posLitNo + negLitNo;
+    }
+    
+    inline bool ClauseIsEmpty() {
+        return LitsNumber() == 0;
+    }
+    //modify ClauseProperties to int
+
+    inline void ClauseDelProp(ClauseProp prop) {
+        DelProp(this->properties, prop);
+    }
+
+    inline void ClauseSetProp(ClauseProp prop) {
+        SetProp(this->properties, prop);
+    }
+
+    inline void ClauseSetTPTPType(ClauseProp type) {
+        ClauseDelProp(ClauseProp::CPTypeMask);
+        ClauseSetProp(type);
+    }
+
+    inline int ClauseQueryTPTPType() {
+        return (int) properties & (int) ClauseProp::CPTypeMask;
+    }
+
+    inline bool ClauseQueryProp(ClauseProp prop) {
+        return QueryProp(properties, prop);
+    }
+
+    inline int ClauseQueryCSSCPASource() {
+        return ((int)properties &(int)ClauseProp::CP_CSSCPA_Mask) / (int)ClauseProp::CP_CSSCPA_1;
+    }
+
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
-   static ClauseProp ClauseTypeParse(Scanner* in, string &legal_types) ;
-    
+    void ClausePrint(FILE* out, bool fullterms);
+    void ClausePrintTPTPFormat(FILE* out);
+    void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
+    void ClauseTSTPCorePrint(FILE* out, bool fullterms);
+    void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
+
+    /*---------------------------------------------------------------------*/
+    /*                          Static Function                            */
+    /*---------------------------------------------------------------------*/
+    static ClauseProp ClauseTypeParse(Scanner* in, string &legal_types);
+
     //
     /// 解析成子句
     /// \param in 
     /// \param bank
     /// \return 
-    static Clause* ClauseParse( );
-    
-    
-    
+    static Clause* ClauseParse();
+
+
+
 private:
 
 };

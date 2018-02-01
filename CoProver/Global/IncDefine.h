@@ -19,7 +19,9 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <list>
 #include <vector>
+#include <set>
 //#include "Environment.h"
 #include <sys/param.h>
 #include "LIB/Out.h"
@@ -36,7 +38,7 @@ typedef long FunCode;
 /*---------------------------------------------------------------------*/
 
 /* 枚举 -- 比较结果类型枚举  */
-enum class CompareResult:uint8_t {
+enum class CompareResult : uint8_t {
     to_unknown = 0,
     to_uncomparable = 1,
     to_equal = 2,

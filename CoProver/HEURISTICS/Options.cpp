@@ -16,7 +16,7 @@
 #include "Options.h"
 IOFormat Options::OutputFormat = IOFormat::AutoFormat;
 std::string Options::ProgName = "CoProver";
-
+   uint32_t Options::step_limit=UINT32_MAX; //运行总次数
 Options::Options() {
 }
 
