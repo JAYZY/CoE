@@ -25,7 +25,7 @@ public:
     set<TermIndNode*, cmp> subTerms; //子项列表
     Literal* leaf;
 
-    TermIndNode() : curTermSymbol(nullptr) {        
+    TermIndNode() : curTermSymbol(nullptr) {
         leaf = nullptr;
     }
 
@@ -85,17 +85,18 @@ public:
     virtual void Insert(Literal*lit);
     /*insert Term*/
     virtual void InsertTerm(TermCell* t);
-    
-    virtual Literal* ForwordSubsumption(TermCell* t,bool isEqual = false);
+
+    virtual Literal* ForwordSubsumption(TermCell* t, bool isEqual = false);
 
 };
 // Discrimation Tree Indexing
 
 class DiscrimationIndexing : public TermIndexing {
 private:
+    
     vector<TermCell*> flattenTerm; //项的扁平化表示
 
-    vector<TermCell*> varLst[50]; //上限 一个term中最多只能有50个变元
+    vector<TermCell*> varLst[100]; //上限 一个term中最多只能有50个变元
     vector<BackPoint*> backpoint;
     /// 在节点treeNode 后面插入 项t的所有符号
     /// \param treeNode
@@ -168,10 +169,14 @@ public:
             subPosIt = (*treePosIt)->subTerms.find(new TermIndNode(varCh[iPos]));
             if (subPosIt == (*treePosIt)->subTerms.end())
                 return false;
-            treePosIt=subPosIt;
-        } 
+            treePosIt = subPosIt;
+        }
         return true;
     }
+    /// bingding vars 
+    /// \param qTermPos
+    /// \param funcLevel
+    /// \param treePosIt  注意:treePosIt对应的是 变元项所在的父节点
 
     void BindingVar(int32_t qTermPos, int32_t funcLevel, std::set<TermIndNode*>::iterator& treePosIt) {
 
@@ -179,42 +184,47 @@ public:
 
         vector<TermCell*>&varCh = this->varLst[-(flattenTerm[qTermPos]->fCode)]; //获取变元替换列表
         //add var-binding
-        varCh.push_back((*treePosIt)->curTermSymbol); //添加变元替换
+        // varCh.push_back((*treePosIt)->curTermSymbol); //添加变元替换
 
         set<TermIndNode*>::iterator tmpIt;
 
-        if (funcLevel == 0)
-            funcLevel += (*treePosIt)->curTermSymbol->arity;
+        // if (funcLevel == 0)
+        //    funcLevel += (*treePosIt)->curTermSymbol->arity;
 
-        while (funcLevel > 0) {
+        while (funcLevel > -1) {
 
             assert(!(*treePosIt)->subTerms.empty());
+
+            tmpIt = (*treePosIt)->subTerms.begin();
+
             //添加回退点
-            tmpIt = treePosIt;
             if (++tmpIt != (*treePosIt)->subTerms.end())
                 backpoint.push_back(new BackPoint(qTermPos, tmpIt));
-
             //skip           
             treePosIt = (*treePosIt)->subTerms.begin();
-           // assert(!(*treePosIt)->subTerms.empty());
-
             //add var-binding
             varCh.push_back((*treePosIt)->curTermSymbol);
-
             funcLevel += ((*treePosIt)->curTermSymbol->arity - 1);
-
         }
         //测试输出绑定的项
-        printf("变元替换项为: ");
-        for(TermCell* tt: varCh){
-            if(tt->fCode>0)
-            cout<<Env::getSig()->fInfo[tt->fCode]->name;
+        flattenTerm[qTermPos]->VarPrint(stdout);
+        printf("=>");
+        for (TermCell* tt : varCh) {
+            if (tt->fCode > 0)
+                cout << Env::getSig()->fInfo[tt->fCode]->name;
             else
                 tt->VarPrint(stdout);
             printf(" ");
         }
         printf("\n");
     }
+    void ClearVarLst(){
+        for(int i=0;i<100;++i)
+        {
+            vector<TermCell*>().swap(varLst[i]);
+        }
+    }
+    
 };
 
 #endif /* TERMINDEXING_H */

@@ -18,7 +18,11 @@ void Processed::Proc(Clause* selCla) {
     Literal* lit = selCla->Lits();
     Literal* p = lit;
     while (p) {
+        p->EqnTSTPPrint(stdout,true);cout<<endl;
         Literal* isSubsump = ti->ForwordSubsumption(p->lterm);
+        
+        ti->ClearVarLst();
+        
         cout <<( (isSubsump==nullptr)? "nill":"issub") << endl;
         p = p->next;
     }

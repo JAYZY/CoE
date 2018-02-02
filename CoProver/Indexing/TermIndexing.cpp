@@ -133,7 +133,7 @@ void DiscrimationIndexing::InsertTerm(TermCell* term) {
 Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) {
 
     //TermIndNode* treeNode = r;
-
+    backpoint.clear();
     set<TermIndNode*>::iterator subNodeIt
             = isEqual ? r->subTerms.find(new TermIndNode(new TermCell(0))) : r->subTerms.find(new TermIndNode(term));
 
@@ -143,10 +143,10 @@ Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) 
     FlattenTerm(term);
     int32_t qTermPos = 0; //queryTerm的位置
     TermCell *queryTerm = nullptr;
-   // assert(flattenTerm[0]==(*subNodeIt)->curTermSymbol);
+    // assert(flattenTerm[0]==(*subNodeIt)->curTermSymbol);
     ++qTermPos;
     //遍历项Term
-    while (qTermPos < flattenTerm.size() ) {
+    while (qTermPos < flattenTerm.size()) {
 
         queryTerm = flattenTerm[qTermPos];
 
@@ -163,8 +163,7 @@ Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) 
             } else {//变元有绑定进行检查,1.成功 skip {1}; 2.不成功回退 rollBack{2}
                 isRollback = !this->CheckOccurs(queryTerm, subNodeIt);
             }
-        }
-        else {
+        } else {
             //skip
             // queryTerm = flattenTerm[++qTermPos];
             set<TermIndNode*>::iterator tmpIt = (*subNodeIt)->subTerms.find(new TermIndNode(queryTerm));
@@ -172,7 +171,7 @@ Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) 
                 isRollback = true;
             } else
                 subNodeIt = tmpIt;
-           
+
 
         }
         if (isRollback) {
@@ -199,9 +198,8 @@ Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) 
                 } while (popTerm != (*subNodeIt)->curTermSymbol);
             }
             BindingVar(qTermPos, funcLevel, subNodeIt);
-        }
-        else
-         ++qTermPos;
+        } else
+            ++qTermPos;
 
     }
 
