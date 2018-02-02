@@ -154,7 +154,7 @@ public:
         }
     }
     Literal* ForwordSubsumption(TermCell* t, bool isEqual = false);
-
+    Literal* BackSubsumption(TermCell *t,bool isEqual=false);
     /// 存在一个变元替换,检查树分支中是否有相同替换的路径分支,若存在则返回 相同替换的分支的最后一个子节点,否则返回nullptr
     /// \param qTerm 查询的项
     /// \param treePos 返回skip后的节点位置

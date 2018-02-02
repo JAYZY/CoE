@@ -208,6 +208,10 @@ Literal* DiscrimationIndexing::ForwordSubsumption(TermCell* term, bool isEqual) 
     return (*subNodeIt)->leaf;
 }
 
+Literal* DiscrimationIndexing::BackSubsumption(TermCell *t, bool isEqual = false) {
+    return nullptr;
+}
+
 void DiscrimationIndexing::TraverseTerm(TermIndNode* indNode, int level) {
     printf(" ");
     ++level;

@@ -45,6 +45,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
+	${OBJECTDIR}/Indexing/NewIndexing.o \
 	${OBJECTDIR}/Indexing/TermIndexing.o \
 	${OBJECTDIR}/LIB/Out.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
@@ -132,6 +133,11 @@ ${OBJECTDIR}/INOUT/TokenCell.o: INOUT/TokenCell.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/TokenCell.o INOUT/TokenCell.cpp
+
+${OBJECTDIR}/Indexing/NewIndexing.o: Indexing/NewIndexing.cpp
+	${MKDIR} -p ${OBJECTDIR}/Indexing
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/NewIndexing.o Indexing/NewIndexing.cpp
 
 ${OBJECTDIR}/Indexing/TermIndexing.o: Indexing/TermIndexing.cpp
 	${MKDIR} -p ${OBJECTDIR}/Indexing
