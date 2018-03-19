@@ -36,7 +36,7 @@ Clause::Clause(Literal* lits) : Clause() {
     ident = ++Env::global_clause_counter;
 
     while (lits) {
-
+        lits->claPtr = this; /*指定当前文字所在子句*/
         next = lits->next;
         if (lits->EqnIsPositive()) {
             posLitNo++;
@@ -55,7 +55,18 @@ Clause::Clause(Literal* lits) : Clause() {
 }
 
 Clause::~Clause() {
+    /* 删除子句，并且需要删除删除子句中的文字或项 */
+    //assert(!setClause);
+    //DelPtr(evaluations);
+    Literal::EqnListFree(literals);
+    // children.Destroy(); //PTreeFree( );
+    DelPtr(info); //ClauseInfoFree(junk->info);
+    // if (!derivation.empty()) {
+    //    derivation.clear();
+    //   vector<IntOrP>().swap(derivation);
+    //PStackFree(junk->derivation);
 }
+ 
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/

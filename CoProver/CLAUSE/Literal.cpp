@@ -14,6 +14,15 @@
 #include "Literal.h"
 
 Literal::Literal() {
+    this->properties = EqnProp::EPNoProps;
+    pos = 0;
+    lterm = nullptr;
+    rterm = nullptr;
+    next = nullptr;
+}
+
+Literal::Literal(Term_p lt, Term_p rt, bool positive) {
+    EqnAlloc(lt, rt, positive);
 }
 
 Literal::Literal(const Literal& orig) {
@@ -124,7 +133,7 @@ bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
             in->AktTokenError("Individual variable used at predicate position", false);
 
         }
-         Env::getSig()->SigSetPredicate(lterm->fCode, true);
+        Env::getSig()->SigSetPredicate(lterm->fCode, true);
     }
     *lref = lterm;
     *rref = rterm;
@@ -178,7 +187,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 sig->SigSetFunction(rterm->fCode, true);
             }
         } else if (in->TestInpTok(equalToke)) { /* Now both sides must be terms */
-            cout<<"怎么可能"<<endl;
+            cout << "怎么可能" << endl;
             sig->SigSetFunction(lterm->fCode, true);
             if (in->TestInpTok(TokenType::NegEqualSign)) {
                 positive = !positive;
@@ -192,7 +201,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 sig->SigSetFunction(rterm->fCode, true);
             }
         } else { /* It's a predicate */
-           rterm = bank->trueTerm; /* Non-Equational literal */
+            rterm = bank->trueTerm; /* Non-Equational literal */
             sig->SigSetPredicate(lterm->fCode, true);
         }
     }
@@ -205,6 +214,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
+
 /*****************************************************************************
  * Print a literal in TSTP format.
  ****************************************************************************/
@@ -213,16 +223,140 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms) {
         fputs("$false", out);
     } else {
         if (EqnIsEquLit()) {
-            
-           // bank->TBPrintTerm(out, lterm, fullterms);
+
+            Env::getTb()->TBPrintTerm(out, lterm, fullterms);
             fprintf(out, "%s", EqnIsNegative() ? "!=" : "=");
-           // bank->TBPrintTerm(out, rterm, fullterms);
+            Env::getTb()->TBPrintTerm(out, rterm, fullterms);
         } else {
             if (EqnIsNegative()) {
                 fputc('~', out);
             }
-            Env::getTb()->TBPrintTerm(out,lterm,fullterms);
-           // bank->TBPrintTerm(out, lterm, fullterms);
+            Env::getTb()->TBPrintTerm(out, lterm, fullterms);
+            // bank->TBPrintTerm(out, lterm, fullterms);
         }
+    }
+}
+
+/*****************************************************************************
+ * Create a copy of list with disjoint variables (using the even/odd convention).
+ * 传递的是子句的第一个文字指针  
+ ****************************************************************************/
+Literal* Literal::EqnListCopyDisjoint() {
+    Literal* newlist = nullptr;
+    Literal** insert = &newlist;
+    Literal* handle = this;
+    while (handle) {
+        *insert = handle->EqnCopyDisjoint();
+        insert = &((*insert)->next);
+        handle = handle->next;
+    }
+    *insert = NULL;
+
+    return newlist;
+}
+
+/***************************************************************************** 
+ * Return a flat copy of the given list, reusing the existing terms.
+ ****************************************************************************/
+Literal* Literal::EqnListFlatCopy() {
+    Literal* newlist = nullptr;
+    Literal* *insert = &newlist;
+    Literal* lit = this;
+    while (lit) {
+        *insert = lit->EqnFlatCopy();
+        insert = &((*insert)->next);
+        lit = lit->next;
+    }
+    *insert = nullptr;
+    return newlist;
+}
+
+/*****************************************************************************
+ * Copy an equation into the same term bank, 
+ * but with disjoint (odd->even or vice versa) variable. 
+ ****************************************************************************/
+Literal* Literal::EqnCopyDisjoint() {
+    Literal* handle;
+
+    Term_p lt = Env::getTb()->TBInsertDisjoint(lterm);
+    Term_p rt = Env::getTb()->TBInsertDisjoint(rterm);
+
+    handle = new Literal(lt, rt, false); /* Properties will be taken care of later! */
+    handle->properties = properties;
+
+    return handle;
+}
+
+/***************************************************************************** 
+ * Create a copy of eq with terms from bank. Does not copy the next pointer. 
+ * Properties of the original terms are not copied.
+ ****************************************************************************/
+Literal* Literal::EqnCopy() {
+
+    Term_p ltermCpy;
+    Term_p rtermCpy;
+
+    ltermCpy = Env::getTb()->TBInsertNoProps(this->lterm, DerefType::DEREF_ALWAYS);
+    rtermCpy = Env::getTb()->TBInsertNoProps(this->rterm, DerefType::DEREF_ALWAYS);
+
+    /* Properties will be taken care of later! */
+    Literal* handle = new Literal(ltermCpy, rtermCpy, false);
+    handle->properties = this->properties;
+    if (!EqnIsOriented()) {
+        handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
+    }
+    return handle;
+}
+
+/*----------------------------------------------------------------------- 
+//   Create a flat copy of eq. 
+/----------------------------------------------------------------------*/
+
+Literal* Literal::EqnFlatCopy() {
+    Literal* eq = this;
+    Literal* handle;
+    Term_p lterm, rterm;
+
+    lterm = eq->lterm;
+    rterm = eq->rterm;
+
+    handle = new Literal(lterm, rterm, false); /* Properties will be
+						    taken care of
+						    later! */
+    handle->properties = eq->properties;
+    if (!handle->EqnQueryProp(EqnProp::EPIsOriented)) {
+        handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
+    }
+    return handle;
+}
+
+/*****************************************************************************
+ *  Copy an instantiated equation into the same term bank 
+ * (using the common optimizations possible in that case). 
+ ****************************************************************************/
+Literal* Literal::EqnCopyOpt() {
+
+    Term_p lNewTerm = Env::getTb()->TBInsertOpt(lterm, DerefType::DEREF_ALWAYS);
+    Term_p rNewTerm = Env::getTb()->TBInsertOpt(rterm, DerefType::DEREF_ALWAYS);
+    Literal* handle = new Literal(lNewTerm, rNewTerm, false);
+    /* Properties will be taken care of later! */
+    handle->properties = properties;
+    handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
+    handle->EqnDelProp(EqnProp::EPIsOriented);
+    return handle;
+}
+
+
+/*---------------------------------------------------------------------*/
+/*                          Static Function                            */
+/*---------------------------------------------------------------------*/
+//
+
+void Literal::EqnListFree(Literal* lst) {
+    Literal* handle;
+    while (lst) {
+        handle = lst;
+        lst = lst->next;
+        DelPtr(handle);
     }
 }

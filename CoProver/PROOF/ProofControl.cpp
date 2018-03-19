@@ -6,33 +6,7 @@
  */
 
 #include "ProofControl.h"
-
-void Processed::Proc(Clause* selCla) {
-    //检查 forword-subsumption
-    // ti->ForwordSubsumption(selCla);
-    //检查 back-subsumption
-
-    cout<<"选中的子句:";
-    selCla->ClausePrint(stdout,true);cout<<endl;
-    //加入indexing 
-    Literal* lit = selCla->Lits();
-    Literal* p = lit;
-    while (p) {
-        p->EqnTSTPPrint(stdout,true);cout<<endl;
-        Literal* isSubsump = ti->ForwordSubsumption(p->lterm);
-        
-        ti->ClearVarLst();
-        
-        cout <<( (isSubsump==nullptr)? "nill":"issub") << endl;
-        p = p->next;
-    }
-
-    while (lit) {
-        ti->Insert(lit);
-        lit = lit->next;
-    }
-
-}
+#include "Inferences/Simplification.h"
 
 ProofControl::ProofControl(list<Clause*>& _axiom) : axiom(_axiom) {
     this->procedSet = new Processed();
@@ -50,9 +24,48 @@ ProofControl::~ProofControl() {
 /*---------------------------------------------------------------------*/
 //
 
+void Processed::Proc(Clause* selCla) {
+    //检查 forword-subsumption
+    // ti->ForwordSubsumption(selCla);
+    //检查 back-subsumption
+
+    //    cout << "选中的子句:";
+    //    selCla->ClausePrint(stdout, true);
+    //    if (selCla->GetClaId() == 31)
+    //        cout << endl;
+    // cout << endl;
+    //加入indexing 
+    Literal* lit = selCla->Lits();
+    Literal* p = lit;
+    //对选择的子句进行simplify
+    //检查选择的子句是否有效
+    //Simplification::ForwordSubsumption(selCla, termIndex);
+    //simpliy 子句集中的子句(根据selCla,检查冗余的子句)
+    Simplification::BackWordSubsumption(selCla, termIndex); //删除
+    Insert(lit);
+
+    termIndex->ClearVarLst();
+}
+
+uint32_t Processed::Insert(Literal* lit) {
+    while (lit) {
+        termIndex->Insert(lit);
+        lit = lit->next;
+    }
+
+}
+
+
+//
+
 Clause* ProofControl::Saturate() {
     uint32_t count = 0;
-    Options::step_limit = 10;
+    Options::step_limit = this->axiom.size();
+    double initial_time = cpuTime();
+
+
+
+
     while (Options::step_limit>++count
             && unprocSet->getClaNum() > 0) {
 
@@ -63,5 +76,6 @@ Clause* ProofControl::Saturate() {
         this->unprocSet->RemoveCla(selCla);
 
     }
-    this->procedSet->PrintTi();
+    paseTime("FindBack", initial_time);
+    // this->procedSet->PrintIndex();
 }

@@ -51,11 +51,17 @@ public:
     TermCell* rterm; /*等号右边文字,若非等词,则为$True;
     //TermBank ss;
     //TermBank* bank; /* Terms are from this bank */
-    Literal* next;
+    Literal* next; /*下一个文字*/
 
+    /*所在子句信息*/
+    Clause* claPtr; //所在子句
+    Literal* parentLitPtr; //父子句文字
 public:
     Literal();
+    Literal(Term_p lt, Term_p rt, bool positive);
     Literal(const Literal& orig);
+    //替代 EqnAlloc
+
     virtual ~Literal();
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
@@ -105,6 +111,11 @@ public:
     inline bool EqnIsTrivial() {
         return this->lterm == this->rterm;
     }
+
+    inline long StandardWeight() {
+        return lterm->TermStandardWeight() + rterm->TermStandardWeight();
+    }
+
     /***************************************************************************** 
      * 将文字element 插入到文字pos的后面。Insert the element at the position defined by pos.
      ****************************************************************************/
@@ -138,7 +149,7 @@ public:
     /***************************************************************************** 
      * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
      ****************************************************************************/
-    void EqnListParse(TokenType sep) {
+    inline void EqnListParse(TokenType sep) {
 
         Scanner* in = Env::getIn();
         TB_p bank = Env::getTb();
@@ -182,11 +193,12 @@ private:
     /* Parse a literal without external sign assuming that _all_equational literals are infix. Return sign. 
      * This is for TSTP syntax and E-LOP style.*/
     bool eqn_parse_infix(TermCell* *lref, TermCell* *rref);
-public:    
+public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //    
+
     void EqnParse() {
 
         Term_p lt = nullptr, rt = nullptr;
@@ -240,10 +252,25 @@ public:
         //  printf("\n");
 #endif
     }
-/*****************************************************************************
- * Print a literal in TSTP format.
- ****************************************************************************/
-void  EqnTSTPPrint(FILE* out, bool fullterms) ;
+    /*****************************************************************************
+     * Print a literal in TSTP format.
+     ****************************************************************************/
+    void EqnTSTPPrint(FILE* out, bool fullterms);
+
+    Literal* EqnListCopyDisjoint();
+    Literal* EqnListFlatCopy();
+    Literal* EqnCopyDisjoint();
+
+    Literal* EqnCopy();
+    Literal* EqnFlatCopy();
+    Literal* EqnCopyOpt();
+
+    /*---------------------------------------------------------------------*/
+    /*                          Static Function                            */
+    /*---------------------------------------------------------------------*/
+    static void EqnListFree(Literal* lst);
+
+
 };
 
 #endif /* LITERAL_H */

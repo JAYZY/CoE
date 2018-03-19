@@ -45,8 +45,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
-	${OBJECTDIR}/Indexing/NewIndexing.o \
 	${OBJECTDIR}/Indexing/TermIndexing.o \
+	${OBJECTDIR}/Inferences/Simplification.o \
+	${OBJECTDIR}/Inferences/Subst.o \
+	${OBJECTDIR}/Inferences/Unify.o \
 	${OBJECTDIR}/LIB/Out.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
 	${OBJECTDIR}/Prover/Prover.o \
@@ -134,15 +136,25 @@ ${OBJECTDIR}/INOUT/TokenCell.o: INOUT/TokenCell.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/TokenCell.o INOUT/TokenCell.cpp
 
-${OBJECTDIR}/Indexing/NewIndexing.o: Indexing/NewIndexing.cpp
-	${MKDIR} -p ${OBJECTDIR}/Indexing
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/NewIndexing.o Indexing/NewIndexing.cpp
-
 ${OBJECTDIR}/Indexing/TermIndexing.o: Indexing/TermIndexing.cpp
 	${MKDIR} -p ${OBJECTDIR}/Indexing
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/TermIndexing.o Indexing/TermIndexing.cpp
+
+${OBJECTDIR}/Inferences/Simplification.o: Inferences/Simplification.cpp
+	${MKDIR} -p ${OBJECTDIR}/Inferences
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Inferences/Simplification.o Inferences/Simplification.cpp
+
+${OBJECTDIR}/Inferences/Subst.o: Inferences/Subst.cpp
+	${MKDIR} -p ${OBJECTDIR}/Inferences
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Inferences/Subst.o Inferences/Subst.cpp
+
+${OBJECTDIR}/Inferences/Unify.o: Inferences/Unify.cpp
+	${MKDIR} -p ${OBJECTDIR}/Inferences
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Inferences/Unify.o Inferences/Unify.cpp
 
 ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${MKDIR} -p ${OBJECTDIR}/LIB

@@ -46,7 +46,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() {    
+TermCell::TermCell() {
     properties = TermProp::TPIgnoreProps;
     arity = 0;
     binding = NULL;
@@ -342,7 +342,7 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
             VarPrint(out);
         } else {
             string tmpStr;
-           Env::getSig()->SigFindName(term->fCode, tmpStr);
+            Env::getSig()->SigFindName(term->fCode, tmpStr);
             fputs(tmpStr.c_str(), out);
             if (!term->IsConst()) {
                 assert(term->args);
@@ -362,6 +362,13 @@ void TermCell::TermPrintArgList(FILE* out, int arity, DerefType deref) {
         args[i]->TermPrint(out, deref);
     }
     putc(')', out);
+}
+
+void TermCell::PrintTermSig(FILE* out) {
+    string sigName;
+    Env::getSig()->SigFindName(this->fCode, sigName);
+    fputs(sigName.c_str(), out);
+
 }
 
 /*-----------------------------------------------------------------------
@@ -634,7 +641,7 @@ bool TermCell::TermVarSearchProp(DerefType deref, TermProp prop) {
  ****************************************************************************/
 FunCode TermCell::TermSigInsert(Sig_p sig, const string& name, int arity, bool special_id, FuncSymbType type) {
     FunCode res;
- 
+
     res = sig->SigInsertId(name, arity, special_id);
     switch (type) {
         case FuncSymbType::FSIdentInt:
@@ -1185,7 +1192,19 @@ bool TermCell::TermIsSubterm(TermCell* test, DerefType deref, TermEqulType Equal
             isEqual = (super == test);
             break;
         case TermEqulType::StructEqual:
-            isEqual = TermStructEqual(super, test);
+            switch (deref) {
+                case DerefType::DEREF_NEVER:
+                    isEqual = TermStructEqualNoDeref(super, test);
+                    break;
+                case DerefType::DEREF_ALWAYS:
+                    isEqual = TermStructEqual(super, test);
+                    break;
+                default:
+                    assert(false);
+                    cout << "比较给定DerefType参数出错" << endl;
+                    break;
+            }
+
             break;
         default:
             break;

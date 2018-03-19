@@ -25,10 +25,16 @@
       <itemPath>HEURISTICS/Options.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Indexing" displayName="Indexing" projectFiles="true">
-      <itemPath>Indexing/NewIndexing.cpp</itemPath>
-      <itemPath>Indexing/NewIndexing.h</itemPath>
       <itemPath>Indexing/TermIndexing.cpp</itemPath>
       <itemPath>Indexing/TermIndexing.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Inferences" displayName="Inferences" projectFiles="true">
+      <itemPath>Inferences/Simplification.cpp</itemPath>
+      <itemPath>Inferences/Simplification.h</itemPath>
+      <itemPath>Inferences/Subst.cpp</itemPath>
+      <itemPath>Inferences/Subst.h</itemPath>
+      <itemPath>Inferences/Unify.cpp</itemPath>
+      <itemPath>Inferences/Unify.h</itemPath>
     </logicalFolder>
     <logicalFolder name="INOUT" displayName="INOUT" projectFiles="true">
       <itemPath>INOUT/FileOp.cpp</itemPath>
@@ -155,13 +161,21 @@
       </item>
       <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Indexing/NewIndexing.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Indexing/NewIndexing.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Simplification.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Subst.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Subst.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Unify.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Unify.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -285,13 +299,21 @@
       </item>
       <item path="INOUT/TokenCell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Indexing/NewIndexing.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Indexing/NewIndexing.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Simplification.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Subst.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Subst.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/Unify.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/Unify.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>

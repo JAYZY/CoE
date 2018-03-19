@@ -128,9 +128,10 @@ public:
 
 class Clause {
 private:
-    uint64_t ident; //子句创建时确定的唯一识别子句的id    
+    uint64_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息
+
     Literal* literals; //文字列表
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数
@@ -143,25 +144,36 @@ public:
 
     Clause();
     Clause(Literal *literal_s);
+
     //Clause(const Clause& orig);
+
     virtual ~Clause();
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
-    inline Literal* Lits(){return literals;}
+
+    inline Literal* Lits() {
+        return literals;
+    }
+
+    inline uint64_t GetClaId() {
+        return this->ident;
+    }
+
     inline void GetWeight(uint64_t value) {
         assert(value>-1);
         weight = value;
     }
 
-    uint64_t GetWeight() {
+    inline uint64_t GetWeight() {
         return weight;
     }
-    inline int LitsNumber() {
+
+    inline uint32_t LitsNumber() {
         return posLitNo + negLitNo;
     }
-    
+
     inline bool ClauseIsEmpty() {
         return LitsNumber() == 0;
     }
@@ -189,7 +201,7 @@ public:
     }
 
     inline int ClauseQueryCSSCPASource() {
-        return ((int)properties &(int)ClauseProp::CP_CSSCPA_Mask) / (int)ClauseProp::CP_CSSCPA_1;
+        return ((int) properties & (int) ClauseProp::CP_CSSCPA_Mask) / (int) ClauseProp::CP_CSSCPA_1;
     }
 
     /*---------------------------------------------------------------------*/

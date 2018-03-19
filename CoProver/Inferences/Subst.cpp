@@ -1,0 +1,247 @@
+/*
+ * 替换类 substitutions 
+ * File:   Subst.cpp
+ * Author: zj 
+ * 
+ * Created on 2017年3月25日, 下午3:36
+ */
+
+#include "Subst.h"
+/*---------------------------------------------------------------------*/
+/*                    Constructed Function                             */
+
+/*---------------------------------------------------------------------*/
+Subst::Subst() {
+    vecSubst.reserve(32);
+}
+
+Subst::Subst(const Subst& orig) {
+}
+
+Subst::~Subst() {
+    this->Clear();
+}
+
+/*---------------------------------------------------------------------*/
+/*                  Member Function-[public]                           */
+
+/*---------------------------------------------------------------------*/
+int Subst::SubstAddBinding(TermCell* var, TermCell* bind) {   
+    assert(var);
+    assert(bind);
+    assert(var->IsVar());
+    assert(!(var->binding));
+    assert(!bind->TermCellQueryProp(TermProp::TPPredPos));
+    /* printf("# %ld <- %ld \n", var->f_code, bind->f_code); */   
+    var->binding = bind;   
+    vecSubst.push_back(var);
+}
+
+/***************************************************************************** 
+ * Backtrack a single binding and remove it from the substitution (if possible). 
+ * Return true if successful, false if the substitutuion is empty.
+ ****************************************************************************/
+bool Subst::SubstBacktrackSingle() {
+    TermCell* handle;
+    if (vecSubst.empty()) {
+        return false;
+    }
+    handle = vecSubst.back();
+    vecSubst.pop_back();
+    handle->binding = NULL;
+    return true;
+}
+
+/***************************************************************************** 
+ * 回滚替换变元,直到给定的位置pos -- Backtrack variable bindings up to (down to?) a given stack pointer position.
+ ****************************************************************************/
+int Subst::SubstBacktrackToPos(int pos) {
+    int ret = 0;
+    while (vecSubst.size() > pos) {
+        SubstBacktrackSingle();
+        ++ret;
+    }
+    return ret;
+}
+
+/***************************************************************************** 
+ * Undo all stored variable binding in subst.
+ ****************************************************************************/
+int Subst::SubstBacktrack() {
+    int ret = 0;
+    while (SubstBacktrackSingle()) {
+        ++ret;
+    }
+    return ret;
+}
+
+/***************************************************************************** 
+ * Instatiate all variables in term with fresh variables from the VarBank. 
+ * Return old value of vars->v_count, so VarBankSetVCount() and 
+ * SubstBacktrackToPos() can be used to backtrack the instatiations term by term.
+ * New variables are marked by TPSpecialFlag, 
+ * if other variables are marked thus the effect is unpredictable.
+ * Warning: As variables may be shared, other terms may be affected!
+ * Take care...your best bet is to norm all terms you need with a single substitution. 
+ * If you need independendly normed terms, you need to work 
+ * with copy/backtrack operations (it's still better than working with unshared terms).
+ ****************************************************************************/
+    FunCode Subst::SubstNormTerm(TermCell* term, VarBank_p vars) {
+    //DerefType deref = DEREF_ALWAYS;
+    FunCode ret = vars->vCount;
+    vector<TermCell*> vecStack;
+    vecStack.push_back(term);
+    TermCell* newvar = nullptr;
+    while (!vecStack.empty()) {
+        term = vecStack.back();
+        term = TermCell::TermDeref(term, DerefType::DEREF_ALWAYS);//debug 20170511 
+        vecStack.pop_back();
+        if (term->IsVar()) {
+            if (!term->TermCellQueryProp(TermProp::TPSpecialFlag)) {
+                newvar = vars->VarBankGetFreshVar();
+                newvar->TermCellSetProp(TermProp::TPSpecialFlag);
+                SubstAddBinding(term, newvar);
+            }
+        } else {
+            for (int i = term->arity - 1; i >= 0; --i) {
+                vecStack.push_back(term->args[i]);
+            }
+        }
+    }
+    vector<TermCell*>().swap(vecStack);
+    return ret;
+}
+
+/***************************************************************************** 
+ *  Print a variable and its binding as x<-binding. Return true if variable is bound. See comments on SubstPrint()!
+ ****************************************************************************/
+bool Subst::SubstBindingPrint(FILE* out, TermCell* var,DerefType deref) {
+    var->TermPrint(out, DerefType::DEREF_NEVER);
+    fprintf(out, "<-");
+    if (var->binding) {
+        var->binding->TermPrint(out,deref);
+        return true;
+    }
+    var->TermPrint(out,DerefType::DEREF_NEVER);
+    return false;
+}
+
+/***************************************************************************** 
+ * Print a substitution. Note: Due to the different interpretations of terms 
+ * (follow/ignore bindings) and share variable, printing substitutions 
+ * with deref=DEREF_ALWAYS may lead to unpredictable behaviour 
+ * (if e.g. the substitution was generated by matching x onto f(x)). 
+ * Returns number of variables in subst (well, why not...). 
+ ****************************************************************************/
+long Subst::SubstPrint(FILE* out,  DerefType deref) {
+    long limit = vecSubst.size();
+    fprintf(out, "{");
+    if (limit) {
+        SubstBindingPrint(out, vecSubst[0], deref);
+        {
+            for (long i = 1; i < limit; ++i) {
+                fprintf(out, ", ");
+                SubstBindingPrint(out, vecSubst[i], deref);
+            }
+        }
+    }
+    fprintf(out, "}");
+    return limit;
+}
+
+/***************************************************************************** 
+ *  Return true if subst is just a variable renaming, false otherwise. 
+ * A substitution is a renaming if all variables are instantiated 
+ * to different variables. Checks only for one level of instantiaton.
+ * 
+ * Changes the TPOpFlag of terms
+ ****************************************************************************/
+bool Subst::SubstIsRenaming() {
+
+    TermCell* var;
+    TermCell* inst;
+    DerefType deref;
+
+    int size = vecSubst.size();
+    /* Check that variables are instantiated with variables, reset
+       TPOpFlag of all terms concerned */
+    int i;
+    for (i = 0; i < size; ++i) {
+        var = vecSubst[i]; // PStackElementP(subst,i);
+        assert(var->IsVar());
+        assert(var->binding);
+        deref = DerefType::DEREF_ONCE;
+        inst = TermCell::TermDeref(var, deref);
+
+        if (!inst->IsVar()) {
+            return false;
+        }
+        inst->TermCellDelProp(TermProp::TPOpFlag);
+    }
+    /* For each unchecked variable, check wether another variable was
+       already mapped to its instantiation */
+    for (i = 0; i < size; i++) {
+        var = vecSubst[i];
+        deref = DerefType::DEREF_ONCE;
+        inst = TermCell::TermDeref(var, deref);
+
+        if (inst->TermCellQueryProp(TermProp::TPOpFlag)) {
+            return false;
+        }
+        inst->TermCellSetProp(TermProp::TPOpFlag);
+    }
+    return true;
+}
+
+/*****************************************************************************
+ * Backtrack a skolem subst, freeing the skolem terms along the way.
+ ****************************************************************************/
+void Subst::SubstBacktrackSkolem() {
+    TermCell* handle;
+
+    while (!vecSubst.empty()) {
+        handle = vecSubst.back();
+        vecSubst.pop_back(); // PStackPopP(subst);
+        assert(handle);
+        assert(handle->binding);
+        TermCell::TermFree(handle->binding);
+        handle->binding=nullptr;
+    }
+}
+
+/*****************************************************************************
+ * Instantiate all variables in term with new skolem symbols from  sig.
+ ****************************************************************************/
+void Subst::SubstSkolemizeTerm(TermCell* term, Sig_p sig) {
+
+
+    assert(term && !vecSubst.empty() && sig);
+
+    if (term->IsVar()) {
+        if (!(term->binding)) {
+            term = vecSubst.back();
+            vecSubst.pop_back();
+            term->binding = TermCell::TermConstCellAlloc(sig->SigGetNewSkolemCode(0));
+        }
+    } else {
+        for (int i = 0; i < term->arity; ++i) {
+            SubstSkolemizeTerm(term->args[i], sig);
+        }
+    }
+}
+
+/***************************************************************************** 
+ * Add bindings for all free variables in term subst, binding them to default_term. 
+ * result: Changes subst
+ ****************************************************************************/
+void Subst::SubstCompleteInstance(TermCell* term, TermCell* defaultBinding) {
+    if (term->IsVar()) {
+        if (!(term->binding)) {
+            SubstAddBinding(term, defaultBinding);
+        }
+    } else {
+        for (int i = 0; i < term->arity; i++) {
+            SubstCompleteInstance(term->args[i], defaultBinding);
+        }
+    }
+}

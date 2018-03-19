@@ -18,14 +18,15 @@
 #include <climits>
 #include <string>
 #include <cstring>
-#include <cassert>
+
 #include <list>
 #include <vector>
 #include <set>
 //#include "Environment.h"
 #include <sys/param.h>
 #include "LIB/Out.h"
-
+//#define NDEBUG
+#include <cassert>
 using namespace std;
 
 
@@ -119,6 +120,8 @@ inline bool IsAnyPropSet(T&obj, V prop) {
     return ((int32_t) obj & (int32_t) prop) == (int32_t) prop;
 }
 
+#define ASSERT_MSG(expr,msg) (void)((expr)?((void)0):assert_msg(msg))
+
 #undef ABS
 #define ABS(x) ((x)>0?(x):-(x))
 
@@ -139,6 +142,8 @@ inline bool IsAnyPropSet(T&obj, V prop) {
 
 #define KILO 1024
 #define MEGA (1024*1024)
+
+
 
 #endif /* INCDEFINE_H */
 

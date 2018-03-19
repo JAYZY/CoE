@@ -11,13 +11,15 @@
 #include "Global/IncDefine.h"
 #include "CLAUSE/Clause.h"
 #include "Indexing/TermIndexing.h"
+
 class Processed {
 private:
     list<Clause*> PosRules; //处理过的正文字 单元子句 (有序的,要么不是等词,要么已经左项>右项) 
     list<Clause*> PosEqns; //处理过的正文字单元子句(无序的等词文字)
     list<Clause*> NegUnits; //单元子句,只有一个 负文字
     list<Clause*> NonUnits; //其他非单元子句
-    DiscrimationIndexing *ti;
+    TermIndexing *termIndex;
+    
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -25,7 +27,8 @@ public:
     //
 
     Processed() {
-        ti = new DiscrimationIndexing();
+        termIndex = new DiscrimationIndexing();
+        
     }
 
     virtual ~Processed() {
@@ -33,7 +36,8 @@ public:
         PosEqns.clear();
         NegUnits.clear();
         NonUnits.clear();
-        DelPtr(ti);
+        DelPtr(termIndex);
+        
     }
 
     /*---------------------------------------------------------------------*/
@@ -52,12 +56,24 @@ public:
     inline uint32_t UnitClaNum() {
         return PosRules.size() + PosEqns.size() + NegUnits.size();
     }
+
+    inline void PrintIndex() {
+        termIndex->Print();
+    }
+
+    inline void PrintNegIndex() {
+        termIndex->Print();
+    }
+    
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
+    
     void Proc(Clause* selCla);
-    void PrintTi(){ti->Print();}
+    
+    uint32_t Insert(Literal* lit);
+
 };
 
 class UnProcessed {
@@ -69,7 +85,7 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    UnProcessed(list<Clause*>&_unproc) : unprocClaSet(_unproc) {       
+    UnProcessed(list<Clause*>&_unproc) : unprocClaSet(_unproc) {
     };
 
     virtual ~UnProcessed() {
@@ -83,9 +99,13 @@ public:
     Clause* GetBestClause() {
         return unprocClaSet.back();
     }
-    uint32_t getClaNum(){return unprocClaSet.size();}
+
+    uint32_t getClaNum() {
+        return unprocClaSet.size();
+    }
+
     void RemoveCla(Clause* cla) {
-        unprocClaSet.remove(cla);        
+        unprocClaSet.remove(cla);
     }
 };
 

@@ -265,8 +265,9 @@ public:
 
     void SigPrint(FILE* out);
     void SigPrintSpecial(FILE* out);
-    void SigPrintACStatus(FILE* out); /*输出AC状态符号,特殊符号*/
+    void SigPrintACStatus(FILE* out); /*输出AC状态符号,特殊符号*/    
     void SigPrintOperator(FILE* out, FunCode op, bool comments); /*输出操作符,特殊符号*/
+    
 
     /* 将所有元素设置为特殊项属性.  * isDel - 是否删除该属性 */
     void SigSetAllSpecial(bool isDel);
