@@ -84,6 +84,9 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
     Literal* candLit = nullptr;
     Subst* subst = new Subst();
     while (true) {
+        
+        Env::backword_CMP_counter+=candLits->size();
+        
         for (int ind = 0; ind < candLits->size(); ++ind) {
             int substPos = subst->Size();
             candLit = candLits->at(ind);
@@ -93,6 +96,7 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
                 if (candCla->LitsNumber() >= genCla->LitsNumber() &&
                         LitListSubsume(selLit, nullptr, candCla->Lits(), subst, nullptr)) {
                     //记录找到的冗余子句
+                    ++Env::backword_Finded_counter;
                     subsumedCla.insert(candCla);
                 }
             }

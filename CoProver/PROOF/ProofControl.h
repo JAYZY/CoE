@@ -18,8 +18,9 @@ private:
     list<Clause*> PosEqns; //处理过的正文字单元子句(无序的等词文字)
     list<Clause*> NegUnits; //单元子句,只有一个 负文字
     list<Clause*> NonUnits; //其他非单元子句
-    TermIndexing *termIndex;
-    
+
+    TermIndexing *unitIndex;//单元索引
+    TermIndexing *termIndex;//多文字索引
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -28,7 +29,7 @@ public:
 
     Processed() {
         termIndex = new DiscrimationIndexing();
-        
+
     }
 
     virtual ~Processed() {
@@ -37,7 +38,7 @@ public:
         NegUnits.clear();
         NonUnits.clear();
         DelPtr(termIndex);
-        
+
     }
 
     /*---------------------------------------------------------------------*/
@@ -64,14 +65,14 @@ public:
     inline void PrintNegIndex() {
         termIndex->Print();
     }
-    
+
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
-    
+
     void Proc(Clause* selCla);
-    
+
     uint32_t Insert(Literal* lit);
 
 };

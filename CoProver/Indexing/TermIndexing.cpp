@@ -15,6 +15,7 @@
 
 #include "TermIndexing.h"
 #include "CLAUSE/Literal.h"
+#include "CLAUSE/Clause.h"
 
 TermIndexing::TermIndexing() {
     chgVars = new Subst();
@@ -106,13 +107,13 @@ void TermIndexing::PrintFlattenTerms(FILE* out) {
 void DiscrimationIndexing::Insert(Literal * lit) {
 
     TermIndNode* termIndNode = lit->EqnIsPositive() ? posRoot : negRoot;
-
+    
     termIndNode = InsertTerm(&termIndNode, lit->lterm);
-
     if (lit->EqnIsEquLit())
         termIndNode = InsertTerm(&termIndNode, lit->rterm);
-
     termIndNode->leafs.push_back(lit);
+    lit = lit->next;
+
 }
 
 TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell * term) {
@@ -142,6 +143,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
         vecTerm.pop_back();
 
         for (int i = node->arity - 1; i>-1; --i) {
+
             vecTerm.push_back(node->args[i]);
         }
     }
@@ -184,13 +186,14 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
 
     if (subNodeIt == (*parentNodeIt)->subTerms.end()) return nullptr;
 
-    TermIndNode* rtnLit = nullptr;
+    TermIndNode * rtnLit = nullptr;
     switch (subsumptype) {
         case SubsumpType::Forword:
             rtnLit = FindForwordSubsumption(1, parentNodeIt, subNodeIt);
             break;
         case SubsumpType::Backword:
             rtnLit = FindBackwordSubsumption(1, parentNodeIt, subNodeIt);
+
             break;
         default:
 
@@ -280,6 +283,7 @@ TermIndNode* DiscrimationIndexing::FindBackwordSubsumption(uint32_t qTermPos,
         ++qTermPos;
     }
     assert(!(*subNodeIt)->leafs.empty());
+
     return (*subNodeIt);
 }
 
@@ -310,15 +314,16 @@ TermIndNode* DiscrimationIndexing::NextBackSubsump() {
 
     assert(stVarChId.back() == -flattenTerm[qTermPos]->fCode);
     stVarChId.pop_back();
-    
+
     vector<TermCell*>&varCh = this->varLst[-(flattenTerm[qTermPos]->fCode)];
-    
+
     int32_t funcLevel = -1;
     if (!varCh.empty()) {
         while (varCh.size() > varChPos) {
             funcLevel = funcLevel - (&(*varCh.back()))->arity + 1;
             varCh.pop_back();
         }
+
         if (varCh.empty()) funcLevel = 0;
         BindingVar(qTermPos, funcLevel, parentNodeIt, subNodeIt);
     }
@@ -386,6 +391,7 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
     }
     assert(!(*parentNodeIt)->leafs.empty());
+
     return (*parentNodeIt);
 
 }
@@ -400,7 +406,7 @@ TermIndNode * DiscrimationIndexing::NextForwordSubsump() {
     chgVars->SubstBacktrackToPos(chgVarPos);
     backpoint.pop_back();
 
-    TermIndNode *rtnLit = FindForwordSubsumption(qTermPos, parentNodeIt, subNodeIt);
+    TermIndNode * rtnLit = FindForwordSubsumption(qTermPos, parentNodeIt, subNodeIt);
 
     return rtnLit;
 }
@@ -416,11 +422,13 @@ Literal * DiscrimationIndexing::FindNextDemodulator(TermCell *term, bool isEqual
 
     if ((*subNodeIt)->subTerms.empty()) return nullptr;
     set<TermIndNode*, TermIndNode::cmp>::iterator tmpTNodeIt = (*subNodeIt)->subTerms.begin();
-    Literal* rtnLit = FindDemodulator(1, subNodeIt, tmpTNodeIt);
+    Literal * rtnLit = FindDemodulator(1, subNodeIt, tmpTNodeIt);
+
     return rtnLit;
 }
 
 Literal * DiscrimationIndexing::FindDemodulator(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt, set<TermIndNode*, TermIndNode::cmp>::iterator & subNodeIt) {
+
     return nullptr;
 
 }
@@ -443,6 +451,7 @@ void DiscrimationIndexing::TraverseTerm(TermIndNode* indNode, bool isPosLit, int
     } else {
 
         for (auto& subT : indNode->subTerms) {
+
             TraverseTerm(subT, isPosLit, level);
         }
     }
@@ -472,6 +481,7 @@ bool DiscrimationIndexing::CheckVarBinding(TermCell* qTerm, set<TermIndNode*, Te
     for (uint32_t iPos = 1; iPos < varCh.size(); ++iPos) {
         subPosIt = (*treePosIt)->subTerms.find(new TermIndNode(varCh[iPos]));
         if (subPosIt == (*treePosIt)->subTerms.end())
+
             return false;
         treePosIt = subPosIt;
     }
@@ -494,8 +504,8 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
 
     vector<TermCell*>&varCh = this->varLst[-(flattenTerm[qTermPos]->fCode)]; //获取变元替换列表
     stVarChId.push_back(-(flattenTerm[qTermPos]->fCode));
-    uint32_t* chgVPos = nullptr; 
-    
+    uint32_t* chgVPos = nullptr;
+
     //添加回退点
     std::set<TermIndNode*, TermIndNode::cmp>::iterator tmpIt;
 
@@ -506,9 +516,9 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
     //funcLevel += ((*parentNodeIt)->curTermSymbol->arity - 1);
 
     while (funcLevel >-1) {
-        
+
         tmpIt = subNodeIt;
-        
+
         if (++tmpIt != (*parentNodeIt)->subTerms.end()) {
             //添加回退点
             chgVPos = new uint32_t[2];
@@ -516,7 +526,7 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
             chgVPos[1] = stVarChId.size();
             backpoint.push_back(new BackPoint(qTermPos, chgVPos, parentNodeIt, tmpIt));
         }
-        
+
         //add var-binding
         varCh.push_back((*subNodeIt)->curTermSymbol);
 
@@ -526,24 +536,25 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
 
         //skip  
         parentNodeIt = subNodeIt;
+
         if ((*parentNodeIt)->subTerms.empty()) break;
         subNodeIt = (*parentNodeIt)->subTerms.begin();
 
     }
 
 
-//    //测试输出绑定的项
-//    cout << "变元绑定:";
-//    flattenTerm[qTermPos]->VarPrint(stdout);
-//    printf("=>");
-//    for (TermCell* tt : varCh) {
-//        if (tt->fCode > 0)
-//            cout << Env::getSig()->fInfo[tt->fCode]->name;
-//        else
-//            tt->VarPrint(stdout);
-//        printf(" ");
-//    }
-//    printf("\n");
+    //    //测试输出绑定的项
+    //    cout << "变元绑定:";
+    //    flattenTerm[qTermPos]->VarPrint(stdout);
+    //    printf("=>");
+    //    for (TermCell* tt : varCh) {
+    //        if (tt->fCode > 0)
+    //            cout << Env::getSig()->fInfo[tt->fCode]->name;
+    //        else
+    //            tt->VarPrint(stdout);
+    //        printf(" ");
+    //    }
+    //    printf("\n");
 }
 
 void DiscrimationIndexing::ClearVarLst() {

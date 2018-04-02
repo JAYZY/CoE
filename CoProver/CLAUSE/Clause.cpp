@@ -66,7 +66,7 @@ Clause::~Clause() {
     //   vector<IntOrP>().swap(derivation);
     //PStackFree(junk->derivation);
 }
- 
+
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
@@ -215,7 +215,29 @@ void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterm
     }
 }
 
+template<typename ComparisonFunctionType>
+void Clause::ClauseSortLiterals(ComparisonFunctionType cmp_fun) {
+    uint32_t lit_no = this->LitsNumber();
 
+    if (lit_no > 1) {
+        int arr_size = lit_no * sizeof (Eqn_p), i;
+        Eqn_p *sort_array = SizeMalloc(arr_size);
+        Eqn_p handle;
+
+        for (i = 0, handle = clause->literals;
+                handle;
+                i++, handle = handle->next) {
+            assert(i < lit_no);
+            handle->pos = i;
+            sort_array[i] = handle;
+        }
+        qsort(sort_array, lit_no, sizeof (Eqn_p), cmp_fun);
+
+        clause->literals = EqnListFromArray(sort_array, lit_no);
+
+        SizeFree(sort_array, arr_size);
+    }
+}
 //识别子句的类型
 
 ClauseProp Clause::ClauseTypeParse(Scanner* in, string &legal_types) {
@@ -279,7 +301,7 @@ Clause* Clause::ClauseParse() {
         in->AcceptInpTok(TokenType::OpenSquare);
 
         //此处过滤项bank  EqnListParse(in, bank,Comma);
-        //此处解析完提条子句
+        //此处解析完子句
         concl->EqnListParse(TokenType::Comma);
 
         in->AcceptInpTok(TokenType::CloseSquare);
@@ -323,6 +345,7 @@ Clause* Clause::ClauseParse() {
         }
         in->AcceptInpTok(TokenType::CloseBracket);
     } else {
+        cout << "文字解析错误" << endl;
         //        //此处过滤term　EqnListParse(in, bank, Pipe);
         //        //cout<<"into EqnListParse"<<endl;
         //        concl->EqnListParse( TokenType::Semicolon);

@@ -17,6 +17,9 @@
 /*                          Static Function                            */
 /*---------------------------------------------------------------------*/
 uint64_t Env::global_clause_counter = 0; //全局子句个数,从1开始编号
+uint64_t Env::backword_CMP_counter=0;
+uint64_t Env::backword_Finded_counter=0;
+
 IOFormat Env::parseFormat = IOFormat::AutoFormat;
 Scanner* Env::in=nullptr;
 TermBank* Env::termBank=nullptr;

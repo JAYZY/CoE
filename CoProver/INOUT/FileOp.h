@@ -187,12 +187,11 @@ public:
     /// \param fileFullName
     /// \param baseName
 
-    inline static const char* FileNameBaseName(const string& fileFullName) {
+    inline static string FileNameBaseName(const string& fileFullName) {
         assert(!fileFullName.empty());
         int pos = fileFullName.find_last_of('/');
-        string s = fileFullName.substr(pos + 1);
-        return s.c_str();
-
+       return fileFullName.substr(pos + 1);
+          
     }
 
 

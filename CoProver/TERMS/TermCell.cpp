@@ -53,6 +53,7 @@ TermCell::TermCell() {
     args = NULL;
     /* If no variable, will be	changed automagically later on */
     weight = DEFAULT_VWEIGHT;
+    zjweight=0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
 }
@@ -61,6 +62,8 @@ TermCell::TermCell() {
 TermCell::TermCell(long symbol) : TermCell() {
 
     weight = DEFAULT_FWEIGHT;
+    
+    zjweight=1.0f;
     fCode = symbol;
 }
 

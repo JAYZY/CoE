@@ -7,6 +7,7 @@
 
 #include "ProofControl.h"
 #include "Inferences/Simplification.h"
+#include "INOUT/FileOp.h"
 
 ProofControl::ProofControl(list<Clause*>& _axiom) : axiom(_axiom) {
     this->procedSet = new Processed();
@@ -41,6 +42,7 @@ void Processed::Proc(Clause* selCla) {
     //检查选择的子句是否有效
     //Simplification::ForwordSubsumption(selCla, termIndex);
     //simpliy 子句集中的子句(根据selCla,检查冗余的子句)
+
     Simplification::BackWordSubsumption(selCla, termIndex); //删除
     Insert(lit);
 
@@ -63,9 +65,6 @@ Clause* ProofControl::Saturate() {
     Options::step_limit = this->axiom.size();
     double initial_time = cpuTime();
 
-
-
-
     while (Options::step_limit>++count
             && unprocSet->getClaNum() > 0) {
 
@@ -77,5 +76,13 @@ Clause* ProofControl::Saturate() {
 
     }
     paseTime("FindBack", initial_time);
+    
+    FILE *fp;
+    
+    fp = fopen("rect.txt", "a"); //参数a表示追加写入 
+    
+    string fileName=FileOp::FileNameBaseName(Env::getIn()->source->source);
+    // printf("%s,%lu,%12.2f s",fileName.c_str(),Env::backword_CMP_counter, cpuTime() - initial_time);
+    fprintf(fp, "%s,%lu,%lu,%12.2f\n",fileName.c_str(),Env::backword_CMP_counter, Env::backword_Finded_counter,cpuTime() - initial_time);
     // this->procedSet->PrintIndex();
 }

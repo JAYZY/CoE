@@ -56,6 +56,8 @@ public:
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
+
+    long zjlitWight;
 public:
     Literal();
     Literal(Term_p lt, Term_p rt, bool positive);
@@ -110,6 +112,49 @@ public:
 
     inline bool EqnIsTrivial() {
         return this->lterm == this->rterm;
+    }
+
+    inline int zjLitWeight() {
+        int sumKinds = 0;
+        int x[100]{};
+        int max = 0;
+        vector<TermCell*> terms;
+        terms.reserve(MAX_SUBTERM_SIZE);
+        terms.push_back(lterm);
+        while (!terms.empty()) {
+            TermCell* t = terms.back();
+            terms.pop_back();
+            if (t->IsVar()) {
+                if (x[-t->fCode] > 0) {
+                    ++sumKinds;
+                }
+                ++x[-t->fCode];
+                if (x[-t->fCode] > max)max = x[-t->fCode];
+            }
+            for (int i = 0; i < t->arity; ++i) {
+                terms.push_back(t->args[i]);
+            }
+        }
+
+        if (this->EqnIsEquLit()) {
+            terms.push_back(rterm);
+            while (!terms.empty()) {
+                TermCell* t = terms.back();
+                terms.pop_back();
+                if (t->IsVar()) {
+                    if (x[-t->fCode] > 0) {
+                        ++sumKinds;
+                    }
+                    ++x[-t->fCode];
+                    if (x[-t->fCode] > max)max = x[-t->fCode];
+                }
+                for (int i = 0; i < t->arity; ++i) {
+                    terms.push_back(t->args[i]);
+                }
+            }
+        }
+        this->zjlitWight = max;
+        return sumKinds;
     }
 
     inline long StandardWeight() {

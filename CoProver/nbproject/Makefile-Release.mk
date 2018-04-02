@@ -50,6 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Inferences/Subst.o \
 	${OBJECTDIR}/Inferences/Unify.o \
 	${OBJECTDIR}/LIB/Out.o \
+	${OBJECTDIR}/Ordering/KBO.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
 	${OBJECTDIR}/Prover/Prover.o \
 	${OBJECTDIR}/TERMS/Sigcell.o \
@@ -160,6 +161,11 @@ ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${MKDIR} -p ${OBJECTDIR}/LIB
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
+
+${OBJECTDIR}/Ordering/KBO.o: Ordering/KBO.cpp
+	${MKDIR} -p ${OBJECTDIR}/Ordering
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Ordering/KBO.o Ordering/KBO.cpp
 
 ${OBJECTDIR}/PROOF/ProofControl.o: PROOF/ProofControl.cpp
 	${MKDIR} -p ${OBJECTDIR}/PROOF

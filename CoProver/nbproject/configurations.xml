@@ -12,6 +12,7 @@
       <itemPath>CLAUSE/Formula.h</itemPath>
       <itemPath>CLAUSE/Literal.cpp</itemPath>
       <itemPath>CLAUSE/Literal.h</itemPath>
+      <itemPath>LiteralCompare.h</itemPath>
       <itemPath>Prover/Prover.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
@@ -49,6 +50,10 @@
     <logicalFolder name="LIB" displayName="LIB" projectFiles="true">
       <itemPath>LIB/Out.cpp</itemPath>
       <itemPath>LIB/Out.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Ordering" displayName="Ordering" projectFiles="true">
+      <itemPath>Ordering/KBO.cpp</itemPath>
+      <itemPath>Ordering/KBO.h</itemPath>
     </logicalFolder>
     <logicalFolder name="PROOF" displayName="PROOF" projectFiles="true">
       <itemPath>PROOF/ProofControl.cpp</itemPath>
@@ -180,6 +185,12 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LiteralCompare.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Ordering/KBO.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -318,6 +329,12 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LiteralCompare.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Ordering/KBO.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>

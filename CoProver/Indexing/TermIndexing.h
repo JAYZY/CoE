@@ -81,8 +81,11 @@ protected:
     };
 
     vector<TermCell*> flattenTerm; //项的扁平化表示
-    TermIndNode* posRoot;
-    TermIndNode* negRoot;
+    
+    TermIndNode* posRoot; //正文字索引
+    TermIndNode* negRoot; //负文字索引
+    
+
 public:
     TermIndexing();
     TermIndexing(const TermIndexing& orig);
@@ -93,11 +96,13 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-    //
-    virtual void Insert(Literal*lit);
+    //************************ Insert **************************************/
+    virtual void Insert(Literal* lit);
     /*insert Term*/
     virtual void InsertTerm(TermCell* t);
 
+    //************************ Remove **************************************/
+    
     virtual void Print();
 
     virtual TermIndNode* Subsumption(Literal* lit, SubsumpType subsumtype);
@@ -105,8 +110,8 @@ public:
     virtual TermIndNode* NextBackSubsump();
 
     // virtual TermIndNode* BackSubsumption(Literal* lit);
-
-
+    //virtual bool DelClaFromIndex(Clause* cla);
+    
     virtual void ClearVarLst();
 
     void DelIndexNode(TermIndNode* root) {

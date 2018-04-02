@@ -1,0 +1,2 @@
+GRP123-2.005+short+noeq.tptp,10,3,lu        0.00
+GRP123-2.005+short+noeq.tptp,10,3,lu        0.00

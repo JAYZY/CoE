@@ -19,6 +19,8 @@ Literal::Literal() {
     lterm = nullptr;
     rterm = nullptr;
     next = nullptr;
+    
+    zjlitWight=0;
 }
 
 Literal::Literal(Term_p lt, Term_p rt, bool positive) {

@@ -50,15 +50,19 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT006+2+short+eq_rstfp.tptp</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp.tptp
 </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/ALG103+1+short+eq_rstfp.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/CSR024+1.010+short+eq_rstfp.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/home/icdc/Problems/CASC-J9-2017/Problems/FNE/FNEProblemFiles/BOO109+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/Problems/FNE/FNEProblemFiles/BOO109+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2017CADE/CNF-57/GRP123-2.005+short+noeq.tptp</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp.tptp</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2017CADE/CNF-57/GRP123-2.005+short+noeq.tptp</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

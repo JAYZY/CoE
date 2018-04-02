@@ -29,6 +29,8 @@
 #include <cassert>
 using namespace std;
 
+extern const uint32_t MAX_SUBTERM_SIZE;//预设最大子项个数,用于优化 vector 2^n
+extern const uint32_t MAX_VAR_SIZE;//预设项中,最大变元数
 
 typedef char* StreamType;
 /* 定义函数符为一个　正整数　Function symbols in terms are represented by positive numbers,
@@ -40,13 +42,13 @@ typedef long FunCode;
 
 /* 枚举 -- 比较结果类型枚举  */
 enum class CompareResult : uint8_t {
-    to_unknown = 0,
-    to_uncomparable = 1,
-    to_equal = 2,
-    to_greater = 3,
-    to_lesser = 4,
-    to_notgteq, /* For caching partial LPO results */
-    to_notleeq
+    toUnknown = 0,
+    toUncomparable = 1,
+    toEqual = 2,
+    toGreater = 3,
+    toLesser = 4,
+    toNotgteq, /* For caching partial LPO results */
+    toNotleeq
 };
 /*---------------------------------------------------------------------*/
 /*                          宏定义-两个函数指针                           */

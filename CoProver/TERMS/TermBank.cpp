@@ -80,12 +80,12 @@ TermBank::~TermBank() {
  * 根据插入顺序输出 -- Print the terms as a dag in the order of insertion.
  ****************************************************************************/
 void TermBank::tb_print_dag(FILE *out, NumTree_p spNode) {
-    
+
     //中序遍历 伸展树 注意.spNode是节点
     if (spNode == nullptr) {
         return;
     }
-    
+
     tb_print_dag(out, spNode->lson);
 
     TermCell* term = (TermCell*) spNode->val1.p_val;
@@ -112,6 +112,8 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode) {
         }
         printf("   =   ");
         term->TermPrint(out, DerefType::DEREF_NEVER);
+        //zj-add
+        fprintf(out, " :weight->%lf", term->zjweight);
     }
     if (TermBank::TBPrintInternalInfo) {
         fprintf(out, "\t/*  Properties: %10d */", (int) term->properties);
@@ -125,7 +127,7 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode) {
  ****************************************************************************/
 TermCell* TermBank::tb_subterm_parse(Scanner* in) {
     TermCell* res = TBTermParseReal(in, true);
-    Sigcell* sig=Env::getSig();
+    Sigcell* sig = Env::getSig();
     if (!res->IsVar()) {
         if (sig->SigIsPredicate(res->fCode)) {//此处有错误
             in->AktTokenError("Predicate used as function symbol in preceeding term", false);
@@ -189,13 +191,25 @@ TermCell* TermBank::TBTermTopInsert(TermCell* t) {
         t->TermCellAssignProp(TermProp::TPGarbageFlag, garbageState);
         t->TermCellSetProp(TermProp::TPShareGround); /* Groundness may change below */
         t->weight = DEFAULT_FWEIGHT;
+
+        t->zjweight = t->fCode;
+        float w = 0.0f;
         for (int i = 0; i < t->arity; ++i) {
             assert(t->args[i]->IsShared() || t->args[i]->IsVar());
             t->weight += t->args[i]->weight;
+
+            w += t->args[i]->fCode;
+
+
             if (!t->args[i]->TermCellQueryProp(TermProp::TPIsGround)) {
                 t->TermCellDelProp(TermProp::TPIsGround);
             }
         }
+//        if (t->arity > 0) t->zjweight += 0.5f * (w / t->arity);
+//        else
+//            t->zjweight += 0.5f;
+
+
         assert(t->TermStandardWeight() == t->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
         assert((t->TermIsGround() == false) == (t->TBTermIsGround() == false));
     }

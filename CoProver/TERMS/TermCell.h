@@ -115,6 +115,8 @@ public:
                     * - it might be possible to combine the previous two in a union. */
     long entryNo; /* Counter for terms in a given termbank - needed for administration and external representation */
     long weight; /* Weight of the term, if term is in term bank */
+    
+    float zjweight;
     // RewriteState rw_data; /* See above */
     TermCell* lson; /* For storing shared term nodes in */
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */

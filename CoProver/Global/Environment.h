@@ -20,7 +20,8 @@ private:
     static Sigcell* sig; // 全局唯一一个sig 存储项相关的符号
 public:
     static uint64_t global_clause_counter;
-
+    static uint64_t backword_CMP_counter; //backword 比较次数
+static uint64_t backword_Finded_counter; //backword 找到冗余次数
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -80,5 +81,7 @@ static inline void paseTime(const char* tip, double initial_time) {
     printf("|  %stime:           %12.2f s                 |\n", tip, cpuTime() - initial_time);
 
 }
+
+
 #endif /* ENVIRONMENT_H */
 

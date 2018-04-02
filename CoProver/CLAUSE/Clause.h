@@ -141,7 +141,7 @@ private:
     Clause* parent2; //父子句2;
 
 public:
-
+    
     Clause();
     Clause(Literal *literal_s);
 
@@ -176,6 +176,16 @@ public:
 
     inline bool ClauseIsEmpty() {
         return LitsNumber() == 0;
+    }
+    //正单元子句
+
+    inline bool IsUnitPos() {
+        return (posLitNo == 1 && negLitNo == 0);
+    }
+    //负单元子句
+
+    inline bool isUnitNeg() {
+        return (posLitNo == 0 && negLitNo == 1);
     }
     //modify ClauseProperties to int
 
@@ -214,6 +224,10 @@ public:
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
 
+    //用模板+仿函数来实现 文字比较
+    template<typename ComparisonFunctionType>
+    void ClauseSortLiterals( ComparisonFunctionType cmp_fun);
+    
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
