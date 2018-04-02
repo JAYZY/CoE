@@ -12,7 +12,7 @@
       <itemPath>CLAUSE/Formula.h</itemPath>
       <itemPath>CLAUSE/Literal.cpp</itemPath>
       <itemPath>CLAUSE/Literal.h</itemPath>
-      <itemPath>LiteralCompare.h</itemPath>
+      <itemPath>CLAUSE/LiteralCompare.h</itemPath>
       <itemPath>Prover/Prover.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
@@ -138,6 +138,8 @@
       </item>
       <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
@@ -185,8 +187,6 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -282,6 +282,8 @@
       </item>
       <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
@@ -329,8 +331,6 @@
       <item path="LIB/Out.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
       </item>

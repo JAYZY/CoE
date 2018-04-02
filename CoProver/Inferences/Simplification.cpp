@@ -9,6 +9,7 @@
 #include "CLAUSE/Clause.h"
 #include "Indexing/TermIndexing.h"
 #include "Unify.h"
+#include "CLAUSE/LiteralCompare.h"
 
 Simplification::Simplification() {
 }
@@ -74,7 +75,9 @@ bool Simplification::ForwordSubsumption(Clause* genCla, TermIndexing* indexing) 
 
 bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing) {
 
-    Literal* selLit = genCla->Lits();
+    Literal* selLit = genCla->FileMaxLit<SteadyCMP>(SteadyCMP()); //genCla->Lits();
+
+
     set<Clause*> subsumedCla;
     Clause* candCla = nullptr;
     TermIndNode* candTermNode = indexing->Subsumption(selLit, SubsumpType::Backword);
@@ -84,14 +87,14 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
     Literal* candLit = nullptr;
     Subst* subst = new Subst();
     while (true) {
-        
-        Env::backword_CMP_counter+=candLits->size();
-        
+
+        Env::backword_CMP_counter += candLits->size();
+
         for (int ind = 0; ind < candLits->size(); ++ind) {
             int substPos = subst->Size();
             candLit = candLits->at(ind);
             candCla = candLit->claPtr; //找到第一个文字所匹配的子句
-          //  cout<<"candClaId"<<candCla->GetClaId()<<endl;
+            //  cout<<"candClaId"<<candCla->GetClaId()<<endl;
             if (subsumedCla.find(candCla) == subsumedCla.end()) {
                 if (candCla->LitsNumber() >= genCla->LitsNumber() &&
                         LitListSubsume(selLit, nullptr, candCla->Lits(), subst, nullptr)) {
@@ -103,7 +106,7 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
             subst->SubstBacktrackToPos(substPos);
         }
         candTermNode = indexing->NextBackSubsump();
-        
+
         if (candTermNode == nullptr) {//no backsump,rollback;
             break;
         }
@@ -114,11 +117,12 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
     DelPtr(subst);
     //对找到的冗余子句进行处理
     if (subsumedCla.empty()) {
-       // cout << "No found backsubsumption!" << endl;
+        // cout << "No found backsubsumption!" << endl;
     } else {
-        
-        cout << "\nfound backsubsumption!,size:" <<subsumedCla.size()<<" "<< endl;
-        genCla->ClausePrint(stdout, true);cout<<" ==> ";
+
+        cout << "\nfound backsubsumption!,size:" << subsumedCla.size() << " " << endl;
+        genCla->ClausePrint(stdout, true);
+        cout << " ==> ";
         (*subsumedCla.begin())->ClausePrint(stdout, true);
 
     }

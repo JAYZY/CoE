@@ -215,28 +215,20 @@ void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterm
     }
 }
 
-template<typename ComparisonFunctionType>
-void Clause::ClauseSortLiterals(ComparisonFunctionType cmp_fun) {
-    uint32_t lit_no = this->LitsNumber();
-
-    if (lit_no > 1) {
-        int arr_size = lit_no * sizeof (Eqn_p), i;
-        Eqn_p *sort_array = SizeMalloc(arr_size);
-        Eqn_p handle;
-
-        for (i = 0, handle = clause->literals;
-                handle;
-                i++, handle = handle->next) {
-            assert(i < lit_no);
-            handle->pos = i;
-            sort_array[i] = handle;
+template<typename FunObj>
+Literal* Clause::FileMaxLit(FunObj cmp_fun) {
+    
+    Literal* handle = this->literals;
+    Literal* maxLit = handle;
+    if (this->LitsNumber() > 1) {
+        handle = handle->next;
+        while (handle) {
+            if (cmp_fun(handle, maxLit) > 0)
+                maxLit = handle;
         }
-        qsort(sort_array, lit_no, sizeof (Eqn_p), cmp_fun);
 
-        clause->literals = EqnListFromArray(sort_array, lit_no);
-
-        SizeFree(sort_array, arr_size);
     }
+    return maxLit;
 }
 //识别子句的类型
 

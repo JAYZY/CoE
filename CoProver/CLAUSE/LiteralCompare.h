@@ -11,9 +11,16 @@
 
 #ifndef LITERALCMP_H
 #define LITERALCMP_H
-class SteadyCMP{
-    
-}
+#include "Literal.h"
+ 
+
+class SteadyCMP {
+public:
+    int operator()( Literal*t1,  Literal* t2) {
+        t1->zjLitWeight();t2->zjLitWeight();
+        return (t1->zjlitWight-t2->zjlitWight);
+    }
+};
 
 
 #endif /* LITERALCMP_H */

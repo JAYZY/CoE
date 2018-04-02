@@ -224,9 +224,9 @@ public:
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
 
-    //用模板+仿函数来实现 文字比较
+    //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
     template<typename ComparisonFunctionType>
-    void ClauseSortLiterals( ComparisonFunctionType cmp_fun);
+    Literal* FileMaxLit( ComparisonFunctionType cmp_fun);
     
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
