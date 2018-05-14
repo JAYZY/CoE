@@ -19,6 +19,10 @@ enum class SubsumpType : uint8_t {
 };
 
 class TermIndNode {
+    
+public:
+    //算法改进
+    set<TermCell*> groundTermSet;
 public:
 
     struct cmp {
@@ -29,15 +33,18 @@ public:
     };
 
 public:
+    uint32_t size;
     TermCell* curTermSymbol; //当前symbol
+    
     set<TermIndNode*, cmp> subTerms; //子项列表
+    
     vector<Literal*> leafs;
 
-    TermIndNode() : curTermSymbol(nullptr) {
+    TermIndNode() : curTermSymbol(nullptr), size(0) {
 
     }
 
-    TermIndNode(TermCell* term) : curTermSymbol(term) {
+    TermIndNode(TermCell* term) : curTermSymbol(term), size(0) {
 
     }
 
@@ -60,6 +67,7 @@ public:
 protected:
 
     //回退点定义
+
     struct BackPoint {
         uint32_t queryTermPos; //pos of queryterm
         uint32_t* chgVarPos; // 记录相关位置信息 如:变元替换列表位置  变元替换回退位置 
@@ -70,8 +78,9 @@ protected:
         /// \param chgVPos  变元替换堆栈的位置
         /// \param ParentTNIt   父节点
         /// \param it           子节点      
+
         BackPoint(uint32_t qTermPos, uint32_t* chgVPos, set<TermIndNode*, TermIndNode::cmp>::iterator&ParentTNIt,
-        set<TermIndNode*, TermIndNode::cmp>::iterator&it)
+                set<TermIndNode*, TermIndNode::cmp>::iterator&it)
         : queryTermPos(qTermPos), chgVarPos(chgVPos), parentNodeIt(ParentTNIt), subNodeIt(it) {
         };
 
@@ -81,18 +90,41 @@ protected:
     };
 
     vector<TermCell*> flattenTerm; //项的扁平化表示
-    
+
     TermIndNode* posRoot; //正文字索引
     TermIndNode* negRoot; //负文字索引
-    
+    TermIndNode* posEqnRoot; //正等词索引
+    TermIndNode* negEqnRoot; //负等词索引
 
 public:
+
     TermIndexing();
     TermIndexing(const TermIndexing& orig);
     virtual ~TermIndexing();
 private:
     virtual void InsertTerm(TermIndNode* treeNode, TermCell * term);
 public:
+
+    inline TermIndNode* getRoot(Literal* lit) {
+
+        if (lit->EqnIsEquLit()) {
+            return lit->EqnIsPositive() ? posEqnRoot : negEqnRoot;
+        } else
+            return lit->EqnIsPositive() ? posRoot : negRoot;
+
+
+    }
+    //返回文字谓词子节点个数
+
+    inline int getNodeNum(Literal*lit) {
+        TermIndNode* r = getRoot(lit);
+        set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = r->subTerms.find(new TermIndNode(lit->lterm));
+        if (subNodeIt == r->subTerms.end())return 0;
+        cout << "(*subNodeIt)->size" << r->size << endl;
+        cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
+        return (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size();
+
+    }
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
@@ -102,7 +134,7 @@ public:
     virtual void InsertTerm(TermCell* t);
 
     //************************ Remove **************************************/
-    
+
     virtual void Print();
 
     virtual TermIndNode* Subsumption(Literal* lit, SubsumpType subsumtype);
@@ -111,7 +143,7 @@ public:
 
     // virtual TermIndNode* BackSubsumption(Literal* lit);
     //virtual bool DelClaFromIndex(Clause* cla);
-    
+
     virtual void ClearVarLst();
 
     void DelIndexNode(TermIndNode* root) {
@@ -161,7 +193,7 @@ public:
 class DiscrimationIndexing : public TermIndexing {
 private:
 
-    vector<TermCell*> varLst[100]; //上限 一个term中最多只能有100个变元
+    vector<TermCell*> varLst[8000]; //上限 一个term中最多只能有1000个变元
     vector<uint32_t> stVarChId; //记录有存在替换的变量ID
     vector<BackPoint*> backpoint; /*回退点*/
     /// 在节点treeNode 后面插入 项t的所有符号
@@ -177,6 +209,8 @@ public:
     DiscrimationIndexing() {
         posRoot = new TermIndNode();
         negRoot = new TermIndNode();
+        posEqnRoot = new TermIndNode(); //正等词索引
+        negEqnRoot = new TermIndNode(); //负等词索
         backpoint.reserve(32);
         //chgVars.reserve(32);
     }
@@ -190,6 +224,10 @@ public:
         TraverseTerm(posRoot);
         cout << "neg Indexing Tree:" << endl;
         TraverseTerm(negRoot, false);
+        cout << "posEqnRoot Indexing Tree:" << endl;
+        TraverseTerm(posEqnRoot, false);
+        cout << "negEqnRoot Indexing Tree:" << endl;
+        TraverseTerm(negEqnRoot, false);
     }
 
     /*---------------------------------------------------------------------*/
@@ -232,7 +270,10 @@ public:
     /// \param treePos 返回skip后的节点位置
     /// \return     
 
-    bool CheckVarBinding(TermCell* qTerm, set<TermIndNode*>::iterator&treePosIt);
+    bool CheckVarBinding(TermCell* qTerm, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+            set<TermIndNode*, TermIndNode::cmp>::iterator&subPosIt);
+
+
 
     bool CheckOccurs();
 
@@ -240,7 +281,7 @@ public:
     /// \param qTermPos
     /// \param funcLevel
     /// \param treePosIt  注意:treePosIt对应的是 变元项所在的父节点
-    void BindingVar( const uint32_t qTermPos, int32_t funcLevel, std::set<TermIndNode*, TermIndNode::cmp>::iterator& parentNodeIt, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
+    void BindingVar(const uint32_t qTermPos, int32_t funcLevel, std::set<TermIndNode*, TermIndNode::cmp>::iterator& parentNodeIt, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
 
     void ClearVarLst();
     void VarLstBacktrackToPos(uint32_t varPos);

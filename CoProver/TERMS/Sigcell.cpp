@@ -69,6 +69,7 @@ Sigcell::Sigcell() {
     skolemCount = 0;
     newpredCount = 0;
     distinctProps = FPDistinctProp;
+    SigInsertInternalCodes();
 }
 
 Sigcell::Sigcell(const Sigcell& orig) {

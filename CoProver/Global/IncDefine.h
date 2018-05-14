@@ -28,6 +28,13 @@
 //#define NDEBUG
 #include <cassert>
 using namespace std;
+#define New
+//#define  OUTINFO
+#define WEI 0.3f
+
+#define MAX_ERRMSG_ADD   512
+#define MAX_ERRMSG_LEN   MAX_ERRMSG_ADD+MAXPATHLEN
+
 
 extern const uint32_t MAX_SUBTERM_SIZE;//预设最大子项个数,用于优化 vector 2^n
 extern const uint32_t MAX_VAR_SIZE;//预设项中,最大变元数
@@ -121,6 +128,7 @@ template<typename T, typename V>
 inline bool IsAnyPropSet(T&obj, V prop) {
     return ((int32_t) obj & (int32_t) prop) == (int32_t) prop;
 }
+
 
 #define ASSERT_MSG(expr,msg) (void)((expr)?((void)0):assert_msg(msg))
 

@@ -42,6 +42,27 @@ private:
     };
 
 public:
+    StreamCell* source;
+    string defaultDir; // 读取的文件目录
+    IOFormat format; //读取的格式
+    string accu; /* Place for Multi-Token constructs or messages */
+    bool ignoreComments; /* Comments can be skipped completely. If not set, comments are accumulated 
+                                                 * (but never delivered as tokens) */
+    char* includeKey; /* An Identifier,  e.g. "include" */
+    TokenCell tokSequence[MAXTOKENLOOKAHEAD]; /* Need help? Bozo! */
+    int current; /* Pointer to current token in tok_sequence */
+    string includePos; /* If created by "include", by which one? */
+
+public:
+    /// 构造函数创建一个扫描器 scanner
+    /// \param type 扫描的类型 
+    /// \param name 文件名称
+    /// \param ignore_comments 是否忽略注释
+    /// \param default_d    
+    Scanner(StreamType type, const char *name, bool ignore_comments, const char *default_d);
+    Scanner(const Scanner& orig);
+    virtual ~Scanner();
+public:
 
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
@@ -99,6 +120,10 @@ public:
         return (pos) % MAXTOKENLOOKAHEAD;
     }
 
+    inline TokenType AktTokenType() {
+        return (AktToken()->tok);
+    }
+
     inline TokenCell* LookToken(int look) {
         return &tokSequence[TOKENREALPOS(current + look)];
     }
@@ -134,6 +159,11 @@ public:
     inline bool TestInpTokNoSkip(TokenType tokType) {
         return !AktToken()->skipped && AktToken()->TestTok(tokType);
     }
+
+    inline IOFormat GetFormat() {
+        return this->format;
+    }
+
     //   Skip a TSTP source field.
     //　跳过TSTP
 
@@ -192,27 +222,6 @@ public:
     }
 
 public:
-    StreamCell* source;
-    string defaultDir; // 读取的文件目录
-    IOFormat format; //读取的格式
-    string accu; /* Place for Multi-Token constructs or messages */
-    bool ignoreComments; /* Comments can be skipped completely. If not set, comments are accumulated 
-                                                 * (but never delivered as tokens) */
-    char* includeKey; /* An Identifier,  e.g. "include" */
-    TokenCell tokSequence[MAXTOKENLOOKAHEAD]; /* Need help? Bozo! */
-    int current; /* Pointer to current token in tok_sequence */
-    string includePos; /* If created by "include", by which one? */
-
-public:
-    /// 构造函数创建一个扫描器 scanner
-    /// \param type 扫描的类型 
-    /// \param name 文件名称
-    /// \param ignore_comments 是否忽略注释
-    /// \param default_d    
-    Scanner(StreamType type, const char *name, bool ignore_comments, const char *default_d);
-    Scanner(const Scanner& orig);
-    virtual ~Scanner();
-public:
     /*---------------------------------------------------------------------*/
     /*                           member Function                           */
     /*---------------------------------------------------------------------*/
@@ -231,7 +240,7 @@ public:
     void CheckInpId(const string& strId); /* Produce a syntax error at the current token with the given message.  */
     void AktTokenError(const char* msg, bool syserr);
     /* Set the format of the scanner (in particular, guess a format if  */
-    void ScannerSetFormat(IOFormat fmt);
+    void SetFormat(IOFormat fmt);
 
     FuncSymbType FuncSymbParse(string& id);
     /* 获取整数的字符串形式并将其转换为整数形式,删除+和数字前的若干个0. */
@@ -257,6 +266,9 @@ public:
      * and put (optional) selected names into name_selector. If the file name is in skip_includes, 
      * skip the rest and return NULL.*/
     Scanner* ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, SplayTree<StrTreeCell> &skip_includes);
+
+
+    string PosRep(StreamType type, const string& source, long line, long column);
 };
 
 #endif /* SCANNER_H */

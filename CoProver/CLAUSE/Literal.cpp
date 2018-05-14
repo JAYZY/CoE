@@ -19,12 +19,12 @@ Literal::Literal() {
     lterm = nullptr;
     rterm = nullptr;
     next = nullptr;
-    
-    zjlitWight=0;
+    xyW = 0.0f;
+    zjlitWight = 0;
 }
 
 Literal::Literal(Term_p lt, Term_p rt, bool positive) {
-    EqnAlloc(lt, rt, positive);
+    EqnAlloc(lt, rt, Env::getTb(), positive);
 }
 
 Literal::Literal(const Literal& orig) {
@@ -39,12 +39,9 @@ Literal::~Literal() {
 //   Parse an equation with optional external sign and depending on
 //   wether FOF or CNF is being parsed.
 
-bool Literal::eqn_parse_real(Term_p *lref, Term_p *rref, bool fof) {
+bool Literal::eqn_parse_real(Scanner* in, TermBank* bank, Term_p *lref, Term_p *rref, bool fof) {
     bool positive = true;
     bool negate = false;
-    Scanner* in = Env::getIn();
-    TermBank* bank = Env::getTb();
-
     switch (in->format) {
         case IOFormat::LOPFormat:
             if (in->TestInpTok(TokenType::TildeSign)) {
@@ -189,7 +186,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 sig->SigSetFunction(rterm->fCode, true);
             }
         } else if (in->TestInpTok(equalToke)) { /* Now both sides must be terms */
-            cout << "怎么可能" << endl;
+
             sig->SigSetFunction(lterm->fCode, true);
             if (in->TestInpTok(TokenType::NegEqualSign)) {
                 positive = !positive;
@@ -348,11 +345,47 @@ Literal* Literal::EqnCopyOpt() {
     return handle;
 }
 
+Term_p Literal::EqnTermsTBTermEncode(bool EqnDirIsReverse) {
+
+    Term_p handle;
+    TermBank* bank = Env::getTb();
+
+    assert(bank);
+    assert(bank->TBFind(lterm));
+    assert(bank->TBFind(rterm));
+
+    handle = bank->DefaultSharedTermCellAlloc();
+    handle->arity = 2;
+    handle->fCode = Env::getSig()->SigGetEqnCode(this->EqnIsPositive());
+    assert(handle->fCode);
+    handle->args = new TermCell*[2];
+    if (EqnDirIsReverse) {
+        handle->args[0] = rterm;
+        handle->args[1] = lterm;
+    } else {
+        handle->args[0] = lterm;
+        handle->args[1] = rterm;
+    }
+
+    handle = bank->TBTermTopInsert(handle);
+
+    return handle;
+}
 
 /*---------------------------------------------------------------------*/
 /*                          Static Function                            */
 /*---------------------------------------------------------------------*/
 //
+
+void Literal::EqnFOFParse(Scanner* in, TB_p bank) {
+
+    //Term_p lterm, rterm;
+
+
+    bool positive = eqn_parse_real(in, bank, &this->lterm, &rterm, true);
+    EqnAlloc(this->lterm, this->rterm, bank, positive);
+   
+}
 
 void Literal::EqnListFree(Literal* lst) {
     Literal* handle;

@@ -1,0 +1,11 @@
+NUM925+7+short+eq_rstfp.tptp,16028,302,        0.05
+NUM925+7+short+eq_rstfp.tptp,16028,302,        0.06
+CSR017+1+cls_tptp.tptp,186698,16452,        2.48
+CSR017+1+cls_tptp.tptp,186698,16452,        2.98
+CSR017+1+cls_tptp.tptp,186698,16452,        2.80
+LCL523+1+cls_tptp.txt,5,0,        0.00
+LCL523+1+cls_tptp.txt,5,0,        0.00
+LCL523+1+cls_tptp.txt,5,0,        0.00
+LCL523+1+cls_tptp.txt,5,0,        0.00
+LCL523+1+cls_tptp.txt,29,0,        0.00
+GRP653+3.p,0,0,        0.06

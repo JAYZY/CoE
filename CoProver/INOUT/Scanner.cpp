@@ -253,7 +253,7 @@ void Scanner::AktTokenError(const char* msg, bool syserr) {
 /***************************************************************************** 
  * Set the format of the scanner (in particular, guess a format if
  ****************************************************************************/
-void Scanner::ScannerSetFormat(IOFormat fmt) {
+void Scanner::SetFormat(IOFormat fmt) {
     if (fmt == IOFormat::AutoFormat) {
 
         if (TestInpId("fof|cnf|tff|include")) {
@@ -837,7 +837,7 @@ Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, Spl
 
     if (!skip_includes.FindByKey(newName)) {
         new_scanner = new Scanner(nullptr, newName.c_str(), this->ignoreComments, this->defaultDir.c_str());
-        new_scanner->ScannerSetFormat(this->format);
+        new_scanner->SetFormat(this->format);
         new_scanner->includePos = pos_rep;
 
     } else {
@@ -887,4 +887,34 @@ Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, Spl
     AcceptInpTok(TokenType::Fullstop);
 
     return new_scanner;
+}
+
+
+string Scanner::PosRep(StreamType type, const string& source, long line, long column)
+{
+    char buff[MAX_ERRMSG_LEN];
+   char        tmp_str[MAX_ERRMSG_LEN];
+
+
+   if(type == StreamTypeFile)
+   {
+      assert(strlen(source.c_str())<=MAXPATHLEN);
+      sprintf(buff, "%s:%ld:(Column %ld):",source.c_str(), line, column);
+   }
+   else
+   {
+      tmp_str[0] = '\0';
+      strcat(tmp_str, type);
+      strcat(tmp_str, ": \"");
+      strncat(tmp_str, source.c_str(), MAXPATHLEN-4);
+      if(strlen(source.c_str())>MAXPATHLEN-4)
+      {
+	 strcat(tmp_str, "...");
+      }
+      strcat(tmp_str, "\"");
+      sprintf(buff, "%s:%ld:(Column %ld):", tmp_str, line, column);
+   }
+   string rtnStr=buff;
+   
+   return rtnStr;
 }

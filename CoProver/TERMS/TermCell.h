@@ -115,11 +115,13 @@ public:
                     * - it might be possible to combine the previous two in a union. */
     long entryNo; /* Counter for terms in a given termbank - needed for administration and external representation */
     long weight; /* Weight of the term, if term is in term bank */
-    
+
     float zjweight;
     // RewriteState rw_data; /* See above */
     TermCell* lson; /* For storing shared term nodes in */
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
+    
+   
 
 private:
     static TermCell* parse_cons_list(Scanner* in, VarBank* vars);
@@ -184,18 +186,6 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    /*创建一个function term 函数符如　f */
-    inline TermCell* TermTopAlloc(long f_code, int arity) {
-        TermCell* res = new TermCell();
-
-        res->fCode = f_code;
-        res->arity = arity;
-        if (arity) {
-            res->args = new TermCell*[arity]; //创建一个冬天二维数组
-        }
-        return res;
-    }
-
     inline void TermCellSetProp(TermProp prop) {
         SetProp(this->properties, prop);
     }
@@ -232,10 +222,13 @@ public:
         return (!(fCode < 0)) && (arity == 0);
     }
 
+    inline bool IsFunc() {
+        return ((fCode > 0)) && (arity > 0);
+    }
+
     inline bool IsShared() {
         return TermCellQueryProp(TermProp::TPIsShared);
     }
-     
 
     inline bool TermIsRewritten() {
         return TermCellQueryProp(TermProp::TPIsRewritten);
@@ -333,12 +326,12 @@ public:
         return TermCellQueryProp(TermProp::TPIsGround);
     }
 
-    /* 返回项是否为TypeTerm 即权重==3*/
+    /* 返回项是否为TypeTerm 即权重==3 P(x)*/
     inline bool TBTermIsTypeTerm() {
         return weight == (DEFAULT_VWEIGHT + DEFAULT_FWEIGHT);
     }
 
-    /* 返回项是否为XTypeTerm */
+    /* 返回项是否为XTypeTerm,全部是变元项 P(x,x,...,x)*/
     inline bool TBTermIsXTypeTerm() {
         return (arity > 0) && (weight == (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT));
     }
@@ -415,6 +408,17 @@ public:
     //临时方法 -------------
     /* Parse an operator */
 
+    /*创建一个function term 函数符如　f */
+    static TermCell* TermTopAlloc(long f_code, int arity) {
+        TermCell* res = new TermCell();
+
+        res->fCode = f_code;
+        res->arity = arity;
+        if (arity) {
+            res->args = new TermCell*[arity]; //创建一个冬天二维数组
+        }
+        return res;
+    }
 
 
     static TermCell* TermTopCopy(TermCell* t);

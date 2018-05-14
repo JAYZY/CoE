@@ -192,15 +192,12 @@ TermCell* TermBank::TBTermTopInsert(TermCell* t) {
         t->TermCellSetProp(TermProp::TPShareGround); /* Groundness may change below */
         t->weight = DEFAULT_FWEIGHT;
 
-        t->zjweight = t->fCode;
-        float w = 0.0f;
+         
+         
         for (int i = 0; i < t->arity; ++i) {
             assert(t->args[i]->IsShared() || t->args[i]->IsVar());
             t->weight += t->args[i]->weight;
-
-            w += t->args[i]->fCode;
-
-
+          
             if (!t->args[i]->TermCellQueryProp(TermProp::TPIsGround)) {
                 t->TermCellDelProp(TermProp::TPIsGround);
             }

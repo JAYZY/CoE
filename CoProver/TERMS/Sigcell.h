@@ -82,7 +82,7 @@ typedef FuncCell *Func_p;
 
 /* Tokens that always are stand-alone identifiers */
 //#define FuncSymbToken  (Identifier | SemIdent | SQString | String)
-  
+
 /* Tokens that may start a (composite or atomic) identifier */
 //#define FuncSymbStartToken (Identifier | SemIdent | SQString | PosInt | String | Plus | Hyphen) 
 
@@ -265,9 +265,9 @@ public:
 
     void SigPrint(FILE* out);
     void SigPrintSpecial(FILE* out);
-    void SigPrintACStatus(FILE* out); /*输出AC状态符号,特殊符号*/    
+    void SigPrintACStatus(FILE* out); /*输出AC状态符号,特殊符号*/
     void SigPrintOperator(FILE* out, FunCode op, bool comments); /*输出操作符,特殊符号*/
-    
+
 
     /* 将所有元素设置为特殊项属性.  * isDel - 是否删除该属性 */
     void SigSetAllSpecial(bool isDel);
@@ -309,6 +309,27 @@ public:
     FunCode SigGetOrNCode(int arity);
     FunCode SigGetNewSkolemCode(int arity);
     FunCode SigGetNewPredicateCode(int arity);
+
+    static inline FunCode SigGetEqnCode(Sigcell* sig, bool positive) {
+        assert(sig);
+        if (positive) {
+            if (sig->eqnCode) {
+                return sig->eqnCode;
+            }
+            sig->eqnCode = sig->SigInsertId("$eq", 2, true);
+            assert(sig->eqnCode);
+            sig->SigSetPredicate(sig->eqnCode, true);
+            return sig->eqnCode;
+        } else {
+            if (sig->neqnCode) {
+                return sig->neqnCode;
+            }
+            sig->neqnCode = sig->SigInsertId("$neq", 2, true);
+            assert(sig->neqnCode);
+            sig->SigSetPredicate(sig->neqnCode, true);
+            return sig->neqnCode;
+        }
+    }
 };
 /*****************************************************************************
  * 增加 Sigcell指针定义

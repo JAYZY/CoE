@@ -11,6 +11,7 @@
 #include "Global/IncDefine.h"
 #include "CLAUSE/Clause.h"
 #include "Indexing/TermIndexing.h"
+#include "Formula/FormulaSet.h"
 
 class Processed {
 private:
@@ -19,8 +20,10 @@ private:
     list<Clause*> NegUnits; //单元子句,只有一个 负文字
     list<Clause*> NonUnits; //其他非单元子句
 
-    TermIndexing *unitIndex;//单元索引
-    TermIndexing *termIndex;//多文字索引
+    //TermIndexing *unitIndex; //单元索引
+    TermIndexing *termIndex; //多文字索引
+
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -73,24 +76,29 @@ public:
 
     void Proc(Clause* selCla);
 
-    uint32_t Insert(Literal* lit);
+    uint32_t Insert(Clause* cla);
 
 };
 
 class UnProcessed {
 private:
-    list<Clause*> unprocClaSet;
+    ClauseSet* unprocClaSet;
+    list<Clause*> unprocLstCla;
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
     //
 
-    UnProcessed(list<Clause*>&_unproc) : unprocClaSet(_unproc) {
+    UnProcessed(list<Clause*>&_unprocLstCla) : unprocLstCla(_unprocLstCla) {
+    };
+
+    UnProcessed(ClauseSet* _unprocClaset) : unprocClaSet(_unprocClaset) {
+
     };
 
     virtual ~UnProcessed() {
-        unprocClaSet.clear();
+        unprocClaSet->FreeClauses();
     };
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
@@ -98,35 +106,39 @@ public:
     //
 
     Clause* GetBestClause() {
-        return unprocClaSet.back();
+        return unprocClaSet->ClauseSetExtractFirst();
     }
 
     uint32_t getClaNum() {
-        return unprocClaSet.size();
+        return unprocClaSet->Members();
     }
 
     void RemoveCla(Clause* cla) {
-        unprocClaSet.remove(cla);
+        unprocClaSet->RemoveClause(cla);
+    }
+    void Sort(){
+        this->unprocClaSet->Sort();
     }
 };
 
 class ProofControl {
-private:
+public:
 
     Processed *procedSet;
     UnProcessed *unprocSet;
-    list<Clause*> axiom; //原始子句集
-
-
+    ClauseSet* axiom; //原始子句集
+    FormulaSet* formulaSet; //公式集
 
 public:
-    ProofControl(list<Clause*>& _axiom);
+    //ProofControl( FormulaSet* formulaSet);
+    ProofControl(ClauseSet* _claSet);
     ProofControl(const ProofControl& orig);
     virtual ~ProofControl();
 public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
+    void parseInput();
     Clause* Saturate();
 };
 

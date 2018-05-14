@@ -41,6 +41,7 @@ enum class TokenType : uint64_t {
     AllQuantor = (TokenType::Exclamation),
     QuestionMark = (2 * TokenType::Exclamation),
     ExistQuantor = (TokenType::QuestionMark),
+    AllOrExistQuantor = (TokenType::AllQuantor | TokenType::ExistQuantor),
     Comma = (2 * TokenType::QuestionMark),
     Semicolon = (2 * TokenType::Comma),
     Colon = (2 * TokenType::Semicolon),

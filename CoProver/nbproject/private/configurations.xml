@@ -50,19 +50,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT006+2+short+eq_rstfp.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp.tptp
-</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/AGT009+1+short+eq_rstfp.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/ALG103+1+short+eq_rstfp.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CADE2017/CSR024+1.010+short+eq_rstfp.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/home/icdc/Problems/CASC-J9-2017/Problems/FNE/FNEProblemFiles/BOO109+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/Problems/FNE/FNEProblemFiles/BOO109+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2017CADE/CNF-57/GRP123-2.005+short+noeq.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/Problems/2/FNN-NLP232+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2016/2/FNN-NLP232+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2016/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL642+1.005.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL665+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL638+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/test.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/test.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL662+1.015.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2017CADE/CNF-57/GRP123-2.005+short+noeq.tptp</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL662+1.015.p</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -117,11 +116,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/CSR062+2.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2017CADE/1/LCL638+1.020+short+noeq.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/origin problem/100k/LCL523+1+cls_tptp.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt -l 3 --auto</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/1/GRP653+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/Problems/CNF-FNN/FNN-CSR111+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL662+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL638+1.020.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    ~/testTxt/10.txt</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL638+1.020.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

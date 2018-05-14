@@ -38,9 +38,14 @@ OBJECTFILES= \
 	${OBJECTDIR}/CLAUSE/Clause.o \
 	${OBJECTDIR}/CLAUSE/Formula.o \
 	${OBJECTDIR}/CLAUSE/Literal.o \
+	${OBJECTDIR}/Formula/ClauseSet.o \
+	${OBJECTDIR}/Formula/FormulaSet.o \
+	${OBJECTDIR}/Formula/WFormula.o \
 	${OBJECTDIR}/Global/Environment.o \
 	${OBJECTDIR}/Global/IncDefine.o \
+	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
+	${OBJECTDIR}/INOUT/CommandLine.o \
 	${OBJECTDIR}/INOUT/FileOp.o \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
@@ -102,6 +107,21 @@ ${OBJECTDIR}/CLAUSE/Literal.o: CLAUSE/Literal.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Literal.o CLAUSE/Literal.cpp
 
+${OBJECTDIR}/Formula/ClauseSet.o: Formula/ClauseSet.cpp
+	${MKDIR} -p ${OBJECTDIR}/Formula
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/ClauseSet.o Formula/ClauseSet.cpp
+
+${OBJECTDIR}/Formula/FormulaSet.o: Formula/FormulaSet.cpp
+	${MKDIR} -p ${OBJECTDIR}/Formula
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/FormulaSet.o Formula/FormulaSet.cpp
+
+${OBJECTDIR}/Formula/WFormula.o: Formula/WFormula.cpp
+	${MKDIR} -p ${OBJECTDIR}/Formula
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/WFormula.o Formula/WFormula.cpp
+
 ${OBJECTDIR}/Global/Environment.o: Global/Environment.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global
 	${RM} "$@.d"
@@ -112,10 +132,20 @@ ${OBJECTDIR}/Global/IncDefine.o: Global/IncDefine.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/IncDefine.o Global/IncDefine.cpp
 
+${OBJECTDIR}/Global/SysDate.o: Global/SysDate.cpp
+	${MKDIR} -p ${OBJECTDIR}/Global
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/SysDate.o Global/SysDate.cpp
+
 ${OBJECTDIR}/HEURISTICS/Options.o: HEURISTICS/Options.cpp
 	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/Options.o HEURISTICS/Options.cpp
+
+${OBJECTDIR}/INOUT/CommandLine.o: INOUT/CommandLine.cpp
+	${MKDIR} -p ${OBJECTDIR}/INOUT
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/INOUT/CommandLine.o INOUT/CommandLine.cpp
 
 ${OBJECTDIR}/INOUT/FileOp.o: INOUT/FileOp.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT

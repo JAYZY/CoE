@@ -8,18 +8,27 @@
     <logicalFolder name="CLAUSE" displayName="CLAUSE" projectFiles="true">
       <itemPath>CLAUSE/Clause.cpp</itemPath>
       <itemPath>CLAUSE/Clause.h</itemPath>
-      <itemPath>CLAUSE/Formula.cpp</itemPath>
-      <itemPath>CLAUSE/Formula.h</itemPath>
       <itemPath>CLAUSE/Literal.cpp</itemPath>
       <itemPath>CLAUSE/Literal.h</itemPath>
       <itemPath>CLAUSE/LiteralCompare.h</itemPath>
       <itemPath>Prover/Prover.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Formula" displayName="Formula" projectFiles="true">
+      <itemPath>Formula/ClauseSet.cpp</itemPath>
+      <itemPath>Formula/ClauseSet.h</itemPath>
+      <itemPath>CLAUSE/Formula.cpp</itemPath>
+      <itemPath>CLAUSE/Formula.h</itemPath>
+      <itemPath>Formula/FormulaSet.cpp</itemPath>
+      <itemPath>Formula/FormulaSet.h</itemPath>
+      <itemPath>Formula/WFormula.cpp</itemPath>
+      <itemPath>Formula/WFormula.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
       <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>Global/Environment.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
+      <itemPath>Global/SysDate.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HEURISTICS" displayName="HEURISTICS" projectFiles="true">
       <itemPath>HEURISTICS/Options.cpp</itemPath>
@@ -38,6 +47,8 @@
       <itemPath>Inferences/Unify.h</itemPath>
     </logicalFolder>
     <logicalFolder name="INOUT" displayName="INOUT" projectFiles="true">
+      <itemPath>INOUT/CommandLine.cpp</itemPath>
+      <itemPath>INOUT/CommandLine.h</itemPath>
       <itemPath>INOUT/FileOp.cpp</itemPath>
       <itemPath>INOUT/FileOp.h</itemPath>
       <itemPath>INOUT/Scanner.cpp</itemPath>
@@ -89,6 +100,7 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>Prover/Prover.h</itemPath>
+    <itemPath>Global/SysDate.cpp</itemPath>
     <itemPath>main.cpp</itemPath>
     <itemPath>问题记录</itemPath>
   </logicalFolder>
@@ -140,6 +152,18 @@
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/FormulaSet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/FormulaSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/WFormula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/WFormula.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
@@ -148,9 +172,17 @@
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Global/SysDate.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/SysDate.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/CommandLine.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/CommandLine.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/FileOp.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -284,6 +316,18 @@
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/FormulaSet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/FormulaSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/WFormula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/WFormula.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/Environment.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
@@ -292,9 +336,17 @@
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Global/SysDate.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/SysDate.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="INOUT/CommandLine.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="INOUT/CommandLine.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/FileOp.cpp" ex="false" tool="1" flavor2="0">
       </item>

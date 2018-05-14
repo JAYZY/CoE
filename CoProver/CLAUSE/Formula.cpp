@@ -16,30 +16,30 @@
 
 Formula::Formula() {
     in = Env::getIn();
-    long res = 0;
-    if (in->format != IOFormat::LOPFormat) {
-
-        //TPTP
-        while (in->TestInpId("input_formula|input_clause|fof|cnf|include")) {
-            if (in->TestInpId("include")) {//读取include 文件
-
-            }
-            assert(in->TestInpId("input_clause|cnf"));
-
-            Clause* clause = Clause::ClauseParse();
-           
-            ClauseSetInsert(clause);
-
-            // axioms->ClauseSetInsert(clause);
-        }
-
-    }
-    while (in->TestInpId("input_formula|input_clause|fof|cnf|tff|include")) {
-        if (in->TestInpId("include")) {//对include进行读取和解析
-
-        }
-
-    }
+//    long res = 0;
+//    if (in->format != IOFormat::LOPFormat) {
+//
+//        //TPTP
+//        while (in->TestInpId("input_formula|input_clause|fof|cnf|include")) {
+//            if (in->TestInpId("include")) {//读取include 文件
+//
+//            }
+//            assert(in->TestInpId("input_clause|cnf"));
+//
+//           // Clause* clause = Clause::ClauseParse();
+//
+//           // ClauseSetInsert(clause);
+//
+//            // axioms->ClauseSetInsert(clause);
+//        }
+//
+//    }
+//    while (in->TestInpId("input_formula|input_clause|fof|cnf|tff|include")) {
+//        if (in->TestInpId("include")) {//对include进行读取和解析
+//
+//        }
+//
+//    }
 }
 
 Formula::Formula(const Formula& orig) {

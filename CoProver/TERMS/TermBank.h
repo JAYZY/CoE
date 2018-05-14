@@ -78,18 +78,22 @@ public:
     }
 
     inline void TBPrintTermFull(FILE* out, TermCell* term) {
-        term->TermPrint(out,DerefType::DEREF_NEVER);
+        term->TermPrint(out, DerefType::DEREF_NEVER);
     }
 
     static inline bool TBTermEqual(TermCell* t1, TermCell* t2) {
         return (t1 == t2);
     }
 
+    static inline bool TBTermIsSubterm(TermCell* super, TermCell* term) {
+        return super->TermIsSubterm((term), DerefType::DEREF_NEVER,TermEqulType::PtrEquel);
+    }
+
 private:
     /*---------------------------------------------------------------------*/
     /*                    Member Function[private]                         */
     /*---------------------------------------------------------------------*/
-    void tb_print_dag(FILE *out, NumTree_p spNode );
+    void tb_print_dag(FILE *out, NumTree_p spNode);
 
     /* 转换一个子项  i.e. a term which cannot start with a predicate symbol. */
     TermCell* tb_subterm_parse(Scanner* in);

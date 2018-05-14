@@ -53,7 +53,7 @@ TermCell::TermCell() {
     args = NULL;
     /* If no variable, will be	changed automagically later on */
     weight = DEFAULT_VWEIGHT;
-    zjweight=0.0f;
+    zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
 }
@@ -62,8 +62,8 @@ TermCell::TermCell() {
 TermCell::TermCell(long symbol) : TermCell() {
 
     weight = DEFAULT_FWEIGHT;
-    
-    zjweight=1.0f;
+
+    zjweight = 1.0f;
     fCode = symbol;
 }
 
@@ -720,6 +720,8 @@ bool TermCell::TermHasFCode(FunCode f) {
    return false;*/
 
     vector<TermCell*> st;
+    st.reserve(arity);
+    
     for (int i = 0; i < arity; ++i) {
         if (args[i]->fCode == f) {
             vector<TermCell*>().swap(st);

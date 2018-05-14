@@ -206,33 +206,21 @@ void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterm
 
     if (handle) {
         handle->EqnTSTPPrint(out, fullterms);
-
+        cout << " zjw:" << handle->zjlitWight;
         while (handle->next) {
             handle = handle->next;
             fputs(sep.c_str(), out);
             handle->EqnTSTPPrint(out, fullterms);
+            cout << " zjw:" << handle->zjlitWight;
         }
     }
 }
 
-template<typename FunObj>
-Literal* Clause::FileMaxLit(FunObj cmp_fun) {
-    
-    Literal* handle = this->literals;
-    Literal* maxLit = handle;
-    if (this->LitsNumber() > 1) {
-        handle = handle->next;
-        while (handle) {
-            if (cmp_fun(handle, maxLit) > 0)
-                maxLit = handle;
-        }
 
-    }
-    return maxLit;
-}
+
 //识别子句的类型
 
-ClauseProp Clause::ClauseTypeParse(Scanner* in, string &legal_types) {
+ClauseProp Clause::ClauseTypeParse(Scanner* in, string legal_types) {
     ClauseProp res;
 
     in->CheckInpId(legal_types);
@@ -263,12 +251,12 @@ ClauseProp Clause::ClauseTypeParse(Scanner* in, string &legal_types) {
 /// 解析子句
 /// \param in 扫描器scanner
 
-Clause* Clause::ClauseParse() {
+Clause* Clause::ClauseParse( Scanner* in,TermBank* t) {
 
-    Scanner* in = Env::getIn();
-    TermBank* t = Env::getTb();
+    //Scanner* in = Env::getIn();
+    //TermBank* t = Env::getTb();
 
-    cout << endl;
+
     t->vars->VarBankClearExtNames();
 
     ClauseProp type = ClauseProp::CPTypeAxiom;

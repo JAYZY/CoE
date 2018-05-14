@@ -19,9 +19,11 @@ private:
     static TermBank* termBank; // 全局唯一一个项bank 存储共享 term
     static Sigcell* sig; // 全局唯一一个sig 存储项相关的符号
 public:
+    static uint64_t global_formula_counter;
     static uint64_t global_clause_counter;
     static uint64_t backword_CMP_counter; //backword 比较次数
-static uint64_t backword_Finded_counter; //backword 找到冗余次数
+    static uint64_t backword_Finded_counter; //backword 找到冗余次数
+    
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -38,7 +40,7 @@ public:
 
     static void iniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
         in = new Scanner(type, name, ignore_comments, default_dir);
-        in->ScannerSetFormat(parseFormat);
+        in->SetFormat(parseFormat);
         if (parseFormat == IOFormat::AutoFormat && Env::in->format == IOFormat::TSTPFormat) {
             Options::OutputFormat = IOFormat::TSTPFormat;
         }
@@ -60,7 +62,7 @@ public:
         //初始化TermBank的时候,插入两个特殊的项 $True $False
         if (!sig)
             sig = new Sigcell();
-        return  sig;
+        return sig;
     }
 
 private:

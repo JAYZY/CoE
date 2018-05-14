@@ -24,34 +24,45 @@
 using namespace std;
 
 int main(int argc, char** argv) {
+    cout << "argc:" << argc << endl;
+    for (int i = 0; i < argc; ++i) {
+        cout << argv[i] << endl;
+    }
+    //命令行解析
 
     //初始化全局扫描器Scanner
     Env::iniScanner(nullptr, argv[1], true, nullptr);
 
     //生成子句
     double initial_time = cpuTime();
-    Formula* formula = new Formula();
-    formula->printClas();
 
+    FormulaSet* formulaSet = new FormulaSet();
+    ClauseSet* claSet = new ClauseSet();
+    SplayTree<StrTreeCell>name_selector, skip_includes;
+
+    long formulaNum = formulaSet->FormulaAndClauseSetParse(Env::getIn(), claSet, name_selector, skip_includes);
+    //formula->printClas();
+    claSet->Sort();
     paseTime("GenFormula_", initial_time);
     initial_time = cpuTime();
-   
-     ProofControl* proofCtr = new ProofControl(formula->getAxioms());
-//    for(auto& cla:formula->getAxioms())
-//    {
-//        Literal* lit=cla->Lits();
-//        cout<<"claID:"<<cla->GetClaId()<<" ";
-//        while(lit){
-//            lit->EqnTSTPPrint(stdout,true);
-//            int x=lit->zjLitWeight();
-//            fprintf(stdout," w:%2ld zjw:%d max:%ld\t",lit->StandardWeight(),x,lit->zjlitWight);
-//            lit=lit->next;
-//        }
-//        fprintf(stdout,"\n");
-//        
-//    }
+
+
+    ProofControl* proofCtr = new ProofControl(claSet);
+
+
+    //               for(auto& cla:formulaSet->getAxioms())
+    //                {
+    //                    Literal* lit=cla->Lits();
+    //                    cout<<"claID "<a<cla->GetClaId()<<":"<<endl;
+    //                    while(lit){
+    //                        lit->EqnTSTPPrint(stdout,true);                
+    //                        fprintf(stdout," w:%2ld zjw:%5.2f\n",lit->StandardWeight(),lit->zjlitWight);
+    //                        lit=lit->next;
+    //                    }
+    //                    fprintf(stdout,"\n");            
+    //                }
     //开始浸透算法
-     proofCtr->Saturate();
+    proofCtr->Saturate();
     paseTime("Saturate_", initial_time);
 
     return 0;

@@ -141,7 +141,7 @@ private:
     Clause* parent2; //父子句2;
 
 public:
-    
+
     Clause();
     Clause(Literal *literal_s);
 
@@ -225,23 +225,51 @@ public:
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
-    template<typename ComparisonFunctionType>
-    Literal* FileMaxLit( ComparisonFunctionType cmp_fun);
-    
+
+    template<typename FunObj, typename T>
+    Literal* FileMaxLit(FunObj cmp_fun, T* index) {
+        Literal* handle = this->literals;
+        Literal* maxLit = handle;
+        if (this->LitsNumber() > 1) {
+            handle = handle->next;
+            while (handle) {
+                //先比较 索引树中,子节点少的优先
+
+                float res =  index->getNodeNum(handle) - index->getNodeNum(maxLit);
+                if (res < 0) {
+                    maxLit = handle;
+                }  else if (0 == res && cmp_fun(handle, maxLit)>0){//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
+                        maxLit = handle;
+                }
+                handle = handle->next;
+            }
+
+        }
+        return maxLit;
+    }
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
-    static ClauseProp ClauseTypeParse(Scanner* in, string &legal_types);
+    static ClauseProp ClauseTypeParse(Scanner* in, string legal_types);
 
     //
     /// 解析成子句
     /// \param in 
     /// \param bank
     /// \return 
-    static Clause* ClauseParse();
+    static Clause* ClauseParse(Scanner* in, TermBank* t);
+    /*---------------------------------------------------------------------*/
+    /*                        operator Function                            */
+    /*---------------------------------------------------------------------*/
+    //
 
+    bool operator<(Clause* cla)const {
+        return (posLitNo + negLitNo) < cla->LitsNumber();
+    }
 
-
+    bool operator<(Clause& cla)const {
+        return (posLitNo + negLitNo) < cla.LitsNumber();
+    }
 private:
 
 };
