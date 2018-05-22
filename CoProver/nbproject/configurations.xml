@@ -99,6 +99,17 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="测试文件"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="重要文件"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
     <itemPath>Prover/Prover.h</itemPath>
     <itemPath>Global/SysDate.cpp</itemPath>
     <itemPath>main.cpp</itemPath>
@@ -106,6 +117,7 @@
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
+    <Elem>.</Elem>
     <Elem>.</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>

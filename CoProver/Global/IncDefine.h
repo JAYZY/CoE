@@ -29,8 +29,8 @@
 #include <cassert>
 using namespace std;
 #define New
-//#define  OUTINFO
-#define WEI 0.3f
+#define  OUTINFO
+#define WEI 0.0f
 
 #define MAX_ERRMSG_ADD   512
 #define MAX_ERRMSG_LEN   MAX_ERRMSG_ADD+MAXPATHLEN

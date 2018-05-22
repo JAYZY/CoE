@@ -165,21 +165,43 @@ public:
         }
         return w;
     }
-    
+
+    inline float newDepth(TermCell*t, map<int, int>&varGroup, int &varW, int level = 0) {
+        float w = 0.0f;
+
+        if (t->IsVar()) {
+            varW += level;
+            ++varGroup[0];
+            ++varGroup[t->fCode];
+
+        } else if (t->IsConst() || t->TBTermIsGround()) {
+            w += 2.0f; //常元+2
+        } else if (t->IsFunc()) {
+            int subVarW = 0.0f;
+            ++level;
+            for (int i = 0; i < t->arity; ++i) {
+                w += newDepth(t->args[i], varGroup, subVarW, level);
+            }
+            w += subVarW / (subVarW + 1.0f);
+            w = 1.0f + w / (1 + w);
+        }
+
+        return w;
+    }
+
     inline float newW(TermCell* t, map<int, int>&varGroup) {
         float w = 0.0f;
-        float varNum = 0.0f; //变元个数
         if (t->IsFunc()) {
             float funcW = 0.0f;
+
             for (int i = 0; i < t->arity; ++i) {
                 TermCell* subT = t->args[i];
                 if (subT->IsVar()) {
-                    ++varNum;
                     ++funcW;
                     ++varGroup[0];
                     ++varGroup[subT->fCode];
                 } else if (subT->IsConst()) {
-                    funcW+=2; //常元+1
+                    funcW += 2; //常元+2
                 } else {
                     map<int, int>subVarGroup;
                     subVarGroup[0] = 0;
@@ -191,18 +213,17 @@ public:
                             } else {
                                 varGroup[ele.first] += ele.second;
                             }
-
                         }
                     }
                 }
             }
-            float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-            float constW=(varNum==0)?1:(0.5f +  (funcW / funcW+1));
-            w = WEI * sameVarW + (1 - WEI)*constW;
+            // float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+            w = ((varGroup[0] == 0) ? 2.0f : (1.0f + (funcW / (funcW + 1))));
+            // WEI * sameVarW + (1 - WEI) * ((varNum == 0) ? 2.0f : (1.0f + (funcW / (funcW + 1))));
         } else if (t->IsVar()) {
             w = 1;
-            ++varGroup[t->fCode];
             ++varGroup[0];
+            ++varGroup[t->fCode];
         } else {
             assert(t->IsConst());
             w = 2;
@@ -539,11 +560,13 @@ public:
         //改进的稳定度算法
         map<int, int>varGroup;
         varGroup[0] = 0;
-        this->zjlitWight = newW(lt, varGroup);
+        float weight = newW(lt, varGroup);
         if (this->EqnIsEquLit()) {
             map<int, int>subVarGroup;
             subVarGroup[0] = 0;
-            float rweight = newW(rt, subVarGroup);
+            weight += newW(rt, subVarGroup);
+            weight=0.5f + 0.5f * (weight / (1 + weight));
+            
             if (subVarGroup[0] > 0) {
                 for (auto&ele : subVarGroup) {
                     if (varGroup.find(ele.first) == varGroup.end()) {
@@ -553,12 +576,17 @@ public:
                     }
                 }
             }
-             float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-           
-            zjlitWight = WEI * sameVarW + (1 - WEI)*(0.5f + 0.5f * (zjlitWight + rweight) / 2.0f);
-            //(zjlitWight + newW(rt)) / 2.0f;// 
-
         }
+        if (varGroup[0] == 0)
+            zjlitWight = 2.0f;
+        else {
+            float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+            zjlitWight = WEI * sameVarW + (1 - WEI)*weight;
+        }
+
+
+        //(zjlitWight + newW(rt)) / 2.0f;// 
+
         //改进的算法 不考虑相同变元
         //        {
         //            this->zjlitWight = this->newWNOSameVar(lt);

@@ -19,10 +19,10 @@ enum class SubsumpType : uint8_t {
 };
 
 class TermIndNode {
-    
 public:
     //算法改进
-    set<TermCell*> groundTermSet;
+    map<TermCell*, uint32_t> groundTermMap;
+
 public:
 
     struct cmp {
@@ -35,9 +35,9 @@ public:
 public:
     uint32_t size;
     TermCell* curTermSymbol; //当前symbol
-    
+
     set<TermIndNode*, cmp> subTerms; //子项列表
-    
+
     vector<Literal*> leafs;
 
     TermIndNode() : curTermSymbol(nullptr), size(0) {
@@ -118,10 +118,22 @@ public:
 
     inline int getNodeNum(Literal*lit) {
         TermIndNode* r = getRoot(lit);
+
+
+        if (lit->lterm->TBTermIsGround()) {
+            uint32_t iSize = r->groundTermMap[lit->lterm];
+            // lit->EqnTSTPPrint(stdout,true);  cout << "groundTermSet.size() " << iSize << endl;
+            return iSize;
+
+        }
+
         set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = r->subTerms.find(new TermIndNode(lit->lterm));
         if (subNodeIt == r->subTerms.end())return 0;
-        cout << "(*subNodeIt)->size" << r->size << endl;
-        cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
+        //cout << "(*subNodeIt)->size" << r->size << endl;
+        //    cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
+
+
+
         return (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size();
 
     }
@@ -129,24 +141,24 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //************************ Insert **************************************/
-    virtual void Insert(Literal* lit);
+    virtual void Insert(Literal * lit);
     /*insert Term*/
-    virtual void InsertTerm(TermCell* t);
+    virtual void InsertTerm(TermCell * t);
 
     //************************ Remove **************************************/
 
     virtual void Print();
 
-    virtual TermIndNode* Subsumption(Literal* lit, SubsumpType subsumtype);
-    virtual TermIndNode* NextForwordSubsump();
-    virtual TermIndNode* NextBackSubsump();
+    virtual TermIndNode * Subsumption(Literal* lit, SubsumpType subsumtype);
+    virtual TermIndNode * NextForwordSubsump();
+    virtual TermIndNode * NextBackSubsump();
 
     // virtual TermIndNode* BackSubsumption(Literal* lit);
     //virtual bool DelClaFromIndex(Clause* cla);
 
     virtual void ClearVarLst();
 
-    void DelIndexNode(TermIndNode* root) {
+    void DelIndexNode(TermIndNode * root) {
 
         vector<TermIndNode*> stNode;
         stNode.reserve(64);
@@ -168,7 +180,7 @@ public:
     /// 扁平化文字项
     /// \param lit 需要扁平化的文字 lit
 
-    void FlattenLiteral(Literal* lit) {
+    void FlattenLiteral(Literal * lit) {
         flattenTerm.clear();
         flattenTerm.reserve(32);
         this->FlattenTerm(lit->lterm);
@@ -178,10 +190,10 @@ public:
 
     /// flattening-term  扁平化项
     /// \param term 需要扁平化的term
-    void FlattenTerm(TermCell* term);
+    void FlattenTerm(TermCell * term);
 
     /// 输出flattenTerms    
-    void PrintFlattenTerms(FILE* out);
+    void PrintFlattenTerms(FILE * out);
 
 };
 

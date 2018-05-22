@@ -108,6 +108,10 @@ void DiscrimationIndexing::Insert(Literal * lit) {
 
     TermIndNode* termIndNode = getRoot(lit); // lit->EqnIsPositive() ? posRoot : negRoot;
 
+    if (lit->lterm->TBTermIsGround()) { //添加基项
+        termIndNode->groundTermMap[lit->lterm]++; //等词的rterm不判断是否为基项
+    }
+
     termIndNode = InsertTerm(&termIndNode, lit->lterm);
 
     if (lit->EqnIsEquLit())
@@ -138,19 +142,17 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
     while (!vecTerm.empty()) {
         node = vecTerm.back();
         vecTerm.pop_back();
-        
-        if (node->TBTermIsGround()) { //添加基项
-            p->groundTermSet.insert(term);
-        }
+
         //生成一个新的树节点(for search or  insert)
         TermIndNode *tiNode = new TermIndNode(node);
 
-        set<TermIndNode*,TermIndNode::cmp>::iterator nodeIt = p->subTerms.find(tiNode);
+        set<TermIndNode*, TermIndNode::cmp>::iterator nodeIt = p->subTerms.find(tiNode);
 
         //若当前树节点子节点没有查询的节点,则插入数据,否则删除
         if (nodeIt == p->subTerms.end()) {
             p = *(p->subTerms.insert(tiNode).first);
         } else {
+
             p = *nodeIt;
             DelPtr(tiNode);
         }
@@ -158,7 +160,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
         for (int i = node->arity - 1; i>-1; --i) {
             vecTerm.push_back(node->args[i]);
         }
-    }    
+    }
     return p;
 }
 

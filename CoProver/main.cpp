@@ -42,7 +42,9 @@ int main(int argc, char** argv) {
 
     long formulaNum = formulaSet->FormulaAndClauseSetParse(Env::getIn(), claSet, name_selector, skip_includes);
     //formula->printClas();
+    
     claSet->Sort();
+    
     paseTime("GenFormula_", initial_time);
     initial_time = cpuTime();
 
