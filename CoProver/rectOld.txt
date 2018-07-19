@@ -9,3 +9,4 @@ LCL523+1+cls_tptp.txt,5,0,        0.00
 LCL523+1+cls_tptp.txt,5,0,        0.00
 LCL523+1+cls_tptp.txt,29,0,        0.00
 GRP653+3.p,0,0,        0.06
+FNN-CSR155+1.p,394,0,        0.02

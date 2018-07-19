@@ -1,24 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   Clause.cpp
- * Author: Zhong Jian<77367632@qq.com>
- * 
+ * Author: Zhong Jian<77367632@qq.com>  
  * Created on 2017年12月22日, 下午8:41
  */
 
 #include "Clause.h"
-
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
 /*---------------------------------------------------------------------*/
 
 //
-
 Clause::Clause()
 : ident(-1), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
 , negLitNo(0), posLitNo(0), weight(123), parent1(nullptr), parent2(nullptr) {

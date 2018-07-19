@@ -126,14 +126,29 @@ public:
 
     inline float xyWeight(TermCell* t) {
         float w = 0.0f;
-        if (t->IsConst()) {
-            ++w; //常元+1
+        if (t->IsConst() || t->TBTermIsGround()) {
+            w = 1.0f; //常元+1
         } else if (t->IsFunc()) {
             float funcW = 0.0f;
             for (int i = 0; i < t->arity; ++i) {
                 funcW += xyWeight(t->args[i]);
             }
-            if ((funcW - 0.0f) < 0.00000001)
+            // w=0.5f+0.5f*(funcW/(funcW+1));
+            w = 0.5f + 0.5f * (funcW / t->arity);
+        }
+        return w;
+    }
+
+    inline float xyWeight1(TermCell* t) {
+        float w = 0.0f;
+        if (t->IsConst()) {
+            w = 1; //常元+1
+        } else if (t->IsFunc()) {
+            float funcW = 0.0f;
+            for (int i = 0; i < t->arity; ++i) {
+                funcW += xyWeight1(t->args[i]);
+            }
+            if ((funcW - 0.0f) < 0.00000001 && (funcW - 0.0f) >-0.00000001)
                 funcW = 0.5f; //全是变元
             w = funcW / t->arity;
         }
@@ -166,67 +181,231 @@ public:
         return w;
     }
 
-    inline float newDepth(TermCell*t, map<int, int>&varGroup, int &varW, int level = 0) {
-        float w = 0.0f;
+    //w=depX+|C|+s(f)     s(f)=1+w/(w+1) 
 
+    inline float DepFunc() {
+        float w=0.0f;        
+        map<int, int>varGroup;
+        if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
+            w = 2.0f;
+        } else {
+            if (this->EqnIsEquLit()) {
+                w += ClacDepthFunc(this->lterm, varGroup, 1);
+                if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
+                    if (w == 2) return 2.0f;
+                    w += 2;
+                } else {
+                    w += ClacDepthFunc(this->rterm, varGroup, 1);
+                    //w += (subVarW * 1.0f) / (subVarW + 1.0f);
+                    //w += subVarW;
+                }
+                 w = 1 + w / (w + 1);
+                 
+            } else {
+                w += ClacDepthFunc(this->lterm, varGroup, 0);
+             }
+        }
+        if (varGroup[0] == 0)return 2.0f;
+        float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        w = WEI * sameVarW + (1 - WEI) * w;
+        return w;
+    }
+    //f(x)=1.5  f(f(x))= 1+(1+1.5)/(2+1.5) 
+    inline float ClacDepthFunc(TermCell*t, map<int, int>&varGroup, int level = 0) {
+        float w = 0.0f;
         if (t->IsVar()) {
-            varW += level;
+            w = level;
             ++varGroup[0];
             ++varGroup[t->fCode];
+        } else if (t->IsConst() || t->TBTermIsGround()) {
+            w = 2.0f; //常元+2
+        } else if (t->IsFunc()) {            
+            ++level;
+            for (int i = 0; i < t->arity; ++i) {
+                w += ClacDepthFunc(t->args[i], varGroup, level);
+            }
+              
+            //if (w == 2 * t->arity)return 2.0f;
+            // w += (subVarW * 1.0f) / (subVarW + 1.0f);
+            //w += subVarW;
+             w = 1.0f + w / (1 + w);
+         }
+        return w;
+    }
+    /* inline float ClacDepthFunc(TermCell*t, map<int, int>&varGroup, int &varW, int level = 0) {
+            float w = 0.0f;
+            if (t->IsVar()) {
+                varW += level;
+                ++varGroup[0];
+                ++varGroup[t->fCode];
+            } else if (t->IsConst() || t->TBTermIsGround()) {
+                w = 2.0f; //常元+2
+            } else if (t->IsFunc()) {
+                int subVarW = 0;
+                ++level;
+                for (int i = 0; i < t->arity; ++i) {
+                    w += ClacDepthFunc(t->args[i], varGroup, subVarW, level);
+                }
+                if (w == 2 * t->arity)return 2.0f;
+               // w += (subVarW * 1.0f) / (subVarW + 1.0f);
+                w+=subVarW;
+                w = 1.0f + w / (1 + w);
+            }
+            return w;
+        }*/
 
+    //w=depX+|C|     w/(w+1) 
+
+    inline float DepV() {
+        int v = 0, numC = 0;
+        if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
+            numC = 2;
+        } else {
+            if (this->EqnIsEquLit()) {
+                CalcDepV(this->lterm, v, numC, 1);
+                if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
+                    numC += 2;
+                } else
+                    CalcDepV(this->rterm, v, numC, 1);
+
+            } else {
+                CalcDepV(this->lterm, v, numC, 0);
+            }
+        }
+        if (v == 0) {
+            assert(numC > 0);
+            return 2.0f;
+        }
+        // float w = v*1.0f / (v + 1) + numC;        
+        //return 1 + w / (w + 1);
+        float w = (v * 1.0f + numC);
+        return 1 + w / (w + 1);
+    }
+
+    inline void CalcDepV(TermCell* t, int &v, int&numC, int level = 0) {
+
+        if (t->IsVar())
+            v += level;
+        else if (t->IsConst() || t->TBTermIsGround()) {
+            numC += 2; //常元+2
+        } else if (t->IsFunc()) {
+            ++level;
+            for (int i = 0; i < t->arity; ++i) {
+                CalcDepV(t->args[i], v, numC, level);
+            }
+        }
+    }
+
+    //w=v+|C|+f     f=w/(w+1) 
+
+    inline float NewW() {
+        float w=0.0f;
+        map<int, int>varGroup;
+        if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
+            w = 2.0f;
+        } else {
+            w = ClacNewW(this->lterm, varGroup);
+        }
+        if (this->EqnIsEquLit()) {
+            if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
+                if (w == 2) return 2.0f;
+                w += 2;
+            } else {
+                w += ClacNewW(this->rterm, varGroup);
+            }
+            w = 1 + w / (w + 1);
+        }
+        if (varGroup[0] == 0)return 2.0f;
+        float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        w = WEI * sameVarW + (1 - WEI) * w;
+        return w;
+    }
+    // w=v+|C|+f     f=w/(w+1) 
+
+    inline float ClacNewW(TermCell* t, map<int, int>&varGroup) {
+        float w = 0.0f;
+        if (t->IsVar()) {
+            varGroup[t->fCode] += 1;
+            ++varGroup[0];
+            ++w;
         } else if (t->IsConst() || t->TBTermIsGround()) {
             w += 2.0f; //常元+2
         } else if (t->IsFunc()) {
-            int subVarW = 0.0f;
-            ++level;
             for (int i = 0; i < t->arity; ++i) {
-                w += newDepth(t->args[i], varGroup, subVarW, level);
+                w += ClacNewW(t->args[i], varGroup);
             }
-            w += subVarW / (subVarW + 1.0f);
-            w = 1.0f + w / (1 + w);
+            if (w == 2 * t->arity)
+                w = 2;
+            else
+                w = 1 + w / (w + 1);
         }
-
         return w;
     }
 
-    inline float newW(TermCell* t, map<int, int>&varGroup) {
-        float w = 0.0f;
-        if (t->IsFunc()) {
-            float funcW = 0.0f;
+    // w=v/(v+1)+|C|+f     f=w/(w+1) 
 
+    inline float NewW2() {
+        float w;
+        map<int, int>varGroup;
+        int varN = 0;
+        if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
+            w = 2.0f;
+        } else {
+            w = ClacNewW2(this->lterm, varN, varGroup);
+        }
+        if (this->EqnIsEquLit()) {
+            if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
+                if (w == 2) return 2.0f;
+                w += 2;
+            } else {
+                w += ClacNewW2(this->rterm, varN, varGroup);
+            }
+            w += (varN * 1.0f) / (varN + 1);
+            w = 1 + w / (w + 1);
+        }
+        if (varGroup[0] == 0)return 2.0f;
+        float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        w = WEI * sameVarW + (1 - WEI) * w;
+        return w;
+    }
+    // w=v/(v+1)+|C|+f     f=w/(w+1)
+
+    inline float ClacNewW2(TermCell* t, int&varNum, map<int, int>&varGroup) {
+        float w = 0.0f;
+        if (t->IsVar()) {
+            varGroup[t->fCode] += 1;
+            ++varGroup[0];
+            ++varNum;
+            return 0.0f;
+        } else if (t->IsConst() || t->TBTermIsGround()) {
+            return 2.0f; //常元+2
+        } else if (t->IsFunc()) {
+
+            map<int, int>subVarGroup;
+            int varN = 0;
             for (int i = 0; i < t->arity; ++i) {
-                TermCell* subT = t->args[i];
-                if (subT->IsVar()) {
-                    ++funcW;
-                    ++varGroup[0];
-                    ++varGroup[subT->fCode];
-                } else if (subT->IsConst()) {
-                    funcW += 2; //常元+2
-                } else {
-                    map<int, int>subVarGroup;
-                    subVarGroup[0] = 0;
-                    funcW += newW(subT, subVarGroup);
-                    if (subVarGroup[0] > 0) {
-                        for (auto&ele : subVarGroup) {
-                            if (varGroup.find(ele.first) == varGroup.end()) {
-                                varGroup[ele.first] = ele.second;
-                            } else {
-                                varGroup[ele.first] += ele.second;
-                            }
-                        }
+                w += ClacNewW2(t->args[i], varN, subVarGroup);
+            }
+
+            if (subVarGroup[0] > 0) {
+                for (auto&ele : subVarGroup) {
+                    if (varGroup.find(ele.first) == varGroup.end()) {
+                        varGroup[ele.first] = ele.second;
+                    } else {
+                        varGroup[ele.first] += ele.second;
                     }
                 }
             }
-            // float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-            w = ((varGroup[0] == 0) ? 2.0f : (1.0f + (funcW / (funcW + 1))));
-            // WEI * sameVarW + (1 - WEI) * ((varNum == 0) ? 2.0f : (1.0f + (funcW / (funcW + 1))));
-        } else if (t->IsVar()) {
-            w = 1;
-            ++varGroup[0];
-            ++varGroup[t->fCode];
-        } else {
-            assert(t->IsConst());
-            w = 2;
+
+            if (w == 2 * t->arity) {
+                assert(varN == 0);
+                return 2.0f;
+            } else {
+                w += varN * 1.0f / (varN + 1);
+                w = 1 + w / (w + 1);
+            }
+
+
         }
         return w;
     }
@@ -547,43 +726,80 @@ public:
         EqnAlloc(lt, rt, bank, positive);
 
         //计算徐杨稳定度
-        //        xyW = xyWeight(lt);
-        //        if (this->EqnIsEquLit()) {
-        //            xyW = (xyW + xyWeight(rt)) / 2.0f;
-        //        }
+        xyW = xyWeight(lt);
+        if (this->EqnIsEquLit()) {
+            xyW = (xyW + xyWeight(rt)) / 2.0f;
+        }
         //计算钟小梅稳定度
         //        map<int, int>varGroup;
         //        xyW = zxmWeight(lt);
         //        if (this->EqnIsEquLit()) {
         //            xyW = 0.5 + 0.5 * (xyW + zxmWeight(rt)) / 2.0f;
         //        }
-        //改进的稳定度算法
-        map<int, int>varGroup;
-        varGroup[0] = 0;
-        float weight = newW(lt, varGroup);
-        if (this->EqnIsEquLit()) {
-            map<int, int>subVarGroup;
-            subVarGroup[0] = 0;
-            weight += newW(rt, subVarGroup);
-            weight=0.5f + 0.5f * (weight / (1 + weight));
-            
-            if (subVarGroup[0] > 0) {
-                for (auto&ele : subVarGroup) {
-                    if (varGroup.find(ele.first) == varGroup.end()) {
-                        varGroup[ele.first] = ele.second;
-                    } else {
-                        varGroup[ele.first] += ele.second;
+        //改进算法2
+        //        {
+        //
+        //            map<int, int>varGroup;
+        //            varGroup[0] = 0;
+        //            int level = this->EqnIsEquLit() ? 1 : 0;
+        //            int subVarW = 0;
+        //            float funcW = 0.0f;
+        //            if (lt->IsConst() || lt->TBTermIsGround()) {
+        //                funcW = 2.0f;
+        //            } else {
+        //                funcW = newDepth(lt, varGroup, subVarW, level);
+        //            }
+        //
+        //            if (this->EqnIsEquLit()) {
+        //                if (rt->IsConst() || rt->TBTermIsGround()) {
+        //                    funcW += 2;
+        //                    if (4 == funcW)
+        //                        funcW = 2;
+        //                } else {
+        //                    funcW += newDepth(rt, varGroup, subVarW, level);
+        //                    funcW += (subVarW*1.0f) / (subVarW + 1.0f);
+        //                    funcW = 1.0f+funcW / (funcW + 1.0f);                     
+        //                }
+        //            }
+        //            float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        //            zjlitWight = WEI * sameVarW + (1 - WEI)*(funcW);
+        //        }
+        //改进变元函数嵌套算法        
+
+        //zjlitWight = DepV();
+       //  zjlitWight = DepFunc();
+         zjlitWight = NewW();
+        // zjlitWight = NewW2();
+        //改进的稳定度算法1
+        /*{
+            map<int, int>varGroup;
+            varGroup[0] = 0;
+            //float weight = ((lt->IsConst() || lt->TBTermIsGround())) ? 2.0f : newW(lt, varGroup);
+
+            if (this->EqnIsEquLit()) {
+                map<int, int>subVarGroup;
+                subVarGroup[0] = 0;
+               // weight += newW(rt, subVarGroup);
+                weight = 1.0f + (weight / (1 + weight));
+
+                if (subVarGroup[0] > 0) {
+                    for (auto&ele : subVarGroup) {
+                        if (varGroup.find(ele.first) == varGroup.end()) {
+                            varGroup[ele.first] = ele.second;
+                        } else {
+                            varGroup[ele.first] += ele.second;
+                        }
                     }
                 }
             }
-        }
-        if (varGroup[0] == 0)
-            zjlitWight = 2.0f;
-        else {
-            float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-            zjlitWight = WEI * sameVarW + (1 - WEI)*weight;
-        }
+            if (varGroup[0] == 0)
+                zjlitWight = 2.0f;
+            else {
+                float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+                zjlitWight = WEI * sameVarW + (1 - WEI) * weight;
+            }
 
+        }*/
 
         //(zjlitWight + newW(rt)) / 2.0f;// 
 

@@ -1,0 +1,7 @@
+argc:2
+/home/icdc/Documents/myProg/CoE/CoProver/dist/Release/GNU-Linux/coprover
+/home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-CSR155+1.p
+|  GenFormula_time:                   0.09 s                 |
+|  FindBacktime:                   0.02 s                 |
+FNN-CSR155+1.p,429,0, 0.02
+|  Saturate_time:                   0.02 s                 |

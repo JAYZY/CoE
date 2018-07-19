@@ -118,23 +118,24 @@ public:
 
     inline int getNodeNum(Literal*lit) {
         TermIndNode* r = getRoot(lit);
-
-
-        if (lit->lterm->TBTermIsGround()) {
-            uint32_t iSize = r->groundTermMap[lit->lterm];
-            // lit->EqnTSTPPrint(stdout,true);  cout << "groundTermSet.size() " << iSize << endl;
-            return iSize;
-
-        }
-
         set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = r->subTerms.find(new TermIndNode(lit->lterm));
         if (subNodeIt == r->subTerms.end())return 0;
-        //cout << "(*subNodeIt)->size" << r->size << endl;
-        //    cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
+
+        uint32_t iSize = 0;
+        if (lit->lterm->TBTermIsGround()) {
+            iSize = (*subNodeIt)->groundTermMap[lit->lterm];
+//            if(iSize>10)
+//                iSize=INT_MAX;
+            // lit->EqnTSTPPrint(stdout, true);
+            //  cout << "iSize " << iSize << endl;
+            return iSize;
+        }
+        //          lit->EqnTSTPPrint(stdout,true);
+        //           cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
 
 
 
-        return (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size();
+        return (*subNodeIt)->subTerms.size() + iSize;
 
     }
     /*---------------------------------------------------------------------*/

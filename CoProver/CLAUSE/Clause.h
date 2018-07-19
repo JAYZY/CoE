@@ -234,18 +234,18 @@ public:
             handle = handle->next;
             while (handle) {
                 //先比较 索引树中,子节点少的优先
-                //                float res =  index->getNodeNum(handle) - index->getNodeNum(maxLit);
-                //                if (res < 0) {
-                //                    maxLit = handle;
-                //                }  else if (res-0<0.00000001&&res-0>-0.00000001 && cmp_fun(handle, maxLit)>0){//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
-                //                        maxLit = handle;
-                //                }
+//                float res = index->getNodeNum(handle) - index->getNodeNum(maxLit);
+//                if (res < 0) {
+//                    maxLit = handle;
+//                } else if (res - 0 < 0.00000001 && res - 0 > -0.00000001 && cmp_fun(handle, maxLit) > 0) {//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
+//                    maxLit = handle;
+//                }
 
                 float res = cmp_fun(handle, maxLit);
                 if (res > 0) {
                     maxLit = handle;
-                } else if (res-0<0.00000001&&res-0>-0.00000001) {
-
+                } 
+                else if (res-0<0.00000001&&res-0>-0.00000001) {
                     if (index->getNodeNum(handle) - index->getNodeNum(maxLit) < 0) {//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
                             maxLit = handle;
                         }

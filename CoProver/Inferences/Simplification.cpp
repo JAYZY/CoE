@@ -112,13 +112,12 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 
 
 #ifdef New
-
-    //Literal* selLit = genCla->FileMaxLit<XYSteadyCMP>(XYSteadyCMP());
+    // Literal* selLit = genCla->FileMaxLit<XYSteadyCMP,TermIndexing>(XYSteadyCMP(),indexing);
     // Literal* selLit = genCla->FileMaxLit<StandardWCMP, TermIndexing>(StandardWCMP(), indexing);
     //Literal* selLit = genCla->FileMaxLit<ConstLenCMP, TermIndexing>(ConstLenCMP(), indexing);
     // Literal* selLit = genCla->FileMaxLit<CountVarT>(CountVarT()); 
-    //   Literal* selLit = genCla->FileMaxLit<ZXMSteadyCMP, TermIndexing>(ZXMSteadyCMP(), indexing);
-    Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
+       Literal* selLit = genCla->FileMaxLit<ZXMSteadyCMP, TermIndexing>(ZXMSteadyCMP(), indexing);
+   // Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
     // Literal* selLit =genCla->FileMaxLit<OnlyMaxDepthCMP, TermIndexing>(OnlyMaxDepthCMP(), indexing);
 
 #else
@@ -173,9 +172,9 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 
 
             //  cout<<"candClaId"<<candCla->GetClaId()<<endl; 
-            
+
             if (subsumedCla.find(candCla) == subsumedCla.end() && candCla->LitsNumber() >= genCla->LitsNumber()) {
-               ++Env::backword_CMP_counter;
+                ++Env::backword_CMP_counter;
 #ifdef OUTINFO
                 ++tmpTest;
 #endif

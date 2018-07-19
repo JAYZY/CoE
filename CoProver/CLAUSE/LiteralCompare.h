@@ -107,48 +107,13 @@ public:
 class StandardWCMP {
 public:
 
-    int operator()(Literal* t1, Literal * t2) {
-        //        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-        //            return 1;
-        //        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-        //            return -1;
-
-        //        int x1 = t1->computJZD();
-        //        int x2 = t2->computJZD();
-        //        t1->EqnTSTPPrint(stdout, true);
-        //        cout << "  x1JZD:" << x1 << endl;
-        //        t2->EqnTSTPPrint(stdout, true);
-        //        cout << "  x2JZD:" << x2 << endl;
-        //        if (x1 == 0) return -1;
-        //        if (x2 == 0) return 1;
-        //        long x = (t1->StandardWeight() - t2->StandardWeight());
-        //        if (x == 0) {
-
-
-
-        //        int x1 = t1->computJZD();
-        //        int x2 = t2->computJZD();
-        ////        t1->EqnTSTPPrint(stdout, true);
-        ////        cout << "  x1JZD:" << x1 << endl;
-        ////        t2->EqnTSTPPrint(stdout, true);
-        ////        cout << "  x2JZD:" << x2 << endl;
-        //        if (x1 == 0) return -1;
-        //        if (x2 == 0) return 1;
-        //        if (x1 == x2) {
+    int operator()(Literal* t1, Literal * t2) {     
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
             return 1;
         long x = (t1->StandardWeight() - t2->StandardWeight());
         return x;
-        //        }
-        //        return x1 - x2;
-
-        //        }
-        //        return (int) x;
-
-
-
     }
 };
 
@@ -168,10 +133,7 @@ class XYSteadyCMP {
 public:
 
     float operator()(Literal* t1, Literal * t2) {
-        //        float x=(t1->xyW-t2->xyW);
-        //        if(x>0.0f) return 1;
-        //        else if(x<0.0f) return -1;
-        //        else return 0;
+
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())

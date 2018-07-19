@@ -108,9 +108,9 @@ void DiscrimationIndexing::Insert(Literal * lit) {
 
     TermIndNode* termIndNode = getRoot(lit); // lit->EqnIsPositive() ? posRoot : negRoot;
 
-    if (lit->lterm->TBTermIsGround()) { //添加基项
-        termIndNode->groundTermMap[lit->lterm]++; //等词的rterm不判断是否为基项
-    }
+    //    if (lit->lterm->TBTermIsGround()) { //添加基项
+    //        termIndNode->groundTermMap[lit->lterm]++; //等词的rterm不判断是否为基项
+    //    }
 
     termIndNode = InsertTerm(&termIndNode, lit->lterm);
 
@@ -152,9 +152,12 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
         if (nodeIt == p->subTerms.end()) {
             p = *(p->subTerms.insert(tiNode).first);
         } else {
-
             p = *nodeIt;
             DelPtr(tiNode);
+        }
+
+        if (node->TBTermIsGround()) { //添加基项
+            p->groundTermMap[node]++; //等词的rterm不判断是否为基项
         }
 
         for (int i = node->arity - 1; i>-1; --i) {
