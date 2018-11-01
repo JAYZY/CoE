@@ -16,12 +16,36 @@
 #include "CLAUSE/Clause.h"
 #include "Global/Environment.h"
 #include "BASIC/SplayTree.h"
-#include "CLAUSE/Formula.h"
+#include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
 #include <iostream>
 #include <set>
 #include <map>
 using namespace std;
+//#define TEST
+
+#ifdef  TEST
+
+int main(int argc, char** argv) {
+    int size = 1000000000;
+    int olds = size / 3;
+    int *x;
+    x = new int[size];
+    double initial_time = cpuTime();
+    memset(x, 0, size * sizeof (int));
+
+    paseTime("allSet_", initial_time);
+
+
+    initial_time = cpuTime();
+    memset(x, 0, olds * sizeof (int));
+
+    paseTime("allSet_", initial_time);
+    DelArrayPtr(x);
+    return 0;
+}
+
+#else
 
 int main(int argc, char** argv) {
     cout << "argc:" << argc << endl;
@@ -30,43 +54,26 @@ int main(int argc, char** argv) {
     }
     //命令行解析
 
-    //初始化全局扫描器Scanner
-    Env::iniScanner(nullptr, argv[1], true, nullptr);
+    //全局扫描器Scanner读取文件 argv[1]
+    Env::IniScanner(nullptr, argv[1], true, nullptr);
 
-    //生成子句
-    double initial_time = cpuTime();
+    //生成公式集\子句-----------------
+    double initial_time = CPUTime();
+    Formula* fol = new Formula();
+    fol->GenerateFormula(Env::getIn());
+    PaseTime("GenFormula_", initial_time);
 
-    FormulaSet* formulaSet = new FormulaSet();
-    ClauseSet* claSet = new ClauseSet();
-    SplayTree<StrTreeCell>name_selector, skip_includes;
+    //预处理操作---------------------       
+    ProofControl::Preprocess(fol);
 
-    long formulaNum = formulaSet->FormulaAndClauseSetParse(Env::getIn(), claSet, name_selector, skip_includes);
-    //formula->printClas();
-    
-    claSet->Sort();
-    
-    paseTime("GenFormula_", initial_time);
-    initial_time = cpuTime();
+    //ProofControl* proofCtr = new ProofControl(fol->getAxioms());
 
-
-    ProofControl* proofCtr = new ProofControl(claSet);
-
-
-    //               for(auto& cla:formulaSet->getAxioms())
-    //                {
-    //                    Literal* lit=cla->Lits();
-    //                    cout<<"claID "<a<cla->GetClaId()<<":"<<endl;
-    //                    while(lit){
-    //                        lit->EqnTSTPPrint(stdout,true);                
-    //                        fprintf(stdout," w:%2ld zjw:%5.2f\n",lit->StandardWeight(),lit->zjlitWight);
-    //                        lit=lit->next;
-    //                    }
-    //                    fprintf(stdout,"\n");            
-    //                }
     //开始浸透算法
-    proofCtr->Saturate();
-    paseTime("Saturate_", initial_time);
+    //proofCtr->Saturate();
+    //PaseTime("Saturate_", initial_time);
 
     return 0;
 }
 
+
+#endif

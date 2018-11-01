@@ -248,6 +248,25 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p va
 
     return arity;
 }
+
+TermCell* TermCell::renameCopy(VarBank* vars, DerefType deref) {
+
+    if (this->IsGround())
+        return this;
+    Term_p t;
+    if (this->IsVar()) {
+        t = vars->VarBankFCodeAssertAlloc(this->fCode);
+    } else {
+        t = TermCell::TermTopCopy(this); //创建一个 unshared term at the moment
+        for (int i = 0; i < t->arity; i++) {
+            t->args[i] = t->args[i]-> renameCopy(vars);
+        }
+        // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中
+    }
+
+    return t;
+
+}
 //P1(f(x1))  x1-y1->a1;   P1(f(a1))
 
 TermCell* TermCell::TermCopy(VarBank* vars, DerefType deref) {
@@ -323,7 +342,8 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
     // assert(sig || term->IsVar());
 
     term = TermCell::TermDeref(term, deref);
-
+    //zj
+    cout << "idx:" << term->idx;
 #ifdef NEVER_DEFINED
     if (TermCellQueryProp(term, TPRestricted)) {
         fprintf(out, "*");
@@ -673,7 +693,7 @@ FunCode TermCell::TermSigInsert(Sig_p sig, const string& name, int arity, bool s
  * 检查项是否为基项 ground 不包括变元项
  * 注意不检查　变元绑定情况 
  ****************************************************************************/
-bool TermCell::TermIsGround() {
+bool TermCell::IsGround() {
     if (IsVar())
         return false;
     vector<TermCell*> st;
@@ -721,7 +741,7 @@ bool TermCell::TermHasFCode(FunCode f) {
 
     vector<TermCell*> st;
     st.reserve(arity);
-    
+
     for (int i = 0; i < arity; ++i) {
         if (args[i]->fCode == f) {
             vector<TermCell*>().swap(st);

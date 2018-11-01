@@ -13,9 +13,12 @@
 
 #ifndef CLAUSE_H
 #define CLAUSE_H
+#include <stdint.h>
+
 #include "Global/IncDefine.h"
 #include "Literal.h"
 #include "INOUT/Scanner.h" 
+
 using namespace std;
 /*---------------------------------------------------------------------*/
 /*                      【clause】子句相关枚举                           */
@@ -132,6 +135,7 @@ private:
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息
 
+
     Literal* literals; //文字列表
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数
@@ -139,15 +143,29 @@ private:
 
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
-
 public:
-
+    /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
+    TermBank_p claTB;
+public:
+    /*---------------------------------------------------------------------*/
+    /*                    Constructed Function                             */
+    /*---------------------------------------------------------------------*/
+    //
     Clause();
+    Clause(const Clause* orig);
+
     Clause(Literal *literal_s);
 
     //Clause(const Clause& orig);
 
+    //
+    /// 解析成子句
+    /// \param in 
+    /// \param bank
+    /// \return 
+    void ClauseParse(Scanner* in, TermBank* t);
     virtual ~Clause();
+
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
@@ -175,17 +193,21 @@ public:
     }
 
     inline bool ClauseIsEmpty() {
-        return LitsNumber() == 0;
+        return 0 == LitsNumber();
+    }
+
+    inline bool isUnit() {
+        return 1 == (posLitNo + negLitNo);
     }
     //正单元子句
 
     inline bool IsUnitPos() {
-        return (posLitNo == 1 && negLitNo == 0);
+        return (1 == posLitNo && 0 == negLitNo);
     }
     //负单元子句
 
     inline bool isUnitNeg() {
-        return (posLitNo == 0 && negLitNo == 1);
+        return (0 == posLitNo && 1 == negLitNo);
     }
     //modify ClauseProperties to int
 
@@ -223,6 +245,14 @@ public:
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
+    void SortLits(); //对子句中 单文字进行排序
+
+    void ClauseNormalizeVars(VarBank_p fresh_vars);
+    //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
+    Clause* renameCopy(VarBank_p renameVarbank);
+
+
+    Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
 
@@ -233,26 +263,12 @@ public:
         if (this->LitsNumber() > 1) {
             handle = handle->next;
             while (handle) {
-                //先比较 索引树中,子节点少的优先
-//                float res = index->getNodeNum(handle) - index->getNodeNum(maxLit);
-//                if (res < 0) {
-//                    maxLit = handle;
-//                } else if (res - 0 < 0.00000001 && res - 0 > -0.00000001 && cmp_fun(handle, maxLit) > 0) {//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
-//                    maxLit = handle;
-//                }
-
                 float res = cmp_fun(handle, maxLit);
                 if (res > 0) {
                     maxLit = handle;
-                } 
-                else if (res-0<0.00000001&&res-0>-0.00000001) {
-                    if (index->getNodeNum(handle) - index->getNodeNum(maxLit) < 0) {//index->getNodeNum(handle) < index->getNodeNum(maxLit)){
-                            maxLit = handle;
-                        }
                 }
                 handle = handle->next;
             }
-
         }
         return maxLit;
     }
@@ -261,12 +277,7 @@ public:
     /*---------------------------------------------------------------------*/
     static ClauseProp ClauseTypeParse(Scanner* in, string legal_types);
 
-    //
-    /// 解析成子句
-    /// \param in 
-    /// \param bank
-    /// \return 
-    static Clause* ClauseParse(Scanner* in, TermBank* t);
+
     /*---------------------------------------------------------------------*/
     /*                        operator Function                            */
     /*---------------------------------------------------------------------*/
@@ -281,6 +292,45 @@ public:
     }
 private:
 
+    /***************************************************************************** 
+     * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
+     ****************************************************************************/
+    inline void EqnListParse(TokenType sep) {
+
+        Scanner* in = Env::getIn();
+        //TB_p bank = Env::getTb();
+        TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
+
+        if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
+                ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
+                ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
+
+            Literal *pos_lits = nullptr, *neg_lits = nullptr;
+            Literal* *pos_append = &pos_lits;
+            Literal* *neg_append = &neg_lits;
+            Literal* handle = nullptr;
+            while (true) {
+                handle = new Literal();
+                handle->claPtr = this;
+                handle->EqnParse(in, this->claVarTerms);
+                
+                if (handle->IsPositive()) {
+                    ++posLitNo;
+                    *pos_append = handle;
+                    pos_append = &((*pos_append)->next);
+                } else {
+                    ++negLitNo;
+                    *neg_append = handle;
+                    neg_append = &((*neg_append)->next);
+                }
+                if (!in->TestInpTok(sep))break;
+                in->NextToken();
+            }
+            *pos_append = neg_lits;
+            *neg_append = nullptr;
+            this->literals = pos_lits;
+        }
+    }
 };
 
 #endif /* CLAUSE_H */

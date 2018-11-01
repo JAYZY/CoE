@@ -10,6 +10,7 @@
 #include "Indexing/TermIndexing.h"
 #include "Unify.h"
 #include "CLAUSE/LiteralCompare.h"
+//map<TermCell*, int> Simplification::termcmp;
 
 Simplification::Simplification() {
 }
@@ -20,87 +21,86 @@ Simplification::Simplification(const Simplification& orig) {
 Simplification::~Simplification() {
 }
 /// 检查子句genCla 是否存在替换 使得候选子句 C 归入到查询子句 G, 目的检查查询子句G是否冗余
-/*PS:G的文字数> C 的文字数;*/
+/*  算法流程:  C {L1,L2..Ln} 
+ * 1.从C中按照规则选择文字Li 查找indexTree.找到候选文字集{candLits}
+ * 2.排除 A.已经比较过的子句;B.候选子句candClas的文字数 > C 的文字数的子句;
+ * 
+ */
 /// \param genCla 查询子句
 /// \param indexing 项索引
 /// \return 子句genCla是否冗余
 
-bool Simplification::ForwordSubsumption(Clause* genCla, TermIndexing* indexing) {
+bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) {
 
-    //Literal* selConLit = genCla->Lits();
-    Literal* selConLit = genCla->FileMaxLit<StandardWCMP, TermIndexing>(StandardWCMP(), indexing);
-    if (genCla->GetClaId() == 4469) {
-        cout << "test-genCla:";
-        genCla->ClausePrint(stdout, true);
-        cout << endl;
-        cout << "选择文字:";
-        selConLit->EqnTSTPPrint(stdout, true);
-        cout << endl;
-    }
-
-
+    Literal* selConLit = genCla->Lits();
     //Literal* selConLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
-
     //Literal* selConLit = genCla->FileMaxLit<OnlyVarLenCMP, TermIndexing>(OnlyVarLenCMP(), indexing);
+    //Literal* selConLit = genCla->FileMaxLit<OnlyMaxDepthCMP, TermIndexing>(OnlyMaxDepthCMP(), indexing);
+   // Literal* selConLit = genCla->FileMaxLit<StandardWCMP, TermIndexing>(StandardWCMP(), indexing);
+    while (selConLit) {
+        //debug print        
+//        cout << "test-genCla:";
+//        genCla->ClausePrint(stdout, true);
+//        cout << endl;
+//        cout << "选择文字:";
+//        selConLit->EqnTSTPPrint(stdout, true);
+//        cout << endl;
 
-    // Literal* selConLit = genCla->FileMaxLit<OnlyMaxDepthCMP, TermIndexing>(OnlyMaxDepthCMP(), indexing);
 #ifdef OUTINFO
-    cout << "选择文字:";
-    selConLit->EqnTSTPPrint(stdout, true);
-    cout << endl;
+//        cout << "选择文字:";
+//        selConLit->EqnTSTPPrint(stdout, true);
+//        cout << endl;
 #endif
-
-    TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
-
-    if (termIndNode == nullptr)
-        return false;
-    vector<Literal*>*candVarLits = &((termIndNode)->leafs);
-
-    set<Clause*> checkedClas; //存储已经检查过得子句
-    Clause* candVarCla = nullptr; //找到可能存在归入冗余的候选子句
-    Literal* candVarLit = nullptr;
-
-    while (true) {
-        for (int ind = 0; ind < candVarLits->size(); ++ind) {
-
-            candVarLit = candVarLits->at(ind);
-
-            int substPos = indexing->chgVars->Size();
-            candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句
-            if (candVarCla->GetClaId() == 3479) {
-                cout << "test-candCla:";
-                candVarCla->ClausePrint(stdout, true);
-                cout << endl;
-                cout << "匹配的文字:";
-                candVarLit->EqnTSTPPrint(stdout, true);
-                cout << endl;
-
-            }
-            assert(candVarCla);
-
-            if (genCla->LitsNumber() >= candVarCla->LitsNumber() && checkedClas.find(candVarCla) == checkedClas.end()) {
-                ++Env::backword_CMP_counter;
-                if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->chgVars, nullptr)) {
-                    //测试:输出找到的冗余子句
-                    genCla->ClausePrint(stdout, true);
-
-                    cout << "\n<--:";
-                    candVarCla->ClausePrint(stdout, true);
-                    cout << endl;
-                    ++Env::backword_Finded_counter;
-                    return true;
-                }
-            }
-            //没有找到 indexing->chgVars->SubstBacktrackToPos(substPos);
-            assert(substPos == indexing->chgVars->Size());
-            checkedClas.insert(candVarCla); //添加已经检查过的子句
-        }
-        termIndNode = indexing->NextForwordSubsump(); //查找下一个
+        TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
         if (termIndNode == nullptr)
             return false;
-        candVarLits = &((termIndNode)->leafs);
-    }
+        vector<Literal*>*candVarLits = &((termIndNode)->leafs);
+        set<Clause*> checkedClas; //存储已经检查过得子句
+        Clause* candVarCla = nullptr; //找到可能存在归入冗余的候选子句
+        Literal* candVarLit = nullptr;
+        while (true) {
+            for (int ind = 0; ind < candVarLits->size(); ++ind) {
 
+                candVarLit = candVarLits->at(ind);
+
+                int substPos = indexing->chgVars->Size();
+                candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句
+                if (candVarCla->GetClaId() == 3479) {
+                    cout << "test-candCla:";
+                    candVarCla->ClausePrint(stdout, true);
+                    cout << endl;
+                    cout << "匹配的文字:";
+                    candVarLit->EqnTSTPPrint(stdout, true);
+                    cout << endl;
+
+                }
+                assert(candVarCla);
+
+                if (genCla->LitsNumber() >= candVarCla->LitsNumber() && checkedClas.find(candVarCla) == checkedClas.end()) {
+                    ++Env::backword_CMP_counter;
+                    if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->chgVars, nullptr)) {
+                        //记录冗余
+                        fprintf(stdout, "[FS]c_%ld by c%ld\n", genCla->GetClaId(),candVarCla->GetClaId());
+                        //                        genCla->ClausePrint(stdout, true);
+                        //                        cout << "\n<--:";
+                        //                        candVarCla->ClausePrint(stdout, true);
+                        //                        cout << endl;
+                        ++Env::backword_Finded_counter;
+                        return true;
+                    }
+                }
+                //没有找到 indexing->chgVars->SubstBacktrackToPos(substPos);
+                assert(substPos == indexing->chgVars->Size());
+                checkedClas.insert(candVarCla); //添加已经检查过的子句
+            }
+            termIndNode = indexing->NextForwordSubsump(); //查找下一个
+            if (termIndNode == nullptr)
+                return false;
+            candVarLits = &((termIndNode)->leafs);
+        }
+
+        selConLit = selConLit->next;
+    }
 }
 
 /// 根据子句genCla查找(indexing tree中)冗余子句,有任意替换r使得 c * r = g ?
@@ -108,17 +108,14 @@ bool Simplification::ForwordSubsumption(Clause* genCla, TermIndexing* indexing) 
 /// \param indexing 已有的索引
 /// \return genCla是否归入某个子句(是否被某个子句包含)
 
-bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing) {
+bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing) {
 
 
 #ifdef New
-    // Literal* selLit = genCla->FileMaxLit<XYSteadyCMP,TermIndexing>(XYSteadyCMP(),indexing);
+    //Literal* selLit = genCla->FileMaxLit<XYSteadyCMP,TermIndexing>(XYSteadyCMP(),indexing);
     // Literal* selLit = genCla->FileMaxLit<StandardWCMP, TermIndexing>(StandardWCMP(), indexing);
-    //Literal* selLit = genCla->FileMaxLit<ConstLenCMP, TermIndexing>(ConstLenCMP(), indexing);
-    // Literal* selLit = genCla->FileMaxLit<CountVarT>(CountVarT()); 
-       Literal* selLit = genCla->FileMaxLit<ZXMSteadyCMP, TermIndexing>(ZXMSteadyCMP(), indexing);
-   // Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
-    // Literal* selLit =genCla->FileMaxLit<OnlyMaxDepthCMP, TermIndexing>(OnlyMaxDepthCMP(), indexing);
+    Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
+    //Literal* selLit = genCla->FileMaxLit<EqnCompareKBO6, TermIndexing>(EqnCompareKBO6(), indexing);
 
 #else
     Literal* selLit = genCla->Lits();
@@ -135,17 +132,22 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 
     cout << "选择文字:";
     selLit->EqnTSTPPrint(stdout, true);
-    cout << endl;
+    cout << " zjw:" << selLit->zjlitWight << " EW:" << selLit->StandardWeight() << "  ";
+    cout << "termcmp[selLit->lterm]:" << TermIndexing::constTermNum[selLit->lterm] << endl;
+
 #endif
-#ifdef OUTINFO
+    //#ifdef OUTINFO
     int tmpTest = 0;
-#endif
+    //#endif
     set<Clause*> subsumedCla;
     Clause* candCla = nullptr;
     TermIndNode* candTermNode = indexing->Subsumption(selLit, SubsumpType::Backword);
     if (candTermNode == nullptr) {
+
+
 #ifdef OUTINFO
         cout << "比较次数:" << tmpTest << endl;
+
 #endif
         return false;
     }
@@ -153,13 +155,18 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 
     Literal* candLit = nullptr;
     Subst* subst = new Subst();
-
+    set<int>cmpedCla;
     while (true) {
 
         for (int ind = 0; ind < candLits->size(); ++ind) {
             int substPos = subst->Size();
             candLit = candLits->at(ind);
             candCla = candLit->claPtr; //找到第一个文字所匹配的子句 
+
+            if (cmpedCla.find(candCla->GetClaId()) != cmpedCla.end())
+                continue;
+
+            cmpedCla.insert(candCla->GetClaId());
 
             //            if (candCla->GetClaId() == 6) {
             //                cout << "test-candCla:";
@@ -175,9 +182,10 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 
             if (subsumedCla.find(candCla) == subsumedCla.end() && candCla->LitsNumber() >= genCla->LitsNumber()) {
                 ++Env::backword_CMP_counter;
-#ifdef OUTINFO
+
+                //#ifdef OUTINFO
                 ++tmpTest;
-#endif
+                //#endif
                 if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
                     //记录找到的冗余子句
                     ++Env::backword_Finded_counter;
@@ -197,6 +205,7 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
     }
     DelPtr(subst);
     //对找到的冗余子句进行处理
+    TermIndexing::constTermNum[selLit->lterm] += tmpTest;
 #ifdef OUTINFO   
     if (subsumedCla.empty()) {
         // cout << "No found backsubsumption!" << endl;
@@ -208,6 +217,8 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
         (*subsumedCla.begin())->ClausePrint(stdout, true);
 
     }
+
+
     cout << "比较次数:" << tmpTest << endl;
 #endif
     return true;
@@ -222,17 +233,19 @@ bool Simplification::BackWordSubsumption(Clause* genCla, TermIndexing* indexing)
 /// \param subst    替换对象
 /// \return    subsumVarLst 是否归入 subsumConLst;
 
-bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, Literal* subsumConLst, Subst*subst, int8_t* pickLst) {
+bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, Literal* subsumConLst, Subst_p subst, int8_t* pickLst) {
 
-    if (!subsumVarLst) return true; //查询文字列表没有文字,返回true
+    if (!subsumVarLst) return true; //查询文字列表没有文字,返回true    
+
     uint32_t iniSubstPos = subst->Size();
+    Unify unify;
     for (Literal* varEqn = subsumVarLst; varEqn; varEqn = varEqn->next) {
 
         if (varEqn == exceptLit)continue;
 
         bool res = false;
         for (Literal* conEqn = subsumConLst; conEqn; conEqn = conEqn->next) {
-            if (conEqn->EqnIsPositive() != varEqn->EqnIsPositive())
+            if (conEqn->IsPositive() != varEqn->IsPositive())
                 continue;
 
             if (conEqn->EqnIsEquLit() != varEqn->EqnIsEquLit())
@@ -246,17 +259,16 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
             //                        cout << "eqn:";     varEqn->EqnTSTPPrint(stdout, true);  cout << endl;
             //                         cout << "eqnCand:";  conEqn->EqnTSTPPrint(stdout, true); cout << endl;
 
-            if (Unify::SubstComputeMatch(varEqn->lterm, conEqn->lterm, subst)) {
-                if (Unify::SubstComputeMatch(varEqn->rterm, conEqn->rterm, subst)) {
+            if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, subst)) {
+                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, subst)) {
                     res = true;
-
                     break;
                 }
             }
             subst->SubstBacktrackToPos(substPos);
             /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
-            if (Unify::SubstComputeMatch(varEqn->rterm, conEqn->lterm, subst) &&
-                    Unify::SubstComputeMatch(varEqn->lterm, conEqn->rterm, subst)) {
+            if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, subst) &&
+                    unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, subst)) {
                 res = true;
                 break;
             }

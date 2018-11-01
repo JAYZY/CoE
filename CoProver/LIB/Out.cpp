@@ -31,7 +31,7 @@ void Out::SysError(const char* message, ErrorCodes ret, ...) {
     va_end(ap);
     exit((int)ret);
 }
-void Out::Warning(char* message, ...)
+void Out::Warning(const char* message, ...)
 {
    va_list ap;
    va_start(ap, message);
@@ -42,7 +42,7 @@ void Out::Warning(char* message, ...)
 
    va_end(ap);
 }
-void Out::SysWarning(char* message, ...)
+void Out::SysWarning(const char* message, ...)
 {
    va_list ap;
    va_start(ap, message);

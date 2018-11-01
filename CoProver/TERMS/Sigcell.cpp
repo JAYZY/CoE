@@ -243,8 +243,8 @@ void Sigcell::SigSetPredicate(FunCode f_code, bool isDel) {
  * 查询该元素是否是一个谓词元素.
  ****************************************************************************/
 bool Sigcell::SigIsPredicate(FunCode f_code) {
-    assert(f_code > 0);
-    assert(f_code <= fCount());
+    assert(f_code > 0);         //确保不是变元
+    assert(f_code <= fCount()); //确保一定是存在的
     return SigQueryFuncProp(f_code, FPPredSymbol);
 }
 

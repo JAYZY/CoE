@@ -23,6 +23,8 @@ TermCellStore::TermCellStore() : entries(0), argCount(0) {
      }*/
     //数组初始化改为：
     memset(store, 0, sizeof (TermCell*) * TERM_STORE_HASH_SIZE);
+    storeEleNum=0;
+    this->hashConflict=0;
 }
 
 TermCellStore::TermCellStore(const TermCellStore& orig) {
@@ -40,8 +42,9 @@ TermCellStore::~TermCellStore() {
 TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
     TermCell* ret;
     FunCode idx=TermCellHash(term);
+    term->idx=idx;
     ret = TermTree::TermTreeInsert(&(store[idx]), term);
-    
+     
 //    cout<<"TermCellStore:"<<idx<<" :";
 //    term->TermPrint(stdout,DerefType::DEREF_ALWAYS);
 //    cout<<endl;

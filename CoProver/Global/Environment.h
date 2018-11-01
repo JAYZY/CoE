@@ -23,7 +23,7 @@ public:
     static uint64_t global_clause_counter;
     static uint64_t backword_CMP_counter; //backword 比较次数
     static uint64_t backword_Finded_counter; //backword 找到冗余次数
-    
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -37,8 +37,12 @@ public:
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
     //
-
-    static void iniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
+    /// 初始化全局扫描器,读取文件
+    /// \param type 扫描器类型
+    /// \param name 读取文件名称
+    /// \param ignore_comments 是否忽略注释,往往是/*开头
+    /// \param default_dir 默认路径(一般为nullptr)
+    static void IniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
         in = new Scanner(type, name, ignore_comments, default_dir);
         in->SetFormat(parseFormat);
         if (parseFormat == IOFormat::AutoFormat && Env::in->format == IOFormat::TSTPFormat) {
@@ -68,21 +72,7 @@ public:
 private:
 
 };
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-static inline double cpuTime(void);
 
-static inline double cpuTime(void) {
-    struct rusage ru;
-    getrusage(RUSAGE_SELF, &ru);
-    return (double) ru.ru_utime.tv_sec + (double) ru.ru_utime.tv_usec / 1000000;
-}
-
-static inline void paseTime(const char* tip, double initial_time) {
-    printf("|  %stime:           %12.2f s                 |\n", tip, cpuTime() - initial_time);
-
-}
 
 
 #endif /* ENVIRONMENT_H */

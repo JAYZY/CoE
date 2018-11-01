@@ -66,6 +66,9 @@ public:
         vCount = 0;
     }
 
+    /**
+     * 重置变元列表为空(设置总数量为空)
+     */
     inline void VarBankResetVCount() {
         vCount = 0;
     }
@@ -92,17 +95,17 @@ public:
     TermCell* VarBankGetFreshVar();
 
     TermCell* TermEquivCellAlloc(TermCell* term);
-    
+
     long VarBankCheckBindings(FILE* out, Sigcell* sig);
-    
+
     Term_p VarBankFCodeAssertAlloc(FunCode f_code);
-    
+
     Term_p VarBankFCodeFind(FunCode f_code);
-    
-    void print(){
+
+    void print() {
         extIndex.Print();
     }
-    
+
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/

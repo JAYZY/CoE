@@ -13,7 +13,7 @@
 
 #ifndef UNIFY_H
 #define UNIFY_H
-#include "Global/IncDefine.h"
+#include "CLAUSE/Literal.h"
 #include "Subst.h"
 class TermCell;
 
@@ -32,24 +32,13 @@ public:
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
     //
-    static bool SubstComputeMatch(TermCell* matcher, TermCell* to_match, Subst*subst);
-    //bool SubstComputeMgu(Term_p t1, Term_p t2,  vector<TermCell*>&subst);
-
-    //    /* 回滚替换变元,直到给定的位置pos -- Backtrack variable bindings up to (down to?) a given stack pointer position. */
-    //    int SubstBacktrackToPos(int pos, vector<TermCell*> &vecSubst);
-    //private:
-    //    
-    //    int SubstAddBinding(TermCell* var, TermCell* bind, vector<TermCell*> &vecSubst);
-    //
-    //    /* Backtrack a single binding and remove it from the substitution (if possible). 
-    //     * Return true if successful, false if the substitutuion is empty. */
-    //    bool SubstBacktrackSingle( vector<TermCell*> &vecSubst);
-    //
-    //   
-    //
-    //    /* Undo all stored variable binding in subst. */
-    //    int SubstBacktrack( vector<TermCell*> &vecSubst);
-
+    bool OccurCheck(Term_p term, Term_p var);
+    bool SubstComputeMatch(TermCell* matcher, TermCell* to_match, Subst*subst);
+    bool SubstComputeMgu(Term_p t1, Term_p t2, Subst_p subst);
+    bool literalMgu(Literal* litA,Literal* litB,Subst_p subst);
+    //等词的合一   E(f(x),f(a))  -E(x,f(b))
+    
+    bool literalEMgu(Literal* litA, Literal* litB, Subst_p subst);
 };
 
 #endif /* UNIFY_H */

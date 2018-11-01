@@ -28,7 +28,7 @@ private:
 public:
     unsigned long inCount; /* TermBank中项个数统计 不需要!!! -- How many terms have been inserted? */
     //Sig_p sig; /* Store sig info */
-    VarBank* vars; /* 共享变元存储对象 -- Information about (shared) variables */
+    VarBank* shareVars; /* 共享变元存储对象 -- Information about (shared) variables */
     TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
     TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
     TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
@@ -81,6 +81,7 @@ public:
         term->TermPrint(out, DerefType::DEREF_NEVER);
     }
 
+    
     static inline bool TBTermEqual(TermCell* t1, TermCell* t2) {
         return (t1 == t2);
     }
@@ -123,7 +124,7 @@ public:
     TermCell* DefaultSharedTermCellAlloc(void);
 
     /* 解析scanner对象为一个Term,并存储到termbank中. */
-    TermCell* TBTermParseReal(Scanner* in, bool isCheckSymbProp);
+    TermCell* TBTermParseReal(Scanner* in, VarBank_p varbank,bool isCheckSymbProp);
 
     /* Make ref point to a term of the same structure as *ref, but with properties prop set. 
      * Properties do not work for variables! */
@@ -135,11 +136,11 @@ public:
     //  TermCell* TermEquivCellAlloc(TermCell* source, VarBank_p vars);
 
     /* 插入一个Term　项到　termbank中 */
-    TermCell* TBInsert(TermCell* term, DerefType deref);
+    TermCell* TBInsert(TermCell* term,  VarBank_p varbank,DerefType deref);
     /* 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0; */
-    TermCell* TBInsertNoProps(TermCell* term, DerefType deref);
+    TermCell* TBInsertNoProps(TermCell* term, VarBank_p varbank, DerefType deref);
 
-    TermCell* TBInsertOpt(TermCell* term, DerefType deref);
+    TermCell* TBInsertOpt(TermCell* term, VarBank_p varbank, DerefType deref);
 
     TermCell* TBInsertRepl(TermCell* term, DerefType deref, TermCell* old, TermCell* repl);
     /* 插入项t到TermBank 中,判断是否为基项或存在绑定,该方法用于rewrite  */
@@ -151,8 +152,8 @@ public:
     /* Find a term in the term cell bank and return it. */
     TermCell* TBFind(TermCell* term);
 
-    /* If bank->min_term exists, return it. Otherwise create and return it. */
-    Term_p TBCreateMinTerm(FunCode min_const);
+    /* If bank->min_term exists, return it. Otherwise create and return it. 
+    Term_p TBCreateMinTerm(FunCode min_const);*/
 
     /*--输出--*/
     void TBPrintBankInOrder(FILE* out);
@@ -160,6 +161,6 @@ public:
     void TBPrintTermCompact(FILE* out, TermCell* term);
     TermCell* TBInsertDisjoint(TermCell* term);
 };
-typedef TermBank *TB_p;
+typedef TermBank *TermBank_p;
 #endif /* TERMBANK_H */
 

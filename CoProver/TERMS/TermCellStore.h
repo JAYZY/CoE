@@ -24,6 +24,9 @@ public:
     long entries; //存储的项的个数（包括子项，eg. f1(a1,a3) entries=3
     long argCount; //存储函数项的元个数　eg. f1(a1,f2(a3))  argCount=2+1=3    
     TermCell* store[TERM_STORE_HASH_SIZE];
+    //zj-add hash冲突次数
+    long hashConflict;
+    long storeEleNum;
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */

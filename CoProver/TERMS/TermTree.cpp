@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "TermTree.h"
+#include "Global/Environment.h"
 
 /* zj新增方法:遍历TermTree 将结点放入一个新的树中 */
 void TermTree::TermTreeTraverseInit(TermCell* t, SplayTree<NumTreeCell>&sTree) {
@@ -216,12 +217,13 @@ TermCell* TermTree::TermTreeInsert(TermCell* *root, TermCell* newTerm) {
 
     if (!*root) {
         newTerm->lson = newTerm->rson = nullptr;
-        *root = newTerm;
+        *root = newTerm;      
         return nullptr;
     }
 
     *root = SplayTermTree(*root, newTerm);
-
+    
+    ++Env::getTb()->termStore.hashConflict;
     cmpres = TermTopCompare(newTerm, *root);
 
     if (cmpres < 0) {

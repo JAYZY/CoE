@@ -39,7 +39,7 @@ WFormula::WFormula() {
 //
 /----------------------------------------------------------------------*/
 
-WFormula::WFormula(TB_p terms, TFormula_p formula) : WFormula() {
+WFormula::WFormula(TermBank_p terms, TFormula_p formula) : WFormula() {
 
     this->terms = terms;
     this->tformula = formula;
@@ -52,7 +52,7 @@ WFormula::WFormula(const WFormula& orig) {
 WFormula::~WFormula() {
 }
 
-WFormula* WFormula::WFormulaParse(Scanner* in, TB_p terms) {
+WFormula* WFormula::WFormulaParse(Scanner* in, TermBank_p terms) {
     WFormula* wform = nullptr;
     switch (in->GetFormat()) {
         case IOFormat::LOPFormat:
@@ -78,7 +78,7 @@ WFormula* WFormula::WFormulaParse(Scanner* in, TB_p terms) {
 /// \param terms
 /// \return 
 
-void WFormula::WFormulaTPTPParse(Scanner* in, TB_p tbs) {
+void WFormula::WFormulaTPTPParse(Scanner* in, TermBank_p tbs) {
     Term_p tform;
     WFormulaProp type;
     //WFormula* handle;
@@ -134,7 +134,7 @@ void WFormula::WFormulaTPTPParse(Scanner* in, TB_p tbs) {
 /// \param terms
 /// \return 
 
-void WFormula::WFormulaTSTPParse(Scanner* in, TB_p tbs) {
+void WFormula::WFormulaTSTPParse(Scanner* in, TermBank_p tbs) {
     TFormula_p tform;
     WFormulaProp type = WFormulaProp::WPTypeAxiom;
     // WFormulaProp initial = WFormulaProp::WPInputFormula;
@@ -195,7 +195,7 @@ void WFormula::WFormulaTSTPParse(Scanner* in, TB_p tbs) {
 /// \param terms
 /// \return 
 
-TFormula_p WFormula::TFormulaTPTPParse(Scanner* in, TB_p terms) {
+TFormula_p WFormula::TFormulaTPTPParse(Scanner* in, TermBank_p terms) {
     TFormula_p f1, f2, res;
     FunCode op;
     f1 = elem_tform_tptp_parse(in, terms);
@@ -214,7 +214,7 @@ TFormula_p WFormula::TFormulaTPTPParse(Scanner* in, TB_p terms) {
 /// \param terms
 /// \return 
 
-TFormula_p WFormula::TFormulaTSTPParse(Scanner* in, TB_p terms) {
+TFormula_p WFormula::TFormulaTSTPParse(Scanner* in, TermBank_p terms) {
     TFormula_p f1, f2, res;
     FunCode op;
 
@@ -236,7 +236,7 @@ TFormula_p WFormula::TFormulaTSTPParse(Scanner* in, TB_p terms) {
 /// \param tbs
 /// \return 
 
-bool WFormula::WFormulaSimplify(TB_p tbs) {
+bool WFormula::WFormulaSimplify(TermBank_p tbs) {
 
     bool res = false;
 
@@ -282,7 +282,7 @@ bool WFormula::TFormulaIsPropConst(Sig_p sig, TFormula_p form, bool positive) {
 
 //Return true iff var is a free variable in form.
 
-bool WFormula::TFormulaVarIsFree(TB_p bank, TFormula_p form, Term_p var) {
+bool WFormula::TFormulaVarIsFree(TermBank_p bank, TFormula_p form, Term_p var) {
     bool res = false;
     int i;
     Sigcell* sig = Env::getSig();
@@ -310,10 +310,10 @@ bool WFormula::TFormulaVarIsFree(TB_p bank, TFormula_p form, Term_p var) {
 
 //   Allocate a formula representing a propositional constant (true or false). 
 
-TFormula_p WFormula::TFormulaPropConstantAlloc(TB_p tbs, bool positive) {
+TFormula_p WFormula::TFormulaPropConstantAlloc(TermBank_p tbs, bool positive) {
 
     Literal* handle = new Literal();
-    handle->EqnAlloc(terms->trueTerm, terms->trueTerm, tbs, positive);
+    handle->EqnAlloc(terms->trueTerm, terms->trueTerm,  positive);
     TFormula_p res = TFormulaLitAlloc(handle);
     DelPtr(handle);
     return res;
@@ -350,7 +350,7 @@ TFormula_p WFormula::tprop_arg_return(Sig_p sig, TFormula_p arg1, TFormula_p arg
 //
 /----------------------------------------------------------------------*/
 
-TFormula_p WFormula::TFormulaSimplify(TB_p tbs, TFormula_p form) {
+TFormula_p WFormula::TFormulaSimplify(TermBank_p tbs, TFormula_p form) {
     TFormula_p handle, arg1 = NULL, arg2 = NULL, newform;
     FunCode f_code;
     bool modified = false;
@@ -478,7 +478,7 @@ TFormula_p WFormula::TFormulaSimplify(TB_p tbs, TFormula_p form) {
 /// \param terms
 /// \return 
 
-TFormula_p WFormula::elem_tform_tptp_parse(Scanner* in, TB_p terms) {
+TFormula_p WFormula::elem_tform_tptp_parse(Scanner* in, TermBank_p terms) {
     TFormula_p res, tmp;
 
     if (in->TestInpTok(TokenType::AllOrExistQuantor)) {
@@ -502,7 +502,7 @@ TFormula_p WFormula::elem_tform_tptp_parse(Scanner* in, TB_p terms) {
     return res;
 }
 
-TFormula_p WFormula::literal_tform_tstp_parse(Scanner* in, TB_p terms) {
+TFormula_p WFormula::literal_tform_tstp_parse(Scanner* in, TermBank_p terms) {
     TFormula_p res, tmp;
     if (in->TestInpTok(TokenType::AllOrExistQuantor)) {//AllQuantor | ExistQuantor
 
@@ -528,7 +528,7 @@ TFormula_p WFormula::literal_tform_tstp_parse(Scanner* in, TB_p terms) {
 
 //Parse a sequence of formulas connected by a single AC operator and return it.
 
-TFormula_p WFormula::assoc_tform_tstp_parse(Scanner* in, TB_p terms, TFormula_p head) {
+TFormula_p WFormula::assoc_tform_tstp_parse(Scanner* in, TermBank_p terms, TFormula_p head) {
 
     TokenType optok = in->AktTokenType();
     FunCode op = tptp_operator_convert(optok);
@@ -618,7 +618,7 @@ FunCode WFormula::tptp_operator_parse(Scanner* in) {
 /// \param quantor
 /// \return 
 
-TFormula_p WFormula::quantified_tform_tptp_parse(Scanner* in, TB_p terms, FunCode quantor) {
+TFormula_p WFormula::quantified_tform_tptp_parse(Scanner* in, TermBank_p terms, FunCode quantor) {
     Term_p var;
     TFormula_p rest, res;
     string source_name, errpos;
@@ -630,7 +630,7 @@ TFormula_p WFormula::quantified_tform_tptp_parse(Scanner* in, TB_p terms, FunCod
     source_name = in->AktToken()->source;
     type = in->AktToken()->streamType;
 
-    var = terms->TBTermParseReal(in, true);
+    var = terms->TBTermParseReal(in, terms->shareVars,true);
     if (!var->IsVar()) {
         errpos += in->PosRep(type, source_name, line, column);
         errpos += " Variable expected, non-variable term found";
@@ -649,7 +649,7 @@ TFormula_p WFormula::quantified_tform_tptp_parse(Scanner* in, TB_p terms, FunCod
     return res;
 }
 
-TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TB_p terms, FunCode quantor) {
+TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TermBank_p terms, FunCode quantor) {
     Term_p var;
     TFormula_p rest, res;
     string source_name, errpos;
@@ -659,7 +659,7 @@ TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TB_p terms, FunCod
     long column = in->AktToken()->column;
     source_name = in->AktToken()->source;
     StreamType type = in->AktToken()->streamType;
-    var = terms->TBTermParseReal(in, true);
+    var = terms->TBTermParseReal(in,terms->shareVars, true);
 
     if (!var->IsVar()) {
         errpos += in->PosRep(type, source_name, line, column);
@@ -688,7 +688,7 @@ TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TB_p terms, FunCod
 /// \param arg2
 /// \return 
 
-TFormula_p WFormula::TFormulaFCodeAlloc(TB_p bank, FunCode op, TFormula_p arg1, TFormula_p arg2) {
+TFormula_p WFormula::TFormulaFCodeAlloc(TermBank_p bank, FunCode op, TFormula_p arg1, TFormula_p arg2) {
 
     Sigcell* sig = Env::getSig();
 

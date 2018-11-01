@@ -123,6 +123,24 @@ public:
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/
     //
+
+    static FILE* SecureFOpen(char* name, char* mode) {
+        FILE* res;
+        res = fopen(name, mode);
+        if (!res) {
+            TmpErrno = errno;
+            Out::SysError("Cannot open file %s", ErrorCodes::FILE_ERROR, name);
+        }
+        return res;
+    }
+
+    static void SecureFClose(FILE* fp) {
+        if (fclose(fp)) {
+            TmpErrno = errno;
+            Out::SysWarning("Problem closing file");
+        }
+    }
+
     /* 创建一个输出文件 */
     static void CreateFile(const string&name, const string fileName);
 
@@ -190,8 +208,8 @@ public:
     inline static string FileNameBaseName(const string& fileFullName) {
         assert(!fileFullName.empty());
         int pos = fileFullName.find_last_of('/');
-       return fileFullName.substr(pos + 1);
-          
+        return fileFullName.substr(pos + 1);
+
     }
 
 

@@ -35,10 +35,11 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Alg/TriAlg.o \
 	${OBJECTDIR}/CLAUSE/Clause.o \
-	${OBJECTDIR}/CLAUSE/Formula.o \
 	${OBJECTDIR}/CLAUSE/Literal.o \
 	${OBJECTDIR}/Formula/ClauseSet.o \
+	${OBJECTDIR}/Formula/Formula.o \
 	${OBJECTDIR}/Formula/FormulaSet.o \
 	${OBJECTDIR}/Formula/WFormula.o \
 	${OBJECTDIR}/Global/Environment.o \
@@ -55,9 +56,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/Inferences/Subst.o \
 	${OBJECTDIR}/Inferences/Unify.o \
 	${OBJECTDIR}/LIB/Out.o \
-	${OBJECTDIR}/Ordering/KBO.o \
+	${OBJECTDIR}/Orderings/KBO.o \
+	${OBJECTDIR}/Orderings/Ordering.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
 	${OBJECTDIR}/Prover/Prover.o \
+	${OBJECTDIR}/TERMS/GroundTermBank.o \
 	${OBJECTDIR}/TERMS/Sigcell.o \
 	${OBJECTDIR}/TERMS/TermBank.o \
 	${OBJECTDIR}/TERMS/TermCell.o \
@@ -92,15 +95,15 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/Alg/TriAlg.o: Alg/TriAlg.cpp
+	${MKDIR} -p ${OBJECTDIR}/Alg
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/TriAlg.o Alg/TriAlg.cpp
+
 ${OBJECTDIR}/CLAUSE/Clause.o: CLAUSE/Clause.cpp
 	${MKDIR} -p ${OBJECTDIR}/CLAUSE
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Clause.o CLAUSE/Clause.cpp
-
-${OBJECTDIR}/CLAUSE/Formula.o: CLAUSE/Formula.cpp
-	${MKDIR} -p ${OBJECTDIR}/CLAUSE
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Formula.o CLAUSE/Formula.cpp
 
 ${OBJECTDIR}/CLAUSE/Literal.o: CLAUSE/Literal.cpp
 	${MKDIR} -p ${OBJECTDIR}/CLAUSE
@@ -111,6 +114,11 @@ ${OBJECTDIR}/Formula/ClauseSet.o: Formula/ClauseSet.cpp
 	${MKDIR} -p ${OBJECTDIR}/Formula
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/ClauseSet.o Formula/ClauseSet.cpp
+
+${OBJECTDIR}/Formula/Formula.o: Formula/Formula.cpp
+	${MKDIR} -p ${OBJECTDIR}/Formula
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/Formula.o Formula/Formula.cpp
 
 ${OBJECTDIR}/Formula/FormulaSet.o: Formula/FormulaSet.cpp
 	${MKDIR} -p ${OBJECTDIR}/Formula
@@ -192,10 +200,15 @@ ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
 
-${OBJECTDIR}/Ordering/KBO.o: Ordering/KBO.cpp
-	${MKDIR} -p ${OBJECTDIR}/Ordering
+${OBJECTDIR}/Orderings/KBO.o: Orderings/KBO.cpp
+	${MKDIR} -p ${OBJECTDIR}/Orderings
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Ordering/KBO.o Ordering/KBO.cpp
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Orderings/KBO.o Orderings/KBO.cpp
+
+${OBJECTDIR}/Orderings/Ordering.o: Orderings/Ordering.cpp
+	${MKDIR} -p ${OBJECTDIR}/Orderings
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Orderings/Ordering.o Orderings/Ordering.cpp
 
 ${OBJECTDIR}/PROOF/ProofControl.o: PROOF/ProofControl.cpp
 	${MKDIR} -p ${OBJECTDIR}/PROOF
@@ -206,6 +219,11 @@ ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${MKDIR} -p ${OBJECTDIR}/Prover
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Prover/Prover.o Prover/Prover.cpp
+
+${OBJECTDIR}/TERMS/GroundTermBank.o: TERMS/GroundTermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/TERMS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/GroundTermBank.o TERMS/GroundTermBank.cpp
 
 ${OBJECTDIR}/TERMS/Sigcell.o: TERMS/Sigcell.cpp
 	${MKDIR} -p ${OBJECTDIR}/TERMS

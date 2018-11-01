@@ -20,7 +20,6 @@ class ClauseSet {
 private:
     // long members; /* How many clauses are there? */
     long literals; /* And how many literals? */
-
     SysDate date; /* Age of the clause set, used for optimizing rewriting. 
                 * The special date SysCreationDate() is used to indicate 
                 * ignoring of dates when checking for irreducability. */
@@ -55,10 +54,24 @@ public:
         claSet.pop_front();
         return handle;
     }
-    inline void Sort(){
+    //按文字降序排列
+
+    inline void SortByLitNumDesc() {
         claSet.sort(
-        [](Clause*c1,Clause*c2)->bool{return c1->LitsNumber()>c2->LitsNumber();});
+                [](Clause*c1, Clause * c2)->bool {
+                    return c1->LitsNumber() > c2->LitsNumber();
+                });
     }
+    //按文字升序排列
+
+    inline void SortByLitNumAsc() {
+        claSet.sort(
+                [](Clause*c1, Clause * c2)->bool {
+                    return c1->LitsNumber() < c2->LitsNumber();
+                });
+    }
+    
+    inline list<Clause*>* getClaSet(){return &claSet;}
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
@@ -66,9 +79,9 @@ public:
     long InsertSet(ClauseSet* set);
 
     void CopyClalst(list<Clause*>&retClaSet);
-    
-    void Print();
-    
+
+    void Print(FILE*out);
+
     /// 删除所有子句
 
     void FreeClauses();

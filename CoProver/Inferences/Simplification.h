@@ -22,11 +22,10 @@ public:
     virtual ~Simplification();
 
 public:
-
+    static map<TermCell*, int> termcmp;
     //检查子句 genCla是否有效,有任意替换r使得 g*r = c ?
-    static bool ForwordSubsumption(Clause* genCla, TermIndexing* indexing);
-
-    static bool BackWordSubsumption(Clause* genCla, TermIndexing* indexing);
+    static bool ForwardSubsumption(Clause* genCla, TermIndexing* indexing);
+    static bool BackWardSubsumption(Clause* genCla, TermIndexing* indexing);
 
 private:
 

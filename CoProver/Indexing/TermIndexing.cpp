@@ -16,7 +16,7 @@
 #include "TermIndexing.h"
 #include "CLAUSE/Literal.h"
 #include "CLAUSE/Clause.h"
-
+   map<TermCell*,int> TermIndexing::constTermNum; 
 TermIndexing::TermIndexing() {
     chgVars = new Subst();
 
@@ -127,6 +127,9 @@ void DiscrimationIndexing::Insert(Literal * lit) {
 /// \return 
 
 TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell * term) {
+    //zj:记录基项个数
+    if(term->TBTermIsGround())
+        ++constTermNum[term];
     vector<TermCell*> vecTerm;
 
     vecTerm.reserve(MAX_SUBTERM_SIZE); //假设大部分项的符号个数不超过32个;
@@ -583,7 +586,7 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
 
 void DiscrimationIndexing::ClearVarLst() {
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         varLst[i].clear();
         vector<TermCell*>().swap(varLst[i]);
     }

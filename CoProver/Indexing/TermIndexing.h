@@ -64,6 +64,7 @@ class TermIndexing {
 public:
     //vector<TermCell*> chgVars; //记录有绑定的变元项
     Subst* chgVars;
+     static map<TermCell*,int> constTermNum; 
 protected:
 
     //回退点定义
@@ -104,13 +105,14 @@ public:
 private:
     virtual void InsertTerm(TermIndNode* treeNode, TermCell * term);
 public:
-
+    inline int GetTermNum(TermCell* t){return constTermNum[t];}
+    
     inline TermIndNode* getRoot(Literal* lit) {
 
         if (lit->EqnIsEquLit()) {
-            return lit->EqnIsPositive() ? posEqnRoot : negEqnRoot;
+            return lit->IsPositive() ? posEqnRoot : negEqnRoot;
         } else
-            return lit->EqnIsPositive() ? posRoot : negRoot;
+            return lit->IsPositive() ? posRoot : negRoot;
 
 
     }
@@ -206,7 +208,7 @@ public:
 class DiscrimationIndexing : public TermIndexing {
 private:
 
-    vector<TermCell*> varLst[8000]; //上限 一个term中最多只能有1000个变元
+    vector<TermCell*> varLst[1000]; //上限 一个term中最多只能有1000个变元
     vector<uint32_t> stVarChId; //记录有存在替换的变量ID
     vector<BackPoint*> backpoint; /*回退点*/
     /// 在节点treeNode 后面插入 项t的所有符号

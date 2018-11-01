@@ -12,6 +12,28 @@
 #ifndef LITERALCMP_H
 #define LITERALCMP_H
 #include "Literal.h"
+#include "Clause.h"
+
+/**
+ * 单元子句排序规则-根据文字权重排序
+ */
+class UnitClaCompareWithWeight {
+public:
+    int operator()(Clause* cA, Clause* cB) {
+        return cA->Lits()->StandardWeight() - cB->Lits()->StandardWeight();
+    }
+};
+
+class EqnCompareKBO6 {
+public:
+
+    int operator()(Literal*t1, Literal* t2) {
+        CompareResult res = t1->Compare(t2);
+        if (res == CompareResult::toGreater)
+            return 1;
+        return -1;
+    }
+};
 
 class SteadyCMP {
 public:
@@ -40,15 +62,18 @@ class ImprovementCMP {
 public:
 
     float operator()(Literal* t1, Literal * t2) {
+
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
             return 1;
+
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t1->zjlitWight - t2->zjlitWight;
     }
 };
 //比较每个项
+
 class SubTermCMP {
 public:
 
@@ -56,27 +81,32 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //无位置<变元<常元
-        
+
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t1->zjlitWight - t2->zjlitWight;
     }
 };
 
 //只比较个数
-class ConstLenCMP{
-    public:
+
+class ConstLenCMP {
+public:
+
     float operator()(Literal* t1, Literal * t2) {
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t1->ConstNum() - t2->ConstNum(); //变元越多越不稳定
     }
 };
 //只比较变元个数
+
 class OnlyVarLenCMP {
 public:
 
@@ -84,6 +114,7 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t2->VarNum() - t1->VarNum(); //变元越多越不稳定
@@ -98,6 +129,7 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t1->EqnDepth() - t2->EqnDepth(); //变元越多越不稳定
@@ -107,12 +139,13 @@ public:
 class StandardWCMP {
 public:
 
-    int operator()(Literal* t1, Literal * t2) {     
+    int operator()(Literal* t1, Literal * t2) {
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
             return 1;
         long x = (t1->StandardWeight() - t2->StandardWeight());
+
         return x;
     }
 };
@@ -124,6 +157,7 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return 1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return -1;
         return t1->xyW - t2->xyW;
     }
@@ -141,5 +175,7 @@ public:
         return t1->xyW - t2->xyW;
     }
 };
+
+
 #endif /* LITERALCMP_H */
 

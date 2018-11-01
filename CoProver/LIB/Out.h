@@ -64,8 +64,8 @@ public:
     }
     __attribute__ ((noreturn))
     static void SysError(const char* message, ErrorCodes ret, ...);
-    static void Warning(char* message, ...);
-    static void SysWarning(char* message, ...);
+    static void Warning(const char* message, ...);
+    static void SysWarning(const char* message, ...);
 
 public:
     Out();

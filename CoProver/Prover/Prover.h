@@ -13,12 +13,15 @@
 
 #ifndef PROVER_H
 #define PROVER_H
-
+#include "Global/IncDefine.h"
+#include "Formula/Formula.h"
 class Prover {
 public:
     Prover();
     Prover(const Prover& orig);
     virtual ~Prover();
+    
+   
 private:
 
 };

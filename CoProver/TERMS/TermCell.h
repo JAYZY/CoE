@@ -18,6 +18,7 @@
 
 #include "Sigcell.h"
 #include <stack>
+#include <stdint.h>
 
 enum class DerefType : uint8_t {
     TRUECODE = 1,
@@ -120,8 +121,9 @@ public:
     // RewriteState rw_data; /* See above */
     TermCell* lson; /* For storing shared term nodes in */
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
-    
-   
+
+    uint16_t uVarCount; //变元计数
+    FunCode idx;
 
 private:
     static TermCell* parse_cons_list(Scanner* in, VarBank* vars);
@@ -167,18 +169,7 @@ public:
 private:
     void TermTopFree();
 public:
-    /*****************************************************************************
-     * 根据定义的类型－－决定term变元binding遍历的类型 
-     ****************************************************************************/
-    TermCell* TermCopy(VarBank* vars, DerefType deref);
 
-    /*创建一个constant term 如　ａ ,b */
-    static TermCell* TermConstCellAlloc(long symbol) {
-        TermCell* t = new TermCell();
-        t->weight = DEFAULT_FWEIGHT;
-        t->fCode = symbol;
-        return t;
-    }
 
 
     /*---------------------------------------------------------------------*/
@@ -262,7 +253,6 @@ public:
     inline TermCell** TermArgListCopy() {
         TermCell* *handle;
         if (arity) {
-
             handle = new TermCell*[arity];
             for (int i = 0; i < arity; ++i) {
                 handle[i] = args[i];
@@ -336,9 +326,12 @@ public:
         return (arity > 0) && (weight == (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT));
     }
 
+
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
+   
+
 
     /* 变元项输出 */
     void VarPrint(FILE* out);
@@ -356,7 +349,7 @@ public:
 
 
     /* 检查项是否为基项 ground 不包括变元项 注:不检查　变元绑定情况 */
-    bool TermIsGround();
+    bool IsGround();
     /* fcode 是否存该项的子项中,eg.判断a1,是否是f(a1,a2)的子项 */
     bool TermHasFCode(FunCode f);
     /* Return if the term contains unbound variables.Does not follow bindings. */
@@ -372,6 +365,8 @@ public:
 
     FunCode TermFindMaxVarCode();
     TermCell* TermEquivCellAlloc(VarBank* vars);
+    TermCell* renameCopy(VarBank* vars, DerefType deref=DerefType::DEREF_ALWAYS);
+    TermCell* TermCopy(VarBank* vars, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);
 
@@ -406,7 +401,14 @@ public:
     /*---------------------------------------------------------------------*/
 
     //临时方法 -------------
-    /* Parse an operator */
+
+    /*创建一个constant term 如　ａ ,b */
+    static TermCell* TermConstCellAlloc(long symbol) {
+        TermCell* t = new TermCell();
+        t->weight = DEFAULT_FWEIGHT;
+        t->fCode = symbol;
+        return t;
+    }
 
     /*创建一个function term 函数符如　f */
     static TermCell* TermTopAlloc(long f_code, int arity) {
@@ -425,7 +427,7 @@ public:
 
     /* 根据定义的类型－－决定term变元binding遍历的类型,返回项绑定的元素项 */
     static inline TermCell* TermDeref(TermCell* term, DerefType deref) {
-        assert((term) || !(term->binding));
+        assert((term->IsVar()) || !(term->binding));
         if (deref == DerefType::DEREF_ALWAYS) {
             while (term->binding) {
                 term = term->binding;
@@ -442,6 +444,16 @@ public:
         }
         return term;
     }
+
+    static inline TermCell* TermDerefAlways(TermCell* term) {
+        assert((term->IsVar()) || !(term->binding));
+        while (term->binding) {
+            term = term->binding;
+        }
+        return term;
+
+    }
+
     static FuncSymbType TermParseOperator(Scanner* in, string&idStr);
     static int TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank* vars);
     static TermCell* TermParse(Scanner* in, VarBank* vars);

@@ -87,7 +87,6 @@ typedef FuncCell *Func_p;
 //#define FuncSymbStartToken (Identifier | SemIdent | SQString | PosInt | String | Plus | Hyphen) 
 
 
-
 class Scanner;
 
 class Sigcell {

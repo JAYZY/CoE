@@ -11,10 +11,9 @@
  * Created on 2017年12月23日, 下午1:58
  */
 
-#ifndef LITERAL_H
+#ifndef LITERAL_H 
 #define LITERAL_H
 #include <map>
-
 #include "TERMS/TermCell.h"
 #include "TERMS/TermBank.h"
 #include "Global/Environment.h"
@@ -60,6 +59,7 @@ public:
     Literal* parentLitPtr; //父子句文字
     float xyW;
     float zjlitWight;
+    int reduceTime; //在归结中消除的其他文字的次数
 public:
     Literal();
     Literal(Term_p lt, Term_p rt, bool positive);
@@ -91,20 +91,30 @@ public:
     inline FunCode EqnGetPredCode() {
         return EqnIsEquLit() ? 0 : this->lterm->fCode;
     }
+    //比较两个文字对某个属性的拥有情况一致.要么都有,要么都没有.
 
-    inline bool EqnIsPositive() {
+    inline bool EqnAreEquivProps(Literal* lit, EqnProp prop) {
+        return PropsAreEquiv(this->properties, lit->properties, prop);
+    }
+    //是否文本被强行指定(选择)
+
+    inline bool IsSelected() {
+        return EqnQueryProp(EqnProp::EPIsSelected);
+    }
+
+    inline bool IsPositive() {
         return EqnQueryProp(EqnProp::EPIsPositive);
     }
 
-    inline bool EqnIsNegative() {
+    inline bool IsNegative() {
         return !(EqnQueryProp(EqnProp::EPIsPositive));
     }
 
-    inline bool EqnIsMaximal() {
+    inline bool IsMaximal() {
         return EqnQueryProp(EqnProp::EPIsMaximal);
     }
 
-    inline bool EqnIsOriented() {
+    inline bool IsOriented() {
         return EqnQueryProp(EqnProp::EPIsOriented);
     }
 
@@ -112,16 +122,31 @@ public:
         return EqnQueryProp(EqnProp::EPIsEquLiteral);
     }
 
-    inline bool EqnIsGround() {
+    inline bool IsGround() {
         return this->lterm->TBTermIsGround() && (this->rterm->TBTermIsGround());
     }
 
-    inline bool EqnIsPropFalse() {
-        return ((lterm == rterm) && EqnIsNegative());
+    inline bool IsPropFalse() {
+        return ((lterm == rterm) && IsNegative());
     }
 
-    inline bool EqnIsTrivial() {
+    inline bool IsTrivial() {
         return this->lterm == this->rterm;
+    }
+
+    inline void swapSides() {
+        Term_p term = this->lterm;
+        this->lterm = this->rterm;
+        this->rterm = term;
+    }
+    //交换左右项(针对等词)
+
+    inline void swapSidesDelProp() {
+        EqnDelProp(EqnProp::EPIsOriented);
+        EqnDelProp(EqnProp::EPMaxIsUpToDate);
+        Term_p term = this->lterm;
+        this->lterm = this->rterm;
+        this->rterm = term;
     }
 
     inline float xyWeight(TermCell* t) {
@@ -184,92 +209,130 @@ public:
     //w=depX+|C|+s(f)     s(f)=1+w/(w+1) 
 
     inline float DepFunc() {
-        float w=0.0f;        
+        float w = 0.0f;
         map<int, int>varGroup;
+        int varN = 0;
         if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
             w = 2.0f;
         } else {
             if (this->EqnIsEquLit()) {
-                w += ClacDepthFunc(this->lterm, varGroup, 1);
+                w += ClacDepthFunc(this->lterm, varGroup, varN);
                 if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
                     if (w == 2) return 2.0f;
                     w += 2;
                 } else {
-                    w += ClacDepthFunc(this->rterm, varGroup, 1);
+                    w += ClacDepthFunc(this->rterm, varGroup, varN);
                     //w += (subVarW * 1.0f) / (subVarW + 1.0f);
                     //w += subVarW;
                 }
-                 w = 1 + w / (w + 1);
-                 
+                w += varN;
+                w = 1 + w / (w + 1);
+
             } else {
-                w += ClacDepthFunc(this->lterm, varGroup, 0);
-             }
+                w += ClacDepthFunc(this->lterm, varGroup, varN);
+            }
         }
-        if (varGroup[0] == 0)return 2.0f;
-        float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        // if (varGroup[0] == 0)return 2.0f;
+        float sameVarW = (varGroup[0]*1.0f) / (1.0f + varGroup[0]);
         w = WEI * sameVarW + (1 - WEI) * w;
         return w;
     }
-    //f(x)=1.5  f(f(x))= 1+(1+1.5)/(2+1.5) 
-    inline float ClacDepthFunc(TermCell*t, map<int, int>&varGroup, int level = 0) {
+    //f(x)=1.5  f(f(x))= 1+(1+1.5)/(2+1.5)=1.7143  f(f(f(x)))= 1+(1+1.7143)/(2+1.7143)=1.73077
+    //w=depX+|C|+s(f)     s(f)=1+w/(w+1) 
+
+    inline float ClacDepthFunc(TermCell*t, map<int, int>&varGroup, int&varN) {
         float w = 0.0f;
         if (t->IsVar()) {
-            w = level;
-            ++varGroup[0];
-            ++varGroup[t->fCode];
+            ++varN;
+            if (++varGroup[t->fCode] > 1) {
+                ++varGroup[0];
+            }
         } else if (t->IsConst() || t->TBTermIsGround()) {
             w = 2.0f; //常元+2
-        } else if (t->IsFunc()) {            
-            ++level;
+        } else if (t->IsFunc()) {
+            int subVarN = 0;
+
             for (int i = 0; i < t->arity; ++i) {
-                w += ClacDepthFunc(t->args[i], varGroup, level);
+                w += ClacDepthFunc(t->args[i], varGroup, subVarN);
             }
-              
-            //if (w == 2 * t->arity)return 2.0f;
-            // w += (subVarW * 1.0f) / (subVarW + 1.0f);
-            //w += subVarW;
-             w = 1.0f + w / (1 + w);
-         }
+            varN += subVarN;
+            w += subVarN;
+            w = 1.0f + w / (1 + w);
+        }
         return w;
     }
-    /* inline float ClacDepthFunc(TermCell*t, map<int, int>&varGroup, int &varW, int level = 0) {
-            float w = 0.0f;
-            if (t->IsVar()) {
-                varW += level;
-                ++varGroup[0];
-                ++varGroup[t->fCode];
-            } else if (t->IsConst() || t->TBTermIsGround()) {
-                w = 2.0f; //常元+2
-            } else if (t->IsFunc()) {
-                int subVarW = 0;
-                ++level;
-                for (int i = 0; i < t->arity; ++i) {
-                    w += ClacDepthFunc(t->args[i], varGroup, subVarW, level);
-                }
-                if (w == 2 * t->arity)return 2.0f;
-               // w += (subVarW * 1.0f) / (subVarW + 1.0f);
-                w+=subVarW;
-                w = 1.0f + w / (1 + w);
-            }
-            return w;
-        }*/
+    //w=X+depX/(depX+1)+|C|+s(f)     s(f)=1+w/(w+1) 
 
-    //w=depX+|C|     w/(w+1) 
+    inline float DepToOneFunc() {
+        float w = 0.0f;
+        map<int, int>varGroup;
+        float varN = 0;
+        if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
+            w = 2.0f;
+        } else {
+            if (this->EqnIsEquLit()) {
+                w += ClacDepthToOneFunc(this->lterm, varGroup, varN);
+                if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
+                    if (w == 2) return 2.0f;
+                    w += 2;
+                } else {
+                    w += ClacDepthToOneFunc(this->rterm, varGroup, varN);
+                    //w += (subVarW * 1.0f) / (subVarW + 1.0f);
+                    //w += subVarW;
+                }
+                w += varN;
+                w = 1 + w / (w + 1);
+
+            } else {
+                w += ClacDepthToOneFunc(this->lterm, varGroup, varN);
+            }
+        }
+        // if (varGroup[0] == 0)return 2.0f;
+        float sameVarW = (varGroup[0]*1.0f) / (1.0f + varGroup[0]);
+        w = WEI * sameVarW + (1 - WEI) * w;
+        return w;
+    }
+    //f(x)=1.5  f(f(x))= 1+(1+1.5)/(2+1.5)=1.7143  f(f(f(x)))= 1+(1+1.7143)/(2+1.7143)=1.73077
+    //w=depX+|C|+s(f)     s(f)=1+w/(w+1) 
+
+    inline float ClacDepthToOneFunc(TermCell*t, map<int, int>&varGroup, float&varN) {
+        float w = 0.0f;
+        if (t->IsVar()) {
+            ++varN;
+            if (++varGroup[t->fCode] > 1) {
+                ++varGroup[0];
+            }
+        } else if (t->IsConst() || t->TBTermIsGround()) {
+            w = 2.0f; //常元+2
+        } else if (t->IsFunc()) {
+            float subVarN = 0;
+
+            for (int i = 0; i < t->arity; ++i) {
+                w += ClacDepthToOneFunc(t->args[i], varGroup, subVarN);
+            }
+            varN += subVarN / (subVarN + 1.0f);
+            w += subVarN;
+            w = 1.0f + w / (1 + w);
+        }
+        return w;
+    }
 
     inline float DepV() {
+        map<int, int> varGroup;
+        varGroup[0] = 0;
         int v = 0, numC = 0;
         if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
             numC = 2;
         } else {
             if (this->EqnIsEquLit()) {
-                CalcDepV(this->lterm, v, numC, 1);
+                CalcDepV(this->lterm, v, numC, varGroup, 1);
                 if (this->rterm->IsConst() || this->rterm->TBTermIsGround()) {
                     numC += 2;
                 } else
-                    CalcDepV(this->rterm, v, numC, 1);
+                    CalcDepV(this->rterm, v, numC, varGroup, 1);
 
             } else {
-                CalcDepV(this->lterm, v, numC, 0);
+                CalcDepV(this->lterm, v, numC, varGroup, 0);
             }
         }
         if (v == 0) {
@@ -278,20 +341,25 @@ public:
         }
         // float w = v*1.0f / (v + 1) + numC;        
         //return 1 + w / (w + 1);
-        float w = (v * 1.0f + numC);
-        return 1 + w / (w + 1);
+        float w = (v + numC);
+        w = 1 + w / (w + 1.0f);
+        float x = (varGroup[0]*1.0f) / (varGroup[0] + 1);
+        return x * WEI + (1 - WEI) * w;
     }
 
-    inline void CalcDepV(TermCell* t, int &v, int&numC, int level = 0) {
+    inline void CalcDepV(TermCell* t, int &v, int&numC, map<int, int>&varGroup, int level = 0) {
 
-        if (t->IsVar())
+        if (t->IsVar()) {
             v += level;
-        else if (t->IsConst() || t->TBTermIsGround()) {
+            ++varGroup[t->fCode];
+            if (varGroup[t->fCode] > 1)
+                ++varGroup[0];
+        } else if (t->IsConst() || t->TBTermIsGround()) {
             numC += 2; //常元+2
         } else if (t->IsFunc()) {
             ++level;
             for (int i = 0; i < t->arity; ++i) {
-                CalcDepV(t->args[i], v, numC, level);
+                CalcDepV(t->args[i], v, numC, varGroup, level);
             }
         }
     }
@@ -299,8 +367,9 @@ public:
     //w=v+|C|+f     f=w/(w+1) 
 
     inline float NewW() {
-        float w=0.0f;
+        float w = 0.0f;
         map<int, int>varGroup;
+        varGroup[0] = 0;
         if (this->lterm->IsConst() || this->lterm->TBTermIsGround()) {
             w = 2.0f;
         } else {
@@ -315,9 +384,12 @@ public:
             }
             w = 1 + w / (w + 1);
         }
-        if (varGroup[0] == 0)return 2.0f;
-        float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-        w = WEI * sameVarW + (1 - WEI) * w;
+        // if (varGroup[0] == 0)return 2.0f;
+        //cout<<"varGroup[0]"<<varGroup[0]<<endl;
+        float x = (varGroup[0]*1.0f) / (varGroup[0] + 1);
+        //
+        //float sameVarW = (x - varGroup.size() + 1) / (1.0f * varGroup[0]);
+        w = WEI * x + (1 - WEI) * w;
         return w;
     }
     // w=v+|C|+f     f=w/(w+1) 
@@ -326,7 +398,10 @@ public:
         float w = 0.0f;
         if (t->IsVar()) {
             varGroup[t->fCode] += 1;
-            ++varGroup[0];
+            if (varGroup[t->fCode] > 1) {
+                //记录相同变元的个数
+                ++varGroup[0];
+            }
             ++w;
         } else if (t->IsConst() || t->TBTermIsGround()) {
             w += 2.0f; //常元+2
@@ -409,8 +484,40 @@ public:
         }
         return w;
     }
+    //只计算相同的变元个数
 
-    inline float zxmWeight(TermCell* t) {
+    inline float SameX() {
+        map<int, int>varGroup;
+        CalcSameX(this->lterm, varGroup);
+
+        if (this->EqnIsEquLit()) {
+            CalcSameX(this->rterm, varGroup);
+        }
+        //if (varGroup[0] == 0) return this->StandardWeight();
+        float sameVarW = (varGroup[0] *1.0f) / (1.0f + varGroup[0]);
+        return WEI * sameVarW + (1 - WEI) * this->StandardWeight();
+    }
+
+    inline void CalcSameX(TermCell* term, map<int, int>&varGroup) {
+        vector<TermCell*>vecT;
+        vecT.reserve(16);
+        vecT.push_back(term);
+        while (!vecT.empty()) {
+            TermCell* t = vecT.back();
+            vecT.pop_back();
+            if (t->IsVar()) {
+
+                ++varGroup[t->fCode];
+                if (varGroup[t->fCode] > 1)
+                    ++varGroup[0];
+            }
+            for (int i = 0; i < t->arity; ++i) {
+                vecT.push_back(t->args[i]);
+            }
+        }
+    }
+
+    inline float zxmWeight(TermCell * t) {
         float w = 0.0f;
         map<int, int> varSubGroup;
         varSubGroup.clear();
@@ -510,7 +617,7 @@ public:
 
     inline int ConstNum() {
 
-        if (this->EqnIsGround()) return 0;
+        if (this->IsGround()) return 0;
         vector<TermCell*>terms;
         terms.reserve(MAX_SUBTERM_SIZE);
         terms.push_back(lterm);
@@ -551,7 +658,7 @@ public:
     //简单统计变元个数
 
     inline int VarNum() {
-        if (this->EqnIsGround()) return 0;
+        if (this->IsGround()) return 0;
         vector<TermCell*>terms;
         terms.reserve(MAX_SUBTERM_SIZE);
         terms.push_back(lterm);
@@ -628,7 +735,7 @@ public:
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 
-    inline long StandardWeight() {
+    inline long StandardWeight() const {
         return lterm->TermStandardWeight() + rterm->TermStandardWeight();
     }
 
@@ -666,34 +773,7 @@ public:
         return handle;
     }
 
-    /***************************************************************************** 
-     * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
-     ****************************************************************************/
-    inline void EqnListParse(TokenType sep) {
-
-        Scanner* in = Env::getIn();
-        TB_p bank = Env::getTb();
-
-        TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
-
-        if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
-                ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
-                ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
-
-            //单个文字 解析&生成
-            this->EqnParse(in, bank);
-
-            Literal* handle = this;
-            while (in->TestInpTok(sep)) {
-                in->NextToken();
-                //此处过滤项list = EqnParse(in, bank);
-                handle->next = new Literal();
-                handle->next->EqnParse(in, bank);
-                handle = handle->next;
-            }
-        }
-        //return list;
-    }
+    
 
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[private]                           */
@@ -701,7 +781,7 @@ public:
 private:
 
     /*Parse an equation with optional external sign and depending on wether FOF or CNF is being parsed.*/
-    bool eqn_parse_real(Scanner* in, TermBank* bank, TermCell * *lref, TermCell * *rref, bool fof);
+    bool eqn_parse_real(Scanner* in, TermCell * *lref, TermCell * *rref,   bool fof);
 
     /*Parse a literal without external sign assuming that _all_equational literals are prefix. 
      * Return sign. This is for TPTP*/
@@ -713,23 +793,29 @@ private:
     /* Parse a literal without external sign assuming that _all_equational literals are infix. Return sign. 
      * This is for TSTP syntax and E-LOP style.*/
     bool eqn_parse_infix(TermCell* *lref, TermCell* *rref);
+
+    //正文字--正文字 负文字--负文字 比较
+    CompareResult ComparePosToPos(Literal* posEqn);
+    //正文字--负文字 比较
+    CompareResult ComparePosToNeg(Literal* negEqn);
+    //负文字--正文字 比较   CompareResult CompareNegToPos(Literal* posEqn);
 public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //    
 
-    void EqnParse(Scanner* in, TermBank* bank) {
+    void EqnParse(Scanner* in) {
 
         Term_p lt = nullptr, rt = nullptr;
-        bool positive = eqn_parse_real(in, bank, &lt, &rt, false);
-        EqnAlloc(lt, rt, bank, positive);
+        bool positive = eqn_parse_real(in, &lt, &rt,false);
+        EqnAlloc(lt, rt, positive);
 
         //计算徐杨稳定度
-        xyW = xyWeight(lt);
-        if (this->EqnIsEquLit()) {
-            xyW = (xyW + xyWeight(rt)) / 2.0f;
-        }
+        //        xyW = xyWeight(lt);
+        //        if (this->EqnIsEquLit()) {
+        //            xyW = (xyW + xyWeight(rt)) / 2.0f;
+        //        }
         //计算钟小梅稳定度
         //        map<int, int>varGroup;
         //        xyW = zxmWeight(lt);
@@ -766,10 +852,13 @@ public:
         //        }
         //改进变元函数嵌套算法        
 
+        //zjlitWight =  SameX();
         //zjlitWight = DepV();
-       //  zjlitWight = DepFunc();
-         zjlitWight = NewW();
-        // zjlitWight = NewW2();
+
+        // zjlitWight = DepFunc();
+        zjlitWight = DepToOneFunc();
+        //zjlitWight = NewW();
+        //zjlitWight = NewW2();
         //改进的稳定度算法1
         /*{
             map<int, int>varGroup;
@@ -813,11 +902,11 @@ public:
         //        }
     }
 
-    void EqnAlloc(Term_p lt, Term_p rt, TermBank* bank, bool positive) {
+    void EqnAlloc(Term_p lt, Term_p rt, bool positive) {
 
         this->pos = 0;
         this->properties = EqnProp::EPNoProps;
-
+        TermBank* bank = Env::getTb();
         if (positive) { //设置正文字属性
             EqnSetProp(EqnProp::EPIsPositive);
         }
@@ -857,10 +946,16 @@ public:
      ****************************************************************************/
     void EqnTSTPPrint(FILE* out, bool fullterms);
 
+    bool EqnOrient();
+
+
     Literal * EqnListCopyDisjoint();
     Literal * EqnListFlatCopy();
-    Literal * EqnCopyDisjoint();
 
+
+    Literal* renameCopy(VarBank_p varbank);
+
+    Literal * EqnCopyDisjoint();
     Literal * EqnCopy();
     Literal * EqnFlatCopy();
     Literal * EqnCopyOpt();
@@ -873,19 +968,20 @@ public:
     /// \return 
     Term_p EqnTermsTBTermEncode(bool EqnDirIsReverse = false);
 
-
-
-
-
     ///  Parse a literal in FOF format (changes syntax for TPTP literals).
     /// \param in
     /// \param bank
     /// \return 
 
-    void EqnFOFParse(Scanner* in, TB_p bank);
+    void EqnFOFParse(Scanner* in, TermBank_p bank);
+
+
+    CompareResult Compare(Literal* lit);
+
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
+    //
     static void EqnListFree(Literal * lst);
 
 

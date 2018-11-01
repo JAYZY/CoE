@@ -4,16 +4,36 @@
  * Created on 2017年12月22日, 下午8:41
  */
 
+#include <stdint.h>
+
 #include "Clause.h"
+#include "Indexing/TermIndexing.h"
+#include "HEURISTICS/SortRule.h"
+
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
 /*---------------------------------------------------------------------*/
 
 //
+
 Clause::Clause()
-: ident(-1), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
+: ident(++Env::global_clause_counter), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
 , negLitNo(0), posLitNo(0), weight(123), parent1(nullptr), parent2(nullptr) {
 
+}
+
+Clause::Clause(const Clause* orig) {
+    this->ident = orig->ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
+    this->properties = orig->properties; //子句属性
+    this->info = orig->info; //子句信息
+
+    this->literals = nullptr; //文字列表
+    this->negLitNo = 0; //负文字个数
+    this->posLitNo = 0; //正文字个数
+    this->weight = 0; //子句权重
+
+    this->parent1 = orig->parent1; //父子句1;
+    this->parent2 = orig->parent2; //父子句2;
 }
 
 Clause::Clause(Literal* lits) : Clause() {
@@ -24,12 +44,12 @@ Clause::Clause(Literal* lits) : Clause() {
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
     Literal* next = nullptr;
-    ident = ++Env::global_clause_counter;
+
 
     while (lits) {
         lits->claPtr = this; /*指定当前文字所在子句*/
         next = lits->next;
-        if (lits->EqnIsPositive()) {
+        if (lits->IsPositive()) {
             posLitNo++;
             *pos_append = lits;
             pos_append = &((*pos_append)->next);
@@ -197,17 +217,30 @@ void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterm
 
     if (handle) {
         handle->EqnTSTPPrint(out, fullterms);
-        cout << " zjw:" << handle->zjlitWight;
+        cout << " zjw:" << handle->zjlitWight << " EW:" << handle->StandardWeight();
+        cout << " T:" << TermIndexing::constTermNum[handle->lterm];
         while (handle->next) {
             handle = handle->next;
             fputs(sep.c_str(), out);
             handle->EqnTSTPPrint(out, fullterms);
-            cout << " zjw:" << handle->zjlitWight;
+            cout << " zjw:" << handle->zjlitWight << " EW:" << handle->StandardWeight();
+            cout << " T:" << TermIndexing::constTermNum[handle->lterm];
         }
     }
 }
 
+//对子句中的文字进行排序
 
+void Clause::SortLits() {
+    uint32_t uLitNum = LitsNumber();
+    if (1 == uLitNum) return;
+    sort(this->literals, literals + uLitNum, SortRule::LitCmp);
+    //SortRule::QuickSort(LitPtr, 0, uLitNum-1);
+    for (uint32_t uCol = 0; uCol < uLitNum; ++uCol) //重新编码 新列号
+    {
+        literals[uCol].pos = (uCol + 1);
+    }
+}
 
 //识别子句的类型
 
@@ -242,19 +275,21 @@ ClauseProp Clause::ClauseTypeParse(Scanner* in, string legal_types) {
 /// 解析子句
 /// \param in 扫描器scanner
 
-Clause* Clause::ClauseParse( Scanner* in,TermBank* t) {
+void Clause::ClauseParse(Scanner* in, TermBank* t) {
 
     //Scanner* in = Env::getIn();
     //TermBank* t = Env::getTb();
 
 
-    t->vars->VarBankClearExtNames();
+    this->claTB->VarBankClearExtNames(); //清除变量集合 clear varbank
 
-    ClauseProp type = ClauseProp::CPTypeAxiom;
-
+    ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
+    //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
     ClauseInfo* info = new ClauseInfo(nullptr, (in->AktToken())->source.c_str(), (in->AktToken())->line, (in->AktToken())->column);
 
-    Literal* concl = new Literal();
+
+    //创建文字
+    //Literal* concl = new Literal();
 
     if (in->format == IOFormat::TPTPFormat) {
         in->AcceptInpId("input_clause");
@@ -273,7 +308,8 @@ Clause* Clause::ClauseParse( Scanner* in,TermBank* t) {
 
         //此处过滤项bank  EqnListParse(in, bank,Comma);
         //此处解析完子句
-        concl->EqnListParse(TokenType::Comma);
+        EqnListParse(TokenType::Comma);
+        //concl->EqnListParse(TokenType::Comma, this->claVarTerms);
 
         in->AcceptInpTok(TokenType::CloseSquare);
         in->AcceptInpTok(TokenType::CloseBracket);
@@ -281,25 +317,25 @@ Clause* Clause::ClauseParse( Scanner* in,TermBank* t) {
 
         in->AcceptInpId("cnf");
         in->AcceptInpTok(TokenType::OpenBracket);
-        info->name = (in->AktToken())->literal.c_str();
+        info->name = (in->AktToken())->literal.c_str(); //赋值子句名称 如:i_0_266
         in->AcceptInpTok(TokenType::NamePosIntSQStr);
         in->AcceptInpTok(TokenType::Comma);
 
         string strId = "axiom|definition|theorem|assumption|hypothesis|negated_conjecture|lemma|unknown|plain|watchlist";
         //判断子句类型
         type = ClauseTypeParse(in, strId);
-
+        //跳过 冒号
         in->AcceptInpTok(TokenType::Comma);
 
         if (in->TestInpTok(TokenType::OpenBracket)) {
             in->AcceptInpTok(TokenType::OpenBracket);
             //此处生成 文字List
-            concl->EqnListParse(TokenType::Pipe);
+            EqnListParse(TokenType::Pipe);
 
             in->AcceptInpTok(TokenType::CloseBracket);
         } else {
             //此处 文字List
-            concl->EqnListParse(TokenType::Pipe);
+            EqnListParse(TokenType::Pipe);
         }
 
         if (in->TestInpTok(TokenType::Comma)) {
@@ -356,14 +392,35 @@ Clause* Clause::ClauseParse( Scanner* in,TermBank* t) {
 
     in->AcceptInpTok(TokenType::Fullstop);
 
-    Clause * handle = new Clause(concl);
-    handle->ClauseSetTPTPType(type);
-    handle->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
-    handle->info = info;
-    return handle;
+    //Clause * handle = new Clause(concl);
+    this->ClauseSetTPTPType(type);
+    this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
+    this->info = info;
+}
 
+/// 将子句中的变元进行重命名
+/// \param fresh_vars
 
+void Clause::ClauseNormalizeVars(VarBank_p renameVarbank) {
+    Subst_p subst = new Subst();
+    renameVarbank->VarBankResetVCount();
+    Literal* lit = this->literals;
 
 }
 
+Clause* Clause::renameCopy(VarBank_p renameVarbank) {
+    Clause* newCla = new Clause(this);
+    Literal* newlist = nullptr;
+    Literal* *insert = &newlist;
+    Literal* lit = this->literals;
+    while (lit) {
+        *insert = lit->renameCopy(renameVarbank);
+        insert = &((*insert)->next);
+        lit = lit->next;
+    }
+    *insert = nullptr;
+    newCla->literals = newlist;
+
+    return newCla;
+}
 

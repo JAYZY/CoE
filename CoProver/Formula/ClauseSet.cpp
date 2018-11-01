@@ -64,9 +64,9 @@ long ClauseSet::InsertSet(ClauseSet* otherSet){
          retClaSet.push_back(cla);
      }
  }
-void ClauseSet::Print(){
+void ClauseSet::Print(FILE* out){
     for(auto&cla:this->claSet){
-        cla->ClausePrint(stdout,true);
+        cla->ClausePrint(out,true);
         
         cout<<endl;
     }
