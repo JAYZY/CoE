@@ -64,6 +64,9 @@ public:
     inline long TermCellStoreNodes() {
         return entries;
     }
+    
+ 
+
 
     /*---------------------------------------------------------------------*/
     /*                       Member Function                               */
@@ -96,8 +99,10 @@ public:
 
     /* 返回,所有项个数 -- Return the number of nodes in the term cell store. */
     long TermCellStoreCountNodes();
+    
+    void printAllTerm(FILE* out);
 private:
-
+    void middleTraverseSubT(FILE*  out,TermCell* root);
 };
 
 #endif /* TERMCELLSTORE_H */

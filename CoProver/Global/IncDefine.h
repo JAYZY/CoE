@@ -19,18 +19,21 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
-
+#include<unistd.h>
 #include <list>
 #include <vector>
 #include <set>
 //#include "Environment.h"
 #include <sys/param.h>
+#include<sys/wait.h>
 #include "LIB/Out.h"
+
 //#define NDEBUG
+
 #include <cassert>
 using namespace std;
 #define New
-#define  OUTINFO
+//#define  OUTINFO
 #define WEI 0.0f
 
 #define MAX_ERRMSG_ADD   512
@@ -68,11 +71,9 @@ enum class CompareResult : uint8_t {
 enum class RESULT {
     READERR = -101, READOK = -100, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
     ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, UnknownFile,
-    MOREFUNC/*函数复合层过多*/, MORELIT/*剩余文字过多*/, NOLEFTLIT/*没有剩余文字*/, SingleLit, TAUTOLOGY/*R为恒真*/,
-    EqnTautology, RSubsump/*R包含冗余*/,
-    RULEOK/*规则检查通过*/, NOMGU/*合一失败*/
-    , SUCCES, FAIL
+    NOMGU/*合一失败*/ , SUCCES,RollBack, FAIL
 };
+
 /*---------------------------------------------------------------------*/
 /*                          宏定义-两个函数指针                           */
 /*---------------------------------------------------------------------*/

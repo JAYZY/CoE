@@ -18,8 +18,8 @@
 
 Clause::Clause()
 : ident(++Env::global_clause_counter), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(123), parent1(nullptr), parent2(nullptr) {
-
+, negLitNo(0), posLitNo(0), weight(0), parent1(nullptr), parent2(nullptr) {
+    claTB = new TermBank();
 }
 
 Clause::Clause(const Clause* orig) {
@@ -31,6 +31,7 @@ Clause::Clause(const Clause* orig) {
     this->negLitNo = 0; //负文字个数
     this->posLitNo = 0; //正文字个数
     this->weight = 0; //子句权重
+    this->claTB = orig->claTB;
 
     this->parent1 = orig->parent1; //父子句1;
     this->parent2 = orig->parent2; //父子句2;
@@ -38,8 +39,6 @@ Clause::Clause(const Clause* orig) {
 
 Clause::Clause(Literal* lits) : Clause() {
     //Clause_p handle = EmptyClauseAlloc();
-
-
     Literal *pos_lits = nullptr, *neg_lits = nullptr;
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
@@ -80,7 +79,39 @@ Clause::~Clause() {
 
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
+
 /*---------------------------------------------------------------------*/
+
+/// 给一个没有绑定文字链的子句,绑定一个文字链 lit
+/// \param lit
+
+void Clause::bindingLits(Literal* litLst) {
+    assert(literals == nullptr);
+    assert(litLst);
+    Literal *pos_lits = nullptr, *neg_lits = nullptr;
+    Literal* *pos_append = &pos_lits;
+    Literal* *neg_append = &neg_lits;
+    Literal* next = nullptr;
+
+
+    while (litLst) {
+        litLst->claPtr = this; /*指定当前文字所在子句*/
+        next = litLst->next;
+        if (litLst->IsPositive()) {
+            posLitNo++;
+            *pos_append = litLst;
+            pos_append = &((*pos_append)->next);
+        } else {
+            negLitNo++;
+            *neg_append = litLst;
+            neg_append = &((*neg_append)->next);
+        }
+        litLst = next;
+    }
+    *pos_append = neg_lits;
+    *neg_append = nullptr;
+    literals = pos_lits;
+}
 
 /*****************************************************************************
  *  Function: ClausePrint(). Print a clause in the most canonical representation.
@@ -143,9 +174,9 @@ void Clause::ClausePrintTPTPFormat(FILE* out) {
     source = ClauseQueryCSSCPASource();
 
     if (ident >= 0) {
-        fprintf(out, "input_clause(c_%d_%ld,%s,[", source, ident, typeName.c_str());
+        fprintf(out, "input_clause(c_%d_%d,%s,[", source, ident, typeName.c_str());
     } else {
-        fprintf(out, "input_clause(i_%d_%ld,%s,[", source, ident - LONG_MIN, typeName.c_str());
+        fprintf(out, "input_clause(i_%d_%d,%s,[", source, ident - INT_MIN, typeName.c_str());
     }
     //literals->EqnListPrint(out, ",", false, true);
     fprintf(out, "]).");
@@ -185,9 +216,9 @@ void Clause::ClauseTSTPPrint(FILE* out, bool fullterms, bool complete) {
     }
     source = ClauseQueryCSSCPASource();
     if (ident >= 0) {
-        fprintf(out, "cnf(c_%d_%ld, ", source, ident);
+        fprintf(out, "cnf(c_%d_%d, ", source, ident);
     } else {
-        fprintf(out, "cnf(i_%d_%ld, ", source, ident - LONG_MIN);
+        fprintf(out, "cnf(i_%d_%d, ", source, ident - INT_MIN);
     }
     fprintf(out, "%s, ", type_name.c_str());
     ClauseTSTPCorePrint(out, fullterms);
@@ -213,33 +244,50 @@ void Clause::ClauseTSTPCorePrint(FILE* out, bool fullterms) {
  * Same as above, but without negation and uses TSTP literal format. 
  ****************************************************************************/
 void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms) {
-    Literal* handle = lst;
-
+    Lit_p handle = lst;
     if (handle) {
+        fprintf(out,"{%hu}",handle->pos);
         handle->EqnTSTPPrint(out, fullterms);
-        cout << " zjw:" << handle->zjlitWight << " EW:" << handle->StandardWeight();
-        cout << " T:" << TermIndexing::constTermNum[handle->lterm];
         while (handle->next) {
-            handle = handle->next;
+            handle = handle->next;            
             fputs(sep.c_str(), out);
+            fprintf(out,"{%hu}",handle->pos);
             handle->EqnTSTPPrint(out, fullterms);
-            cout << " zjw:" << handle->zjlitWight << " EW:" << handle->StandardWeight();
-            cout << " T:" << TermIndexing::constTermNum[handle->lterm];
+            
         }
     }
 }
 
 //对子句中的文字进行排序
 
+/*建议 先负后正,先稳定低后稳定高  */
 void Clause::SortLits() {
+    if (this->ClauseQueryProp(ClauseProp::CPIsOriented))//已经排序后的子句不再排序
+        return;
     uint32_t uLitNum = LitsNumber();
     if (1 == uLitNum) return;
-    sort(this->literals, literals + uLitNum, SortRule::LitCmp);
-    //SortRule::QuickSort(LitPtr, 0, uLitNum-1);
-    for (uint32_t uCol = 0; uCol < uLitNum; ++uCol) //重新编码 新列号
-    {
-        literals[uCol].pos = (uCol + 1);
+    //this->ClausePrint(stdout,true);    cout<<endl;
+    Lit_p *sortArray = new Lit_p[uLitNum];
+    Lit_p lit = this->literals;
+    int ind = -1;
+    while (lit) {
+        sortArray[++ind] = lit;
+        lit = lit->next;
     }
+
+    sort(sortArray, sortArray + uLitNum, SortRule::LitCmp);
+    //将数组转换为Literal 链表
+    this->literals = sortArray[0];
+    Lit_p tmpPtr = this->literals;
+   
+    for (int i = 1; i < uLitNum; ++i) {//不需要重新编码  
+        tmpPtr->next = sortArray[i];
+        tmpPtr = tmpPtr->next;
+    }
+    tmpPtr->next = nullptr;
+    tmpPtr = nullptr;
+    DelArrayPtr(sortArray);
+    this->ClauseSetProp(ClauseProp::CPIsOriented);
 }
 
 //识别子句的类型
@@ -275,13 +323,13 @@ ClauseProp Clause::ClauseTypeParse(Scanner* in, string legal_types) {
 /// 解析子句
 /// \param in 扫描器scanner
 
-void Clause::ClauseParse(Scanner* in, TermBank* t) {
+void Clause::ClauseParse(Scanner* in) {
 
     //Scanner* in = Env::getIn();
     //TermBank* t = Env::getTb();
 
 
-    this->claTB->VarBankClearExtNames(); //清除变量集合 clear varbank
+    this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
 
     ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
     //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
@@ -353,6 +401,7 @@ void Clause::ClauseParse(Scanner* in, TermBank* t) {
         in->AcceptInpTok(TokenType::CloseBracket);
     } else {
         cout << "文字解析错误" << endl;
+        return;
         //        //此处过滤term　EqnListParse(in, bank, Pipe);
         //        //cout<<"into EqnListParse"<<endl;
         //        concl->EqnListParse( TokenType::Semicolon);
@@ -404,15 +453,15 @@ void Clause::ClauseParse(Scanner* in, TermBank* t) {
 void Clause::ClauseNormalizeVars(VarBank_p renameVarbank) {
     Subst_p subst = new Subst();
     renameVarbank->VarBankResetVCount();
-    Literal* lit = this->literals;
+    Lit_p lit = this->literals;
 
 }
 
 Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     Clause* newCla = new Clause(this);
-    Literal* newlist = nullptr;
-    Literal* *insert = &newlist;
-    Literal* lit = this->literals;
+    Lit_p newlist = nullptr;
+    Lit_p *insert = &newlist;
+    Lit_p lit = this->literals;
     while (lit) {
         *insert = lit->renameCopy(renameVarbank);
         insert = &((*insert)->next);
@@ -424,3 +473,37 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     return newCla;
 }
 
+void Clause::EqnListParse(TokenType sep) {
+    Scanner* in = Env::getIn();
+    //TB_p bank = Env::getTb();
+    TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
+
+    if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
+            ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
+            ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
+
+        Literal *pos_lits = nullptr, *neg_lits = nullptr;
+        Lit_p *pos_append = &pos_lits;
+        Lit_p *neg_append = &neg_lits;
+        Lit_p handle = nullptr;
+        int originLitPos = 0;
+        while (true) {
+            handle = new Literal(in, this);
+            handle->pos = ++originLitPos; //记录文字在子句中的原始位置
+            if (handle->IsPositive()) {
+                ++posLitNo;
+                *pos_append = handle;
+                pos_append = &((*pos_append)->next);
+            } else {
+                ++negLitNo;
+                *neg_append = handle;
+                neg_append = &((*neg_append)->next);
+            }
+            if (!in->TestInpTok(sep))break;
+            in->NextToken();
+        }
+        *pos_append = neg_lits;
+        *neg_append = nullptr;
+        this->literals = pos_lits;
+    }
+}

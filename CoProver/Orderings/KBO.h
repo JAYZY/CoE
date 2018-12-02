@@ -11,7 +11,7 @@
 
 #ifndef KBO_H
 #define KBO_H 
-#include "TERMS/TermCell.h"
+#include "Terms/TermCell.h"
 
 class KBO {
 private:

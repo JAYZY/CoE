@@ -123,7 +123,7 @@ public:
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
-    FunCode idx;
+    FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
     static TermCell* parse_cons_list(Scanner* in, VarBank* vars);
@@ -315,6 +315,8 @@ public:
     inline bool TBTermIsGround() {
         return TermCellQueryProp(TermProp::TPIsGround);
     }
+    /* 检查项是否为基项 ground 不包括变元项 注:不检查　变元绑定情况 */
+    bool IsGround();
 
     /* 返回项是否为TypeTerm 即权重==3 P(x)*/
     inline bool TBTermIsTypeTerm() {
@@ -330,12 +332,14 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-   
+
 
 
     /* 变元项输出 */
     void VarPrint(FILE* out);
-    void TermPrint(FILE* out, DerefType deref);
+    void TermPrint(FILE* out, DerefType deref = DerefType::DEREF_ALWAYS);
+    void PrintDerefAlways(FILE* out) ;
+    
     void TermPrintArgList(FILE* out, int arity, DerefType deref);
     void PrintTermSig(FILE* out);
 
@@ -348,8 +352,7 @@ public:
 
 
 
-    /* 检查项是否为基项 ground 不包括变元项 注:不检查　变元绑定情况 */
-    bool IsGround();
+
     /* fcode 是否存该项的子项中,eg.判断a1,是否是f(a1,a2)的子项 */
     bool TermHasFCode(FunCode f);
     /* Return if the term contains unbound variables.Does not follow bindings. */
@@ -365,7 +368,7 @@ public:
 
     FunCode TermFindMaxVarCode();
     TermCell* TermEquivCellAlloc(VarBank* vars);
-    TermCell* renameCopy(VarBank* vars, DerefType deref=DerefType::DEREF_ALWAYS);
+    TermCell* renameCopy(VarBank* vars, DerefType deref = DerefType::DEREF_ALWAYS);
     TermCell* TermCopy(VarBank* vars, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);
@@ -396,10 +399,24 @@ public:
     long TermAddFunOcc(vector<int>*f_occur, vector<IntOrP>*res_stack);
     void UnpackTermPos(vector<IntOrP>& pos, long cpos);
 
+    /// 这个比较采用不同termbank进行存储时候的项 
+    /// \param term
+    /// \return 
+    bool equalStruct(TermCell* term);
     /*---------------------------------------------------------------------*/
     /*                         Static Function                             */
     /*---------------------------------------------------------------------*/
 
+    /// 这个项相同比较,前提是所有项,均在一个 Termbank情况下;
+    // 因此采用了地址相同来判断    
+    static bool TermStructEqual(TermCell* t1, TermCell* t2);
+    static bool TermStructEqualNoDeref(TermCell* t1, TermCell* t2);
+    static bool TermStructEqualNoDerefHardVars(TermCell* t1, TermCell* t2);
+    static bool TermStructEqualDeref(TermCell* t1, TermCell* t2, DerefType deref_1, DerefType deref_2);
+    static bool TermStructEqualDerefHardVars(TermCell* t1, TermCell* t2, DerefType deref_1, DerefType deref_2);
+
+    static int TermStructWeightCompare(TermCell* t1, TermCell* t2);
+    static int TermLexCompare(TermCell* t1, TermCell* t2);
     //临时方法 -------------
 
     /*创建一个constant term 如　ａ ,b */
@@ -460,14 +477,7 @@ public:
 
 
     static FunCode TermSigInsert(Sigcell* sig, const string &name, int arity, bool special_id, FuncSymbType type);
-    static bool TermStructEqual(TermCell* t1, TermCell* t2);
-    static bool TermStructEqualNoDeref(TermCell* t1, TermCell* t2);
-    static bool TermStructEqualNoDerefHardVars(TermCell* t1, TermCell* t2);
-    static bool TermStructEqualDeref(TermCell* t1, TermCell* t2, DerefType deref_1, DerefType deref_2);
-    static bool TermStructEqualDerefHardVars(TermCell* t1, TermCell* t2, DerefType deref_1, DerefType deref_2);
 
-    static int TermStructWeightCompare(TermCell* t1, TermCell* t2);
-    static int TermLexCompare(TermCell* t1, TermCell* t2);
 };
 typedef TermCell *Term_p;
 #endif /* TERMCELL_H */

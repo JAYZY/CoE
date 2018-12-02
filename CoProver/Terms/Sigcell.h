@@ -19,7 +19,7 @@
 #include "BASIC/SplayTree.h"
 #include "BASIC/TreeNodeDef.h"
 #include "INOUT/Scanner.h"
-class Clause;
+//class Clause;
 /*---------------------------------------------------------------------*/
 /*                    Data type declarations                           */
 
@@ -88,7 +88,7 @@ typedef FuncCell *Func_p;
 
 
 class Scanner;
-
+class Clause;
 class Sigcell {
 public:
     static bool SigSupportLists;

@@ -13,12 +13,11 @@
 
 #ifndef FORMULA_H
 #define FORMULA_H
-#include "Global/IncDefine.h"
-#include "INOUT/Scanner.h"
-#include "CLAUSE/Clause.h"
+
 #include "Formula/ClauseSet.h"
 #include "Indexing/TermIndexing.h"
 #include "CLAUSE/LiteralCompare.h"
+
 class Formula {
 private:
     //谓词索引------
@@ -27,26 +26,32 @@ private:
     map<TermCell*, set<TermCell*>> g_PostEqn; //正等词列表 a=b a=c a=d;
     map<TermCell*, set<TermCell*>> g_NegEqn; //负等词 a!=b a!=c
 
-
-
     //单文字子句
     // TermIndexing *unitTermIndex = nullptr; //单文字子句索引
     /*Statistics(统计信息)--    */
 
-    vector<Clause*>goalClaset;
+
 
     //list<Clause*> axioms;
-    ClauseSet* claSet;
+    ClauseSet* origalClaSet; //原始子句集合
+    ClauseSet* processedClaSet; //处理后的子句集,(或工作子句集)
     Scanner* in;
 
 
 public:
-    uint32_t uEquLitNum;
-    uint32_t uNonHornClaNum;
-    TermIndexing* negUnitClaIndex; //正单元子句索引
-    TermIndexing* posUnitClaIndex; //负单元子句索引
+    //公式集的相关信息
+    uint32_t uEquLitNum; //等词个数
+    uint32_t uNonHornClaNum; //非Horn子句个数
+
+    TermIndexing* unitClaIndex; //正单元子句索引
+    //TermIndexing* posUnitClaIndex; //负单元子句索引
+    TermIndexing *allTermIndex; //Discrimation Indexing 主要用于forward subsume
+
+    vector<Clause*> goalClaset;     //目标子句集--注意,包括单元子句,也包括其他子句
     vector<Clause*> vNegUnitClas; //负单元子句,只有一个 负文字
     vector<Clause*> vPosUnitClas; //正单元子句
+
+
 
     Formula();
     Formula(const Formula& orig);
@@ -60,23 +65,40 @@ public:
 
     /*---------------------------------------------------------------------*/
     inline ClauseSet* getAxioms() {
-        return claSet;
+        return origalClaSet;
+    }
+    //初始化所有的索引
+
+    inline void initIndex() {
+        if (this->allTermIndex) {
+            DelPtr(allTermIndex);
+        }
+        allTermIndex = new DiscrimationIndexing();
+
+        if (this->unitClaIndex) {
+            DelPtr(unitClaIndex);
+        }
+        unitClaIndex = new DiscrimationIndexing();
     }
 
     inline void addGoalClas(Clause* goalCla) {
         goalClaset.push_back(goalCla);
     }
 
-    inline void ClauseSetInsert(Clause* cla) {
-        assert(cla);
-        claSet->InsertCla(cla);
-        //暂时没有给定子句的评估函数
+    //    inline void ClauseSetInsert(Clause* cla) {
+    //        assert(cla);
+    //        claSet->InsertCla(cla);
+    //        //暂时没有给定子句的评估函数
+    //    }
+
+    inline void printOrigalClaSet(FILE* out) {
+        origalClaSet->Print(out);
     }
 
-    inline void printClas(FILE* out) {
-        claSet->Print(out);
+    inline void printProcessedClaSet(FILE* out) {
+        processedClaSet->Print(out);
     }
-    
+
     /**
      * 对单元子句列表进行排序
      */
@@ -85,21 +107,30 @@ public:
         sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
         sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
     }
-    
+
 
 
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
     //读取公式
-    void GenerateFormula(Scanner* in);
-    //添加谓词符号到全局列表中
+    void generateFormula(Scanner* in);
+    //公式预处理
+    void preProcess();
+
+    bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, vector<Literal*>&vNewR);
+
+    //插入新子句到
+    void insertNewCla(Cla_p cla);
+
+
+    //添加谓词符号到全局列表中  
     void AddPredLst(Clause* cla);
     vector<Literal*>* getPredLst(Literal* lit);
     /*得到互补谓词候选文字集合*/
     vector<Literal*>* getPairPredLst(Literal* lit);
     //输出公式集的信息
-    void printInfo(FILE* out);
+    void printOrigalClasInfo(FILE* out);
 
 };
 

@@ -16,9 +16,10 @@
 #include "TermIndexing.h"
 #include "CLAUSE/Literal.h"
 #include "CLAUSE/Clause.h"
-   map<TermCell*,int> TermIndexing::constTermNum; 
+map<TermCell*, int> TermIndexing::constTermNum;
+
 TermIndexing::TermIndexing() {
-    chgVars = new Subst();
+    subst = new Subst();
 
 }
 
@@ -26,8 +27,9 @@ TermIndexing::TermIndexing(const TermIndexing& orig) {
 }
 
 TermIndexing::~TermIndexing() {
-
-    DelPtr(chgVars);
+    this->destroy();
+    DelPtr(subst);
+    vector<TermCell*>().swap(flattenTerm);
 }
 
 void TermIndexing::InsertTerm(TermIndNode* treeNode, TermCell * term) {
@@ -77,14 +79,17 @@ void TermIndexing::ClearVarLst() {
 void TermIndexing::FlattenTerm(TermCell* term) {
     vector<TermCell*>vecTmp;
     vecTmp.reserve(32);
+
     vecTmp.push_back(term);
     while (!vecTmp.empty()) {
-        TermCell* t = &*(vecTmp.back());
+        TermCell* t = TermCell::TermDerefAlways(&*(vecTmp.back()));
         vecTmp.pop_back();
+
         flattenTerm.push_back(t);
         for (int32_t i = t->arity - 1; i>-1; --i)
             vecTmp.push_back(t->args[i]);
     }
+     vector<TermCell*>().swap(vecTmp);
 }
 
 void TermIndexing::PrintFlattenTerms(FILE* out) {
@@ -128,7 +133,7 @@ void DiscrimationIndexing::Insert(Literal * lit) {
 
 TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell * term) {
     //zj:记录基项个数
-    if(term->TBTermIsGround())
+    if (term->TBTermIsGround())
         ++constTermNum[term];
     vector<TermCell*> vecTerm;
 
@@ -184,10 +189,12 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
 
 
     backpoint.clear();
-    TermIndNode* rootNode = getRoot(lit);
-
-    set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = rootNode->subTerms.find(new TermIndNode(lit->lterm));
-
+    TermIndNode* rootNode = getRoot(lit);    
+    TermIndNode* tIndnode=new TermIndNode(lit->lterm);
+    
+    set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = rootNode->subTerms.find(tIndnode);
+    DelPtr(tIndnode);
+    
     if (parentNodeIt == rootNode->subTerms.end()) return nullptr; //谓词不存在
     //queryTerm的位置,排除谓词符号
 
@@ -383,10 +390,10 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
                 if ((++tmpIt) != (*parentNodeIt)->subTerms.end()) {
                     //记录回退点
                     chgVPos = new uint32_t[1];
-                    chgVPos[0] = chgVars->Size();
+                    chgVPos[0] = subst->Size();
                     backpoint.push_back(new BackPoint(qTermPos, chgVPos, parentNodeIt, tmpIt));
                 }
-                chgVars->SubstAddBinding((*subNodeIt)->curTermSymbol, queryTerm); //记录已经有绑定的变元项   
+                subst->SubstAddBinding((*subNodeIt)->curTermSymbol, queryTerm); //记录已经有绑定的变元项   
             } else if (!(*subNodeIt)->curTermSymbol->binding->TermIsSubterm(queryTerm, DerefType::DEREF_NEVER, TermEqulType::StructEqual)) {
                 isRollback = true; //比较是否相同
             }
@@ -410,7 +417,7 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
             parentNodeIt = backpoint.back()->parentNodeIt;
             subNodeIt = backpoint.back()->subNodeIt;
             uint32_t chgVarPos = backpoint.back()->chgVarPos[0];
-            chgVars->SubstBacktrackToPos(chgVarPos);
+            subst->SubstBacktrackToPos(chgVarPos);
             backpoint.pop_back();
         } else {
             parentNodeIt = subNodeIt;
@@ -432,7 +439,7 @@ TermIndNode * DiscrimationIndexing::NextForwordSubsump() {
     set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = backpoint.back()->parentNodeIt;
     set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = backpoint.back()->subNodeIt;
     uint32_t chgVarPos = backpoint.back()->chgVarPos[0];
-    chgVars->SubstBacktrackToPos(chgVarPos);
+    subst->SubstBacktrackToPos(chgVarPos);
     backpoint.pop_back();
 
     TermIndNode * rtnLit = FindForwordSubsumption(qTermPos, parentNodeIt, subNodeIt);
@@ -587,10 +594,12 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
 void DiscrimationIndexing::ClearVarLst() {
 
     for (int i = 0; i < 1000; ++i) {
-        varLst[i].clear();
+        //varLst[i].clear();
         vector<TermCell*>().swap(varLst[i]);
     }
-    this->backpoint.clear();
-    this->chgVars->Clear();
-    this->stVarChId.clear();
+    
+    vector<BackPoint*>().swap(backpoint);
+    vector<uint32_t>().swap(stVarChId);
+    this->subst->Clear();
+
 }

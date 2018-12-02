@@ -14,9 +14,11 @@
 #ifndef LITERAL_H 
 #define LITERAL_H
 #include <map>
-#include "TERMS/TermCell.h"
-#include "TERMS/TermBank.h"
+#include <bits/stdint-uintn.h>
+#include "Terms/TermCell.h"
+#include "Terms/TermBank.h"
 #include "Global/Environment.h"
+
 /*---------------------------------------------------------------------*/
 /*                      【Literal】文字相关枚举                          */
 /*---------------------------------------------------------------------*/
@@ -34,7 +36,7 @@ enum class EqnProp : uint32_t {
     EPIsDominated = 128, /* Literal is dominated by another one */
     EPDominates = EqnProp::EPIsDominated, /* Double use of this property in potentially maximal or minimal clauses */
     EPIsUsed = 256, /* For non-injective subsumption and  pattern-generation */
-    EPGONatural = 512, /* Set if left side is bigger in the special (total) ground ordering treating variables as small constants */
+    EPIsDel = 512, /* 该文字是否被删除 */
     EPIsSelected = 1024, /* For selective superpostion */
     EPIsPMIntoLit = 2048, /* For inheriting selection */
     EPFromClauseLit = 4096, /* This comes from the from clause in a paramod step */
@@ -43,28 +45,32 @@ enum class EqnProp : uint32_t {
     EPRPatMinimal = 32768, /* Eqn r=l is Pattern-Minimal */
     EPIsSplitLit = 65636 /* This literal has been introduced by splitting */
 };
+class Clause;
 
 class Literal {
 public:
     EqnProp properties; /*prositive ,maximal,equational */
-    int pos;
+    uint16_t pos;//在子句中的位置 一个子句中最大文字数 < 2^16=65536
+    uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
     TermCell* lterm; /*左文字*/
-    TermCell* rterm; /*等号右边文字,若非等词,则为$True;
-    //TermBank ss;
-    //TermBank* bank; /* Terms are from this bank */
+    TermCell* rterm; /*等号右边文字,若非等词,则为$True;*/ 
     Literal* next; /*下一个文字*/
-
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
-    float xyW;
+    int weight;
     float zjlitWight;
-    int reduceTime; //在归结中消除的其他文字的次数
+    
 public:
+    /*---------------------------------------------------------------------*/
+    /*                    Constructed Function                             */
+    /*---------------------------------------------------------------------*/
+    //
     Literal();
+    Literal(Scanner* in, Clause* cla);
     Literal(Term_p lt, Term_p rt, bool positive);
     Literal(const Literal& orig);
-    //替代 EqnAlloc
+
 
     virtual ~Literal();
     /*---------------------------------------------------------------------*/
@@ -96,6 +102,20 @@ public:
     inline bool EqnAreEquivProps(Literal* lit, EqnProp prop) {
         return PropsAreEquiv(this->properties, lit->properties, prop);
     }
+    //比较两个文字是否是互补谓词文字.
+
+    inline bool isComplementProps(Literal* lit) {
+        return (this->IsPositive()!=lit->IsPositive());
+    }
+    /// 两个文字是否同时为正文字或同时为负文字
+    /// \param lit
+    /// \return 
+
+    inline bool isSameProps(Literal* lit) {
+        
+        return (this->IsPositive()==lit->IsPositive())&&(this->EqnIsEquLit() == lit->EqnIsEquLit());
+    }
+
     //是否文本被强行指定(选择)
 
     inline bool IsSelected() {
@@ -773,7 +793,7 @@ public:
         return handle;
     }
 
-    
+
 
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[private]                           */
@@ -781,7 +801,7 @@ public:
 private:
 
     /*Parse an equation with optional external sign and depending on wether FOF or CNF is being parsed.*/
-    bool eqn_parse_real(Scanner* in, TermCell * *lref, TermCell * *rref,   bool fof);
+    bool eqn_parse_real(Scanner* in, TermCell * *lref, TermCell * *rref, bool fof);
 
     /*Parse a literal without external sign assuming that _all_equational literals are prefix. 
      * Return sign. This is for TPTP*/
@@ -808,7 +828,7 @@ public:
     void EqnParse(Scanner* in) {
 
         Term_p lt = nullptr, rt = nullptr;
-        bool positive = eqn_parse_real(in, &lt, &rt,false);
+        bool positive = eqn_parse_real(in, &lt, &rt, false);
         EqnAlloc(lt, rt, positive);
 
         //计算徐杨稳定度
@@ -906,11 +926,11 @@ public:
 
         this->pos = 0;
         this->properties = EqnProp::EPNoProps;
-        TermBank* bank = Env::getTb();
+
         if (positive) { //设置正文字属性
             EqnSetProp(EqnProp::EPIsPositive);
         }
-        if (rt != bank->trueTerm) {//设置等词属性
+        if (rt != Env::getGTbank()->trueTerm) {//设置等词属性
             assert(rt->fCode != (FunCode) DerefType::TRUECODE);
             EqnSetProp(EqnProp::EPIsEquLiteral);
         } else {//非等词文字
@@ -941,6 +961,12 @@ public:
         //  printf("\n");
 #endif
     }
+
+
+
+    TermBank_p getClaTermBank();
+
+
     /*****************************************************************************
      * Print a literal in TSTP format.
      ****************************************************************************/
@@ -956,7 +982,7 @@ public:
     Literal* renameCopy(VarBank_p varbank);
 
     Literal * EqnCopyDisjoint();
-    Literal * EqnCopy();
+    Literal * EqnCopy(TermBank_p termbank);
     Literal * EqnFlatCopy();
     Literal * EqnCopyOpt();
 
@@ -975,7 +1001,8 @@ public:
 
     void EqnFOFParse(Scanner* in, TermBank_p bank);
 
-
+    bool equalsStuct(Literal* lit);
+    //根据选定的启发式策略来判断两个文字的比较结果
     CompareResult Compare(Literal* lit);
 
     /*---------------------------------------------------------------------*/
@@ -986,6 +1013,6 @@ public:
 
 
 };
-
+typedef Literal *Lit_p;
 #endif /* LITERAL_H */
 

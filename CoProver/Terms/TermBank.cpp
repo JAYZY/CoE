@@ -31,7 +31,7 @@ TermBank::TermBank() {
     //assert(sig);
     inCount = 0;
     rewriteSteps = 0; //replace次数 
-    extIndex.reserve(100000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
+    extIndex.reserve(10000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
     garbageState = TermProp::TPIgnoreProps;
 
     //初始化 varBank
@@ -40,19 +40,19 @@ TermBank::TermBank() {
     termStore = TermCellStore();
 
     //创建一个特殊TrueTerm 
-    TermCell* tmpTerm = new TermCell((FunCode) DerefType::TRUECODE, 0);
-    tmpTerm->TermCellSetProp(TermProp::TPPredPos); //默认谓词符号
-
-    trueTerm = TBInsert(tmpTerm, nullptr,DerefType::DEREF_NEVER);
-    TermCell::TermFree(tmpTerm); //TermFree(term);
-
-    //创建一个特殊FalseTerm 
-    tmpTerm = new TermCell((FunCode) DerefType::FLASECODE);
-    tmpTerm->TermCellSetProp(TermProp::TPPredPos);
-    falseTerm = TBInsert(tmpTerm,nullptr, DerefType::DEREF_NEVER);
-
-    TermCell::TermFree(tmpTerm); //TermFree(term);
-    minTerm = nullptr;
+    //    TermCell* tmpTerm = new TermCell((FunCode) DerefType::TRUECODE, 0);
+    //    tmpTerm->TermCellSetProp(TermProp::TPPredPos); //默认谓词符号
+    //
+    //    //  trueTerm = TBInsert(tmpTerm, nullptr, DerefType::DEREF_NEVER);
+    //    TermCell::TermFree(tmpTerm); //TermFree(term);
+    //
+    //    //创建一个特殊FalseTerm 
+    //    tmpTerm = new TermCell((FunCode) DerefType::FLASECODE);
+    //    tmpTerm->TermCellSetProp(TermProp::TPPredPos);
+    //    //  falseTerm = TBInsert(tmpTerm, nullptr, DerefType::DEREF_NEVER);
+    //
+    //    TermCell::TermFree(tmpTerm); //TermFree(term);
+    //  minTerm = nullptr;
     //freevarsets = NULL;
 }
 
@@ -152,17 +152,17 @@ int TermBank::tb_term_parse_arglist(Scanner* in, TermCell*** argAnchor, bool isC
 
     vector<TermCell*> vectTerm;
     vectTerm.reserve(10);
-    TermCell* tmp = isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false);
-    
+    //TermCell* tmp = isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false);
+
     vectTerm.push_back(isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false));
-    
+
     int arity = 1;
     //arity++;
     while (in->TestInpTok(TokenType::Comma)) {
         in->NextToken();
-        
+
         vectTerm.push_back(isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false));
-        
+
         arity++;
     }
     in->AcceptInpTok(TokenType::CloseBracket);
@@ -176,6 +176,36 @@ int TermBank::tb_term_parse_arglist(Scanner* in, TermCell*** argAnchor, bool isC
     return arity;
 }
 
+int TermBank::tb_term_parse_arglist(Scanner* in, TermCell* term, bool isCheckSymbProp) {
+    in->AcceptInpTok(TokenType::OpenBracket);
+    if (in->TestInpTok(TokenType::CloseBracket)) {
+        in->NextToken();
+        term->args = nullptr;
+        return 0;
+    }
+    vector<TermCell*> vectTerm;
+    vectTerm.reserve(10);
+    TermCell* tmp = nullptr;
+    while (true) {
+        tmp = isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false);
+        term->uVarCount += tmp->uVarCount; //记录变元个数
+        ++term->arity;
+        vectTerm.push_back(tmp);
+        //arity++;
+        if (!in->TestInpTok(TokenType::Comma)) {
+            break;
+        }
+        in->NextToken();
+    }
+    in->AcceptInpTok(TokenType::CloseBracket);
+    assert(term->arity == vectTerm.size());
+    term->args = new TermCell*[term->arity]; // TermArgArrayAlloc(arity);
+    memcpy(term->args, &vectTerm[0], sizeof (TermCell*) * term->arity);
+    vector<TermCell*>().swap(vectTerm);
+    //SizeFree(handle, size * sizeof (TermCell*));
+    return term->arity;
+}
+
 /***************************************************************************** 
  * Insert a term into the term bank for which the subterms are 
  * already in the term bank. Will reuse or destroy the top cell!
@@ -184,7 +214,8 @@ int TermBank::tb_term_parse_arglist(Scanner* in, TermCell*** argAnchor, bool isC
 TermCell* TermBank::TBTermTopInsert(TermCell* t) {
     assert(t);
     assert(!t->IsVar());
-    TermCell* newTerm = termStore.TermCellStoreInsert(t);
+
+    TermCell* newTerm = (0 == t->uVarCount) ? Env::getGTbank()->termStore.TermCellStoreInsert(t) : termStore.TermCellStoreInsert(t);
     if (newTerm) /* TermCell node already existed, just add properties */ {
         newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
         DelPtr(t);
@@ -195,20 +226,16 @@ TermCell* TermBank::TBTermTopInsert(TermCell* t) {
         t->TermCellSetProp(TermProp::TPShareGround); /* Groundness may change below */
         t->weight = DEFAULT_FWEIGHT;
 
-         
-         
+
+
         for (int i = 0; i < t->arity; ++i) {
             assert(t->args[i]->IsShared() || t->args[i]->IsVar());
             t->weight += t->args[i]->weight;
-          
+
             if (!t->args[i]->TermCellQueryProp(TermProp::TPIsGround)) {
                 t->TermCellDelProp(TermProp::TPIsGround);
             }
         }
-//        if (t->arity > 0) t->zjweight += 0.5f * (w / t->arity);
-//        else
-//            t->zjweight += 0.5f;
-
 
         assert(t->TermStandardWeight() == t->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
         assert((t->IsGround() == false) == (t->TBTermIsGround() == false));
@@ -357,10 +384,12 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
             string idStr;
             FuncSymbType id_type;
             if ((id_type = TermCell::TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
-                //若为变元符号
+                //若为变元符号    将该项插入文字所在子句的 子句级共享变元集中
                 handle = this->shareVars->Insert(idStr);
             } else {
-                handle = DefaultSharedTermCellAlloc();
+                //非变元符号  要么是基项,要么是含变元的函数项 
+                handle = new TermCell();
+                handle->TermCellSetProp(TermProp::TPIsShared); //DefaultSharedTermCellAlloc();
                 Sigcell* sig = Env::getSig();
                 if (in->TestInpTok(TokenType::OpenBracket)) {//有括号说明有子项存在
                     if ((id_type == FuncSymbType::FSIdentInt)&&((int32_t) sig->distinctProps & (int32_t) FPIsInteger)) {
@@ -376,10 +405,17 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
                     if ((id_type == FuncSymbType::FSIdentObject)&&((int32_t) sig->distinctProps & (int32_t) FPIsObject)) {
                         in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
                     }
-                    
-                    handle->arity = tb_term_parse_arglist(in, &(handle->args), isCheckSymbProp);//函数符子项读取
+
+                    //handle->arity = tb_term_parse_arglist(in, &(handle->args), isCheckSymbProp); //函数符子项读取
+                    handle->arity = tb_term_parse_arglist(in, handle, isCheckSymbProp); //函数符子项读取
+
+
+                    if (0 == handle->uVarCount) {
+                        handle->TermCellSetProp(TermProp::TPShareGround);
+                    }
                 } else {
                     handle->arity = 0;
+                    handle->TermCellSetProp(TermProp::TPShareGround);
                 }
                 //查询 sigcell对象获取 读取符号的 fcode
                 handle->fCode = TermCell::TermSigInsert(sig, idStr, handle->arity, false, id_type);
@@ -390,6 +426,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
                     errpos += to_string((long) (sig->fInfo[sig->SigFindFCode(idStr)]->arity));
                     cout << "SYNTAX_ERROR:" + errpos << endl;
                 }
+                //基项插入 全局基项bank 带变元的函数项 插入子句共享bank;s
                 handle = TBTermTopInsert(handle);
             }
 
@@ -443,7 +480,7 @@ TermCell* TermBank::TBInsert(TermCell* term, VarBank_p varbank, DerefType deref)
         // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
 
         for (int i = 0; i < t->arity; ++i) {
-            t->args[i] = TBInsert(t->args[i],varbank,deref);
+            t->args[i] = TBInsert(t->args[i], varbank, deref);
         }
         t = TermTopInsert(t);
     }
@@ -454,18 +491,18 @@ TermCell* TermBank::TBInsert(TermCell* term, VarBank_p varbank, DerefType deref)
  * 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0;
  * As TBInsert, but will set all properties of the new term to 0 first.
  ****************************************************************************/
-TermCell* TermBank::TBInsertNoProps(TermCell* term, VarBank_p varbank, DerefType deref) {
+TermCell* TermBank::TBInsertNoProps(TermCell* term, DerefType deref) {
     assert(term);
     term = TermCell::TermDeref(term, deref); /*根据deref类型,获取term的绑定项*/
     /*非共享term！－This is an unshared　term cell at the　moment, */
 
-    TermCell* t = term->TermEquivCellAlloc(varbank); //得到term的副本copy
+    TermCell* t = term->TermEquivCellAlloc(this->shareVars); //得到term的副本copy
     if (!t->IsVar()) {
         t->properties = TermProp::TPIgnoreProps;
         //assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
         // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
         for (int i = 0; i < t->arity; ++i) {
-            t->args[i] = TBInsertNoProps(t->args[i], varbank,deref);
+            t->args[i] = TBInsertNoProps(t->args[i], deref);
         }
         t = TermTopInsert(t);
     }
@@ -477,7 +514,7 @@ TermCell* TermBank::TBInsertNoProps(TermCell* term, VarBank_p varbank, DerefType
  * in the bank (except possibly for variables appearing as
  * bindings). This allows us to just return term for ground terms.
  ****************************************************************************/
-TermCell* TermBank::TBInsertOpt(TermCell* term, VarBank_p varbank, DerefType deref) {
+TermCell* TermBank::TBInsertOpt(TermCell* term, DerefType deref) {
     int i;
 
     assert(term);
@@ -487,14 +524,14 @@ TermCell* TermBank::TBInsertOpt(TermCell* term, VarBank_p varbank, DerefType der
     if (term->IsGround()) {
         return term;
     }
-    Term_p t = term->TermEquivCellAlloc(varbank);
+    Term_p t = term->TermEquivCellAlloc(this->shareVars);
     /* This is an unshared term cell at the moment, */
 
     if (!t->IsVar()) {
         // assert(SysDateIsCreationDate(t->rw_data.nf_date[0]));
         // assert(SysDateIsCreationDate(t->rw_data.nf_date[1]));
         for (i = 0; i < t->arity; i++) {
-            t->args[i] = TBInsertOpt(t->args[i], varbank,deref);
+            t->args[i] = TBInsertOpt(t->args[i], deref);
         }
         t = tb_termtop_insert(t);
     }
@@ -606,9 +643,9 @@ TermCell* TermBank::TermTopInsert(TermCell* t) {
  ****************************************************************************/
 TermCell* TermBank::TBFind(TermCell* term) {
     assert(term->IsGround());
-//    if (term->IsVar()) {
-//        return vars->FindByFCode(term->fCode);
-//    }
+    //    if (term->IsVar()) {
+    //        return vars->FindByFCode(term->fCode);
+    //    }
     return termStore.TermCellStoreFind(term);
 }
 
@@ -618,7 +655,7 @@ TermCell* TermBank::TBFind(TermCell* term) {
 long TermBank::TBTermNodes() {
     assert(termStore.entries == termStore.TermCellStoreCountNodes());
     //变元节点数+非变元节点数
-    return termStore.entries ;//+ vars->vctFCodes.size();
+    return termStore.entries; //+ vars->vctFCodes.size();
 
 }
 
@@ -696,7 +733,8 @@ void TermBank::TBPrintTermCompact(FILE* out, TermCell* term) {
 void TermBank::TBPrintTerm(FILE* out, Term_p term, bool fullterms) {
     if (fullterms) {
         //TBPrintTermFull(out, term);
-        term->TermPrint(out, DerefType::DEREF_NEVER);
+        term->PrintDerefAlways(out);
+        //term->TermPrint(out, DerefType::DEREF_NEVER);
         //fprintf(out,"\n");
     } else {
         TBPrintTermCompact(out, term);

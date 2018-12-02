@@ -11,13 +11,9 @@
  * Created on 2017年12月13日, 下午1:50
  */
 
-#include "Global/IncDefine.h"
-#include "INOUT/Scanner.h"
-#include "CLAUSE/Clause.h"
-#include "Global/Environment.h"
-#include "BASIC/SplayTree.h"
 #include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
+#include "Alg/Resolution.h"
 #include <iostream>
 #include <set>
 #include <map>
@@ -48,10 +44,7 @@ int main(int argc, char** argv) {
 #else
 
 int main(int argc, char** argv) {
-    cout << "argc:" << argc << endl;
-    for (int i = 0; i < argc; ++i) {
-        cout << argv[i] << endl;
-    }
+
     //命令行解析
 
     //全局扫描器Scanner读取文件 argv[1]
@@ -59,12 +52,32 @@ int main(int argc, char** argv) {
 
     //生成公式集\子句-----------------
     double initial_time = CPUTime();
+
     Formula* fol = new Formula();
-    fol->GenerateFormula(Env::getIn());
+    fol->generateFormula(Env::getIn());
     PaseTime("GenFormula_", initial_time);
 
+
     //预处理操作---------------------       
-    ProofControl::Preprocess(fol);
+    fol->preProcess();
+ 
+    //    pid_t  child = fork();
+    //    if (child == 0) {
+    Resolution resolution;
+    RESULT res = resolution.BaseAlgByRecodePath(fol); //使用记录路径的方式进行路径回退
+    cout << (int) res << endl;
+    exit(0);
+    //    } else if (child > 0) {
+    //        waitpid(child, NULL, 0);
+    //    }
+
+
+    //fol->printClas(stdout);
+    //Env::getGTbank()->GTPrintAllTerm(stdout);
+    //cout << "每个子句的共享项==================" << endl;
+
+
+
 
     //ProofControl* proofCtr = new ProofControl(fol->getAxioms());
 
@@ -74,6 +87,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-
-
 #endif

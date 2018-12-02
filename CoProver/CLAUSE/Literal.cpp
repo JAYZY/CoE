@@ -21,8 +21,50 @@ Literal::Literal() {
     lterm = nullptr;
     rterm = nullptr;
     next = nullptr;
-    xyW = 0.0f;
+    claPtr = nullptr;
+    weight = 0;
     zjlitWight = 0;
+    
+    
+}
+
+Literal::Literal(Scanner* in, Cla_p cla) {
+    Term_p lt = nullptr, rt = nullptr;
+    this->claPtr = cla;
+    // EqnAlloc(lt, rt, positive);
+    this->pos = 0;
+    this->properties = EqnProp::EPNoProps;
+
+    bool positive = eqn_parse_real(in, &lt, &rt, false);
+
+
+    if (positive) { //设置正文字属性
+        EqnSetProp(EqnProp::EPIsPositive);
+    }
+    if (rt != Env::getGTbank()->trueTerm) {//设置等词属性
+        assert(rt->fCode != (FunCode) DerefType::TRUECODE);
+        EqnSetProp(EqnProp::EPIsEquLiteral);
+    } else {//非等词文字
+        assert(rt->TermCellQueryProp(TermProp::TPPredPos));
+        /*printf("# lterm->f_code: %ld <%s>\n", lterm->f_code,
+          SigFindName(bank->sig,lterm->f_code));
+          SigPrint(stdout,bank->sig);
+          fflush(stdout); */
+        assert(!lt->IsVar());
+        /* TermPrint(stdout, lterm, bank->sig, DEREF_NEVER);
+        printf("===");
+        TermPrint(stdout, rterm, bank->sig, DEREF_NEVER);
+        printf("\n"); */
+        assert(Env::getSig()->SigQueryFuncProp(lt->fCode, FPPredSymbol));
+
+        lt->TermCellSetProp(TermProp::TPPredPos);
+        if (Env::getSig()->SigQueryFuncProp(lt->fCode, FPPseudoPred)) {
+            EqnSetProp(EqnProp::EPPseudoLit);
+        }
+    }
+    this->next = nullptr;
+    this->lterm = lt;
+    this->rterm = rt;
 }
 
 Literal::Literal(Term_p lt, Term_p rt, bool positive) {
@@ -41,7 +83,7 @@ Literal::~Literal() {
 //   Parse an equation with optional external sign and depending on
 //   wether FOF or CNF is being parsed.
 
-bool Literal::eqn_parse_real(Scanner* in,Term_p *lref, Term_p *rref, bool fof) {
+bool Literal::eqn_parse_real(Scanner* in, Term_p *lref, Term_p *rref, bool fof) {
     bool positive = true;
     bool negate = false;
     switch (in->format) {
@@ -92,43 +134,43 @@ bool Literal::eqn_parse_real(Scanner* in,Term_p *lref, Term_p *rref, bool fof) {
 //   Parse a literal without external sign assuming that _all_
 //   equational literals are prefix. Return sign. This is for TPTP
 
-bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref,VarBank_p varbank) {
+bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
     Scanner* in = Env::getIn();
-    TermBank* bank = Env::getTb();
+
     Term_p lterm = nullptr;
     Term_p rterm = nullptr;
     bool positive = true;
-
+    TermBank_p claTermBank = this->claPtr->claTB;
     if (in->TestInpId("equal")) {
         in->NextToken();
         in->AcceptInpTok(TokenType::OpenBracket);
 
         //lterm = TBTermParse(in, bank);直接调用TBTermParseReal
         //解析项
-        lterm = bank->TBTermParseReal(in,varbank, true); //TBTermParse();
+        lterm = claTermBank->TBTermParseReal(in, true); //TBTermParse();
         //BOOL_TERM_NORMALIZE(lterm);
-        if (lterm == bank->falseTerm) {
-            lterm = bank->trueTerm;
+        if (lterm == Env::getGTbank()->falseTerm) {
+            lterm = Env::getGTbank()->trueTerm;
             positive = !positive;
         }
         in->AcceptInpTok(TokenType::Comma);
-        rterm = bank->TBTermParseReal(in,varbank, true); //TBTermParse(in, bank);
+        rterm = claTermBank->TBTermParseReal(in, true); //TBTermParse(in, bank);
         //BOOL_TERM_NORMALIZE(rterm);
-        if (rterm == bank->falseTerm) {
-            rterm = bank->trueTerm;
+        if (rterm == Env::getGTbank()->falseTerm) {
+            rterm = Env::getGTbank()->trueTerm;
             positive = !positive;
         }
         in->AcceptInpTok(TokenType::CloseBracket);
     } else {
-        lterm = bank->TBTermParseReal(in,varbank, true); //TBTermParse(in, bank);
+        lterm = claTermBank->TBTermParseReal(in, true); //TBTermParse(in, bank);
         //BOOL_TERM_NORMALIZE(lterm);
-        if (lterm == bank->falseTerm) {
-            lterm = bank->trueTerm;
+        if (lterm == Env::getGTbank()->falseTerm) {
+            lterm = Env::getGTbank()->trueTerm;
             positive = !positive;
         }
-        rterm = bank->trueTerm; /* Non-Equational literal */
+        rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
     }
-    if (rterm == bank->trueTerm) {
+    if (rterm == Env::getGTbank()->trueTerm) {
         if (lterm->IsVar()) {
             in->AktTokenError("Individual variable used at predicate position", false);
 
@@ -161,17 +203,17 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
     TermBank* bank = this->claPtr->claTB;
 
     //lterm = TBTermParse(in, bank);
-    lterm = bank->TBTermParseReal(in,varbank, true);
+    lterm = bank->TBTermParseReal(in, true);
     //BOOL_TERM_NORMALIZE(lterm);
-    if (lterm == bank->falseTerm) {
-        lterm = bank->trueTerm;
+    if (lterm == Env::getGTbank()->falseTerm) {
+        lterm = Env::getGTbank()->trueTerm;
         positive = !positive;
     }
     TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);
     //bank->sig->SigSetPredicate(lterm->fCode, true);
     Sigcell* sig = Env::getSig();
     if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) {
-        rterm = bank->trueTerm; /* Non-Equational literal */
+        rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
     } else {
         if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) {
 
@@ -179,7 +221,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 positive = !positive;
             }
             in->AcceptInpTok(equalToke);
-            rterm = bank->TBTermParseReal(in,varbank, true); //TBTermParse(in, bank);
+            rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
             if (!rterm->IsVar()) {
                 if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
@@ -193,7 +235,9 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 positive = !positive;
             }
             in->AcceptInpTok(equalToke);
-            rterm = bank->TBTermParseReal(in,varbank, true); //TBTermParse(in, bank);
+
+            rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
+
             if (!rterm->IsVar()) {
                 if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
@@ -201,7 +245,7 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 sig->SigSetFunction(rterm->fCode, true);
             }
         } else { /* It's a predicate */
-            rterm = bank->trueTerm; /* Non-Equational literal */
+            rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
             sig->SigSetPredicate(lterm->fCode, true);
         }
     }
@@ -213,7 +257,12 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
 
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
+
 /*---------------------------------------------------------------------*/
+
+TermBank_p Literal::getClaTermBank() {
+    return claPtr->claTB;
+}
 
 /*****************************************************************************
  * Print a literal in TSTP format.
@@ -224,14 +273,14 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms) {
     } else {
         if (EqnIsEquLit()) {
 
-            Env::getTb()->TBPrintTerm(out, lterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms);
             fprintf(out, "%s", IsNegative() ? "!=" : "=");
-            Env::getTb()->TBPrintTerm(out, rterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, rterm, fullterms);
         } else {
             if (IsNegative()) {
                 fputc('~', out);
             }
-            Env::getTb()->TBPrintTerm(out, lterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms);
             // bank->TBPrintTerm(out, lterm, fullterms);
         }
     }
@@ -252,22 +301,22 @@ bool Literal::EqnOrient() {
     CompareResult relation = CompareResult::toUncomparable;
     bool res = false;
 
-    if ( this->EqnQueryProp(EqnProp::EPMaxIsUpToDate)) {
+    if (this->EqnQueryProp(EqnProp::EPMaxIsUpToDate)) {
         return false;
     }
     if (this->lterm == this->rterm) {
         relation = CompareResult::toEqual;
-    } else if (this->lterm == Env::getTb()->trueTerm) {
-        relation =CompareResult::toLesser;
-    } else if (this->rterm == Env::getTb()->trueTerm) {
-        relation =CompareResult::toGreater;
+    } else if (this->lterm == Env::getGTbank()->trueTerm) {
+        relation = CompareResult::toLesser;
+    } else if (this->rterm == Env::getGTbank()->trueTerm) {
+        relation = CompareResult::toGreater;
     } else {
         /* printf("EqnOrient: ");
         TermPrint(stdout, eq->lterm, eq->bank->sig, DEREF_ALWAYS);
         printf(" # ");
         TermPrint(stdout, eq->rterm, eq->bank->sig, DEREF_ALWAYS);
         printf("\n");*/
-        relation =Ordering::Tocompare(this->lterm,this->rterm,DerefType::DEREF_ALWAYS,DerefType::DEREF_ALWAYS);
+        relation = Ordering::Tocompare(this->lterm, this->rterm, DerefType::DEREF_ALWAYS, DerefType::DEREF_ALWAYS);
     }
     switch (relation) {
         case CompareResult::toUncomparable:
@@ -275,18 +324,18 @@ bool Literal::EqnOrient() {
             this->EqnDelProp(EqnProp::EPIsOriented);
             break;
         case CompareResult::toGreater:
-            this->EqnSetProp(EqnProp::EPIsOriented);            
+            this->EqnSetProp(EqnProp::EPIsOriented);
             break;
         case CompareResult::toLesser:
-            this->swapSides();            
+            this->swapSides();
             this->EqnSetProp(EqnProp::EPIsOriented);
             res = true;
             break;
         default:
             assert(false);
             break;
-    }    
-this->EqnSetProp(EqnProp::EPMaxIsUpToDate);            
+    }
+    this->EqnSetProp(EqnProp::EPMaxIsUpToDate);
     return res;
 }
 
@@ -323,28 +372,26 @@ Literal* Literal::EqnListFlatCopy() {
     *insert = nullptr;
     return newlist;
 }
-  Literal* Literal::renameCopy(VarBank_p varbank){
-      
-      Term_p lt=lterm->renameCopy(varbank);
-      Term_p rt=rterm->renameCopy(varbank);
-      Literal* newLit=new Literal(lt,rt,false);
-      newLit->properties = this->properties;
-      return newLit;
-  }
 
+Literal* Literal::renameCopy(VarBank_p varbank) {
 
+    Term_p lt = lterm->renameCopy(varbank);
+    Term_p rt = rterm->renameCopy(varbank);
+    Literal* newLit = new Literal(lt, rt, false);
+    newLit->properties = this->properties;
+    return newLit;
+}
 
 /*****************************************************************************
  * Copy an equation into the same term bank, 
  * but with disjoint (odd->even or vice versa) variable. 
  ****************************************************************************/
 Literal* Literal::EqnCopyDisjoint() {
-    Literal* handle;
 
-    Term_p lt = Env::getTb()->TBInsertDisjoint(lterm);
-    Term_p rt = Env::getTb()->TBInsertDisjoint(rterm);
+    Term_p lt = this->getClaTermBank()->TBInsertDisjoint(lterm);
+    Term_p rt = this->getClaTermBank()->TBInsertDisjoint(rterm);
 
-    handle = new Literal(lt, rt, false); /* Properties will be taken care of later! */
+    Literal* handle = new Literal(lt, rt, false); /* Properties will be taken care of later! */
     handle->properties = properties;
 
     return handle;
@@ -354,15 +401,10 @@ Literal* Literal::EqnCopyDisjoint() {
  * Create a copy of eq with terms from bank. Does not copy the next pointer. 
  * Properties of the original terms are not copied.
  ****************************************************************************/
-Literal* Literal::EqnCopy() {
+Literal* Literal::EqnCopy(TermBank_p termbank) {
 
-    Term_p ltermCpy;
-    Term_p rtermCpy;
-VarBank_p varbank=this->claPtr->claVarTerms;
- 
-    ltermCpy = Env::getTb()->TBInsertNoProps(this->lterm,varbank, DerefType::DEREF_ALWAYS);
-    rtermCpy = Env::getTb()->TBInsertNoProps(this->rterm,varbank, DerefType::DEREF_ALWAYS);
-
+    Term_p ltermCpy = termbank->TBInsertNoProps(this->lterm, DerefType::DEREF_ALWAYS);
+    Term_p rtermCpy = termbank->TBInsertNoProps(this->rterm, DerefType::DEREF_ALWAYS);
     /* Properties will be taken care of later! */
     Literal* handle = new Literal(ltermCpy, rtermCpy, false);
     handle->properties = this->properties;
@@ -400,11 +442,11 @@ Literal* Literal::EqnFlatCopy() {
  * (using the common optimizations possible in that case). 
  ****************************************************************************/
 Literal* Literal::EqnCopyOpt() {
-    
-    VarBank_p varbank=this->claPtr->claVarTerms;
-    
-    Term_p lNewTerm = Env::getTb()->TBInsertOpt(lterm,varbank, DerefType::DEREF_ALWAYS);
-    Term_p rNewTerm = Env::getTb()->TBInsertOpt(rterm, varbank,DerefType::DEREF_ALWAYS);
+
+    TermBank_p calTermBank = this->getClaTermBank();
+
+    Term_p lNewTerm = calTermBank->TBInsertOpt(lterm, DerefType::DEREF_ALWAYS);
+    Term_p rNewTerm = calTermBank->TBInsertOpt(rterm, DerefType::DEREF_ALWAYS);
     Literal* handle = new Literal(lNewTerm, rNewTerm, false);
     /* Properties will be taken care of later! */
     handle->properties = properties;
@@ -416,7 +458,7 @@ Literal* Literal::EqnCopyOpt() {
 Term_p Literal::EqnTermsTBTermEncode(bool EqnDirIsReverse) {
 
     Term_p handle;
-    TermBank* bank = Env::getTb();
+    TermBank* bank = this->getClaTermBank();
 
     assert(bank);
     assert(bank->TBFind(lterm));
@@ -442,9 +484,22 @@ Term_p Literal::EqnTermsTBTermEncode(bool EqnDirIsReverse) {
 
 void Literal::EqnFOFParse(Scanner* in, TermBank_p bank) {
     //Term_p lterm, rterm;
-    bool positive = eqn_parse_real(in,  &this->lterm, &rterm, bank->shareVars,true);
+    bool positive = eqn_parse_real(in, &this->lterm, &rterm, true);
     EqnAlloc(this->lterm, this->rterm, positive);
 }
+
+//检查两个文字 是否相同（包含了其中的变元替换）
+
+bool Literal::equalsStuct(Literal* lit) {
+    if (this->lterm->equalStruct(lit->lterm) && this->rterm->equalStruct(lit->rterm))
+        return true;
+    //考虑等词情况
+    if (this->lterm->equalStruct(lit->rterm) && this->rterm->equalStruct(lit->lterm))
+        return true;
+    return false;
+
+}
+
 
 /*-----------------------------------------------------------------------
  *E的比较规则如下:

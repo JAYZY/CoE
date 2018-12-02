@@ -64,6 +64,14 @@ public:
         return OutFile && OutFile->is_open();
     }
 
+    inline void get_exe_path(char* path,int size) {
+        char link[1024];
+        sprintf(link, "/proc/%d/exe", getpid()); /////////////
+        readlink(link, path, size); //////////////
+        //printf("%s/n", path);
+        
+    }
+
     /* 写入信息 */
     inline void Write(const string&msg) {
         switch (outType) {

@@ -8,11 +8,14 @@
 #ifndef GROUNDTERMBANK_H
 #define GROUNDTERMBANK_H
 #include <stdint.h>
-
-#include "Global/IncDefine.h"
+#include "VarBank.h"
+#include "TermCellStore.h"
+#include "INOUT/Scanner.h"
+#include "TermCell.h"
 class GroundTermBank {
 private:
     uint64_t inCount; 
+public:
     TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
     TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
     TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
@@ -32,8 +35,8 @@ public:
     //
     TermCell* GBInsert(TermCell* term);
     TermCell* GTermTopInsert(TermCell* t);
-private:
 
+    void GTPrintAllTerm(FILE *out) ;
 };
 typedef GroundTermBank *GTermBank_p;
 #endif /* GROUNDTERMBANK_H */

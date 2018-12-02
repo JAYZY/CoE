@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Alg/Resolution.o \
 	${OBJECTDIR}/Alg/TriAlg.o \
 	${OBJECTDIR}/CLAUSE/Clause.o \
 	${OBJECTDIR}/CLAUSE/Literal.o \
@@ -46,6 +47,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Global/IncDefine.o \
 	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
+	${OBJECTDIR}/HEURISTICS/StrategyParam.o \
 	${OBJECTDIR}/INOUT/CommandLine.o \
 	${OBJECTDIR}/INOUT/FileOp.o \
 	${OBJECTDIR}/INOUT/Scanner.o \
@@ -60,14 +62,14 @@ OBJECTFILES= \
 	${OBJECTDIR}/Orderings/Ordering.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
 	${OBJECTDIR}/Prover/Prover.o \
-	${OBJECTDIR}/TERMS/GroundTermBank.o \
-	${OBJECTDIR}/TERMS/Sigcell.o \
-	${OBJECTDIR}/TERMS/TermBank.o \
-	${OBJECTDIR}/TERMS/TermCell.o \
-	${OBJECTDIR}/TERMS/TermCellStore.o \
-	${OBJECTDIR}/TERMS/TermTree.o \
-	${OBJECTDIR}/TERMS/VarBank.o \
-	${OBJECTDIR}/TERMS/VarHash.o \
+	${OBJECTDIR}/Terms/GroundTermBank.o \
+	${OBJECTDIR}/Terms/Sigcell.o \
+	${OBJECTDIR}/Terms/TermBank.o \
+	${OBJECTDIR}/Terms/TermCell.o \
+	${OBJECTDIR}/Terms/TermCellStore.o \
+	${OBJECTDIR}/Terms/TermTree.o \
+	${OBJECTDIR}/Terms/VarBank.o \
+	${OBJECTDIR}/Terms/VarHash.o \
 	${OBJECTDIR}/main.o
 
 
@@ -94,6 +96,11 @@ LDLIBSOPTIONS=-Wl,-rpath,'.'
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover ${OBJECTFILES} ${LDLIBSOPTIONS}
+
+${OBJECTDIR}/Alg/Resolution.o: Alg/Resolution.cpp
+	${MKDIR} -p ${OBJECTDIR}/Alg
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/Resolution.o Alg/Resolution.cpp
 
 ${OBJECTDIR}/Alg/TriAlg.o: Alg/TriAlg.cpp
 	${MKDIR} -p ${OBJECTDIR}/Alg
@@ -149,6 +156,11 @@ ${OBJECTDIR}/HEURISTICS/Options.o: HEURISTICS/Options.cpp
 	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/Options.o HEURISTICS/Options.cpp
+
+${OBJECTDIR}/HEURISTICS/StrategyParam.o: HEURISTICS/StrategyParam.cpp
+	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/StrategyParam.o HEURISTICS/StrategyParam.cpp
 
 ${OBJECTDIR}/INOUT/CommandLine.o: INOUT/CommandLine.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT
@@ -220,45 +232,45 @@ ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Prover/Prover.o Prover/Prover.cpp
 
-${OBJECTDIR}/TERMS/GroundTermBank.o: TERMS/GroundTermBank.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/GroundTermBank.o: Terms/GroundTermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/GroundTermBank.o TERMS/GroundTermBank.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/GroundTermBank.o Terms/GroundTermBank.cpp
 
-${OBJECTDIR}/TERMS/Sigcell.o: TERMS/Sigcell.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/Sigcell.o: Terms/Sigcell.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/Sigcell.o TERMS/Sigcell.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/Sigcell.o Terms/Sigcell.cpp
 
-${OBJECTDIR}/TERMS/TermBank.o: TERMS/TermBank.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermBank.o: Terms/TermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermBank.o TERMS/TermBank.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermBank.o Terms/TermBank.cpp
 
-${OBJECTDIR}/TERMS/TermCell.o: TERMS/TermCell.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermCell.o: Terms/TermCell.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCell.o TERMS/TermCell.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermCell.o Terms/TermCell.cpp
 
-${OBJECTDIR}/TERMS/TermCellStore.o: TERMS/TermCellStore.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermCellStore.o: Terms/TermCellStore.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCellStore.o TERMS/TermCellStore.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermCellStore.o Terms/TermCellStore.cpp
 
-${OBJECTDIR}/TERMS/TermTree.o: TERMS/TermTree.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermTree.o: Terms/TermTree.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermTree.o TERMS/TermTree.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermTree.o Terms/TermTree.cpp
 
-${OBJECTDIR}/TERMS/VarBank.o: TERMS/VarBank.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/VarBank.o: Terms/VarBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarBank.o TERMS/VarBank.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/VarBank.o Terms/VarBank.cpp
 
-${OBJECTDIR}/TERMS/VarHash.o: TERMS/VarHash.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/VarHash.o: Terms/VarHash.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarHash.o TERMS/VarHash.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/VarHash.o Terms/VarHash.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

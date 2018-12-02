@@ -28,7 +28,7 @@ public:
     struct cmp {
 
         bool operator()(const TermIndNode* a, const TermIndNode * b) const {
-            return (b->curTermSymbol->fCode - a->curTermSymbol->fCode) > 0 ? true : false;
+            return (b->curTermSymbol->fCode > a->curTermSymbol->fCode);
         }
     };
 
@@ -44,8 +44,11 @@ public:
 
     }
 
-    TermIndNode(TermCell* term) : curTermSymbol(term), size(0) {
-
+    TermIndNode(TermCell* term) {
+        
+        curTermSymbol = term; 
+        size = 0;             
+        
     }
 
     virtual ~TermIndNode() {
@@ -63,8 +66,8 @@ public:
 class TermIndexing {
 public:
     //vector<TermCell*> chgVars; //记录有绑定的变元项
-    Subst* chgVars;
-     static map<TermCell*,int> constTermNum; 
+    Subst* subst;
+    static map<TermCell*, int> constTermNum;
 protected:
 
     //回退点定义
@@ -105,15 +108,18 @@ public:
 private:
     virtual void InsertTerm(TermIndNode* treeNode, TermCell * term);
 public:
-    inline int GetTermNum(TermCell* t){return constTermNum[t];}
-    
+
+    inline int GetTermNum(TermCell* t) {
+        return constTermNum[t];
+    }
+
     inline TermIndNode* getRoot(Literal* lit) {
 
         if (lit->EqnIsEquLit()) {
             return lit->IsPositive() ? posEqnRoot : negEqnRoot;
-        } else
+        } else {
             return lit->IsPositive() ? posRoot : negRoot;
-
+        }
 
     }
     //返回文字谓词子节点个数
@@ -126,8 +132,8 @@ public:
         uint32_t iSize = 0;
         if (lit->lterm->TBTermIsGround()) {
             iSize = (*subNodeIt)->groundTermMap[lit->lterm];
-//            if(iSize>10)
-//                iSize=INT_MAX;
+            //            if(iSize>10)
+            //                iSize=INT_MAX;
             // lit->EqnTSTPPrint(stdout, true);
             //  cout << "iSize " << iSize << endl;
             return iSize;
@@ -162,7 +168,7 @@ public:
     virtual void ClearVarLst();
 
     void DelIndexNode(TermIndNode * root) {
-
+        if (root == nullptr)return;
         vector<TermIndNode*> stNode;
         stNode.reserve(64);
         stNode.push_back(root);
@@ -178,6 +184,13 @@ public:
         vector<TermIndNode*>().swap(stNode);
     }
 
+    inline void destroy() {
+        DelIndexNode(posRoot);
+        DelIndexNode(negRoot);
+        DelIndexNode(posEqnRoot);
+        DelIndexNode(negEqnRoot);
+
+    }
 
 
     /// 扁平化文字项
@@ -185,7 +198,7 @@ public:
 
     void FlattenLiteral(Literal * lit) {
         flattenTerm.clear();
-        flattenTerm.reserve(32);
+        flattenTerm.reserve(64);
         this->FlattenTerm(lit->lterm);
         if (lit->EqnIsEquLit())
             this->FlattenTerm(lit->rterm);
@@ -219,8 +232,9 @@ private:
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
-
     /*---------------------------------------------------------------------*/
+    //
+
     DiscrimationIndexing() {
         posRoot = new TermIndNode();
         negRoot = new TermIndNode();
@@ -228,6 +242,14 @@ public:
         negEqnRoot = new TermIndNode(); //负等词索
         backpoint.reserve(32);
         //chgVars.reserve(32);
+    }
+
+    ~DiscrimationIndexing() {
+        destroy();
+        ClearVarLst();
+
+
+
     }
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */

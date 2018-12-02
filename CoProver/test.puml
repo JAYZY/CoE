@@ -1,0 +1,44 @@
+:回退的类型:1.主对角线重新查找下一个互补文字(改变被归结文字);2.重新选择主界线文字(改变主动归结文字);3.重新选择被下拉的主界线文字(改变下拉替换)
+
+:回退分析: 在正常△构建中,若某个主动文字均找不到可以延拓的文字,则说明,类型1(改变被归结文字)不适用. 
+
+:此时考虑两种情况 检查是否有下拉,若有下拉,则重新下拉并且还是重该主界线文字出发
+
+@startuml
+title 回退算法流程图
+start
+
+:做△ -->triRes;
+if (triRes==NOMGU) then
+    while (主界线文字不为空) is (△无法延拓)
+        :找不到延拓文字\n(改变被归结文字);
+        if (1.有下拉文字) then (true)
+            if (检查其他下拉主界线\n文字可以下拉) then (yes)
+                :将下拉文字还原; 
+                :重新选择下拉主界线文字;        
+            endif    
+        else(false)
+            :回退主界线文字->actLit;
+            :回退该子句的vNewR中的文字->actClaLeft;    
+            if (2.actClaLeft不为空) then (yes)
+                :回退候选集合索引(不赋值);
+            endif
+        endif
+        
+        if (主界线回退不成功) then
+            :主界线文字赋值->actLit(不回退)\n回退该子句的vNewR中的文字->actClaLeft\n回退候选集合索引->posCandInd;
+             note right
+                    无法找到合适的主界线文字,
+                    则表明需要继续后退到下一个
+                    主界线文字并开始第3种回退
+            end note
+        endif 
+    endwhile (重做△)
+endif
+:改变参数下一次△延拓;
+
+stop 
+@enduml
+
+
+ 

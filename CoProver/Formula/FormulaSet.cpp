@@ -69,11 +69,11 @@ long FormulaSet::FormulaSetInsertSet(FormulaSet* fromset) {
 long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
         SplayTree<StrTreeCell>&name_selector, SplayTree<StrTreeCell>&skip_includes) {
 
-    TermBank_p terms = Env::getTb();
+
     long res = 0;
     WFormula* form = nullptr;
     WFormula* nextform = nullptr;
-    Clause* clause, nextclause;
+    //Clause* clause, nextclause;
     // StrTree_p stand_in = NULL;
 
     //    if (name_selector.IsEmpty()) {
@@ -112,19 +112,19 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
                 } else {
                     if (in->TestInpId("input_formula|fof")) {
                         Out::Error("现在暂时不能识别 FOF公式集!", ErrorCodes::FILE_ERROR);
-                        
-                        form = new WFormula();
-                        form->WFormulaParse(in, terms);
-                        
+
+                        //form = new WFormula();
+                       // form->WFormulaParse(in, terms);
+
                         // fprintf(stdout, "Parsed: ");
                         // WFormulaPrint(stdout, form, true);
                         // fprintf(stdout, "\n");
                         this->FormulaSetInsert(form);
                     } else {
-                        
+
                         assert(in->TestInpId("input_clause|cnf"));
-                        clause = new Clause();
-                        clause->ClauseParse(in, terms);
+                        Clause* clause = new Clause();
+                        clause->ClauseParse(in);
                         cset->InsertCla(clause);
                     }
                     res++;

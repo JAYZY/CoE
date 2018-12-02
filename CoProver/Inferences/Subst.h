@@ -8,8 +8,8 @@
 
 #ifndef SUBST_H
 #define SUBST_H
-#include "TERMS/TermCell.h"
-#include "TERMS/VarBank.h"
+#include "Terms/TermCell.h"
+#include "Terms/VarBank.h"
 
 class Subst {
 private:

@@ -150,31 +150,31 @@ public:
     }
 };
 
-class ZXMSteadyCMP {
-public:
-
-    float operator()(Literal* t1, Literal * t2) {
-        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-            return 1;
-        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-
-            return -1;
-        return t1->xyW - t2->xyW;
-    }
-};
-
-class XYSteadyCMP {
-public:
-
-    float operator()(Literal* t1, Literal * t2) {
-
-        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-            return -1;
-        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-            return 1;
-        return t1->xyW - t2->xyW;
-    }
-};
+//class ZXMSteadyCMP {
+//public:
+//
+//    float operator()(Literal* t1, Literal * t2) {
+//        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
+//            return 1;
+//        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+//
+//            return -1;
+//        return t1->xyW - t2->xyW;
+//    }
+//};
+//
+//class XYSteadyCMP {
+//public:
+//
+//    float operator()(Literal* t1, Literal * t2) {
+//
+//        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
+//            return -1;
+//        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+//            return 1;
+//        return t1->xyW - t2->xyW;
+//    }
+//};
 
 
 #endif /* LITERALCMP_H */

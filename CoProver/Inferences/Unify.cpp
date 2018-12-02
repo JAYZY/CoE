@@ -14,7 +14,7 @@
 #include <queue>
 
 #include "Unify.h"
-#include "TERMS/TermCell.h"
+#include "Terms/TermCell.h"
 #include "CLAUSE/Literal.h"
 CPUTIME_DEFINE(MguTimer);
 

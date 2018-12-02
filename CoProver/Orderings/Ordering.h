@@ -14,7 +14,7 @@
 #ifndef ORDERING_H
 #define ORDERING_H
 #include "../Global/IncDefine.h"
-#include "../TERMS/TermCell.h"
+#include "../Terms/TermCell.h"
 
 enum class TermOrderType {
     LPO,

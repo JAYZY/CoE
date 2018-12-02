@@ -9,15 +9,15 @@
 #define ENVIRONMENT_H
 #include "IncDefine.h"
 #include "INOUT/Scanner.h"
-#include "TERMS/TermBank.h"
+#include "Terms/GroundTermBank.h"
 
 class Env {
 private:
 
     static Scanner* in;
     static IOFormat parseFormat;
-    static TermBank* termBank; // 全局唯一一个项bank 存储共享 term
-    static Sigcell* sig; // 全局唯一一个sig 存储项相关的符号
+    static GTermBank_p GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
+    static Sig_p sig; // 全局唯一一个sig 存储项相关的符号 只存储不删除
 public:
     static uint64_t global_formula_counter;
     static uint64_t global_clause_counter;
@@ -55,11 +55,11 @@ public:
         return in;
     }
 
-    static TermBank* getTb() {
-        if (!termBank)
-            termBank = new TermBank();
-        assert(termBank);
-        return termBank;
+    static GTermBank_p getGTbank() {
+        if (!GTBank)
+            GTBank = new GroundTermBank();
+        assert(GTBank);
+        return GTBank;
     }
 
     static Sigcell* getSig() {

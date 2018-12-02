@@ -14,7 +14,6 @@
 #ifndef CLAUSE_H
 #define CLAUSE_H
 #include <stdint.h>
-
 #include "Global/IncDefine.h"
 #include "Literal.h"
 #include "INOUT/Scanner.h" 
@@ -28,11 +27,8 @@ using namespace std;
 enum class ClauseProp {
     CPIgnoreProps = 0, /* For masking propertiesout */
     CPInitial = 1, /* Initial clause */
-
     CPInputFormula = 2 * ClauseProp::CPInitial, /* _Really_ initial clause in TSTP sense */
-
-    CPIsProcessed = 2 * ClauseProp::CPInputFormula, /* Clause has been processed previously */
-
+    CPIsProcessed = 2 * ClauseProp::CPInputFormula, /* Clause has been processed previously (用这个属性表示子句中处理过恒真文字和相同文字)*/
     CPIsOriented = 2 * ClauseProp::CPIsProcessed, /* Term and literal comparisons are up to date */
     CPIsDIndexed = 2 * ClauseProp::CPIsOriented, /* Clause is in the demod_index of its set */
     CPIsSIndexed = 2 * ClauseProp::CPIsDIndexed, /* Clause is in the fvindex of its set */
@@ -68,7 +64,10 @@ enum class ClauseProp {
     CPWatchOnly = 2 * ClauseProp::CPIsProtected,
     CPSubsumesWatch = 2 * ClauseProp::CPWatchOnly,
     CPLimitedRW = 2 * ClauseProp::CPSubsumesWatch, /* Clause has been processed and hence can only be rewritten in limited ways. */
-    CPIsRelevant = 2 * ClauseProp::CPLimitedRW /* Clause is selected as relevant for a proof attempt (used by SInE). */
+    CPIsRelevant = 2 * ClauseProp::CPLimitedRW, /* Clause is selected as relevant for a proof attempt (used by SInE). */
+    
+    
+            
 };
 //子句的信息
 
@@ -130,20 +129,20 @@ public:
 };
 
 class Clause {
-private:
-    uint64_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
+public:
+    uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息
-
-
-    Literal* literals; //文字列表
+   
+    uint32_t weight; //子句权重
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数
-    uint64_t weight; //子句权重
+    
 
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
-public:
+
+    Literal* literals; //文字列表
     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
     TermBank_p claTB;
 public:
@@ -163,9 +162,11 @@ public:
     /// \param in 
     /// \param bank
     /// \return 
-    void ClauseParse(Scanner* in, TermBank* t);
+    void ClauseParse(Scanner* in);
     virtual ~Clause();
 
+    //传入的文字加入到文字链中
+    //void addLits(Lit_p lit)
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
@@ -175,7 +176,7 @@ public:
         return literals;
     }
 
-    inline uint64_t GetClaId() {
+    inline uint32_t GetClaId() {
         return this->ident;
     }
 
@@ -184,7 +185,7 @@ public:
         weight = value;
     }
 
-    inline uint64_t GetWeight() {
+    inline uint32_t GetWeight() {
         return weight;
     }
 
@@ -240,6 +241,9 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
+   //重新绑定文字列表,并重新计算
+    void bindingLits(Literal* lit);
+    
     void ClausePrint(FILE* out, bool fullterms);
     void ClausePrintTPTPFormat(FILE* out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
@@ -258,8 +262,9 @@ public:
 
     template<typename FunObj, typename T>
     Literal* FileMaxLit(FunObj cmp_fun, T* index) {
-        Literal* handle = this->literals;
-        Literal* maxLit = handle;
+
+        Lit_p handle = this->literals;
+        Lit_p maxLit = handle;
         if (this->LitsNumber() > 1) {
             handle = handle->next;
             while (handle) {
@@ -271,6 +276,7 @@ public:
             }
         }
         return maxLit;
+
     }
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */
@@ -295,43 +301,8 @@ private:
     /***************************************************************************** 
      * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
      ****************************************************************************/
-    inline void EqnListParse(TokenType sep) {
-
-        Scanner* in = Env::getIn();
-        //TB_p bank = Env::getTb();
-        TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
-
-        if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
-                ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
-                ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
-
-            Literal *pos_lits = nullptr, *neg_lits = nullptr;
-            Literal* *pos_append = &pos_lits;
-            Literal* *neg_append = &neg_lits;
-            Literal* handle = nullptr;
-            while (true) {
-                handle = new Literal();
-                handle->claPtr = this;
-                handle->EqnParse(in, this->claVarTerms);
-                
-                if (handle->IsPositive()) {
-                    ++posLitNo;
-                    *pos_append = handle;
-                    pos_append = &((*pos_append)->next);
-                } else {
-                    ++negLitNo;
-                    *neg_append = handle;
-                    neg_append = &((*neg_append)->next);
-                }
-                if (!in->TestInpTok(sep))break;
-                in->NextToken();
-            }
-            *pos_append = neg_lits;
-            *neg_append = nullptr;
-            this->literals = pos_lits;
-        }
-    }
+    void EqnListParse(TokenType sep) ;
 };
-
+typedef Clause* Cla_p;
 #endif /* CLAUSE_H */
 

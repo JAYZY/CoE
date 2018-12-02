@@ -18,8 +18,8 @@
 
 /* zj新增方法:遍历TermTree 将结点放入一个新的树中 */
 void TermTree::TermTreeTraverseInit(TermCell* t, SplayTree<NumTreeCell>&sTree) {
-    if(t==nullptr) return;
-         
+    if (t == nullptr) return;
+
     vector<TermCell*> st;
     st.push_back(t);
     while (!st.empty()) {
@@ -30,7 +30,7 @@ void TermTree::TermTreeTraverseInit(TermCell* t, SplayTree<NumTreeCell>&sTree) {
         newNode->val1.p_val = t;
         sTree.Insert(newNode);
         if (t->lson) {
-            
+
             st.push_back(t->lson);
             //st.push_back(t->rson);
         }
@@ -217,15 +217,12 @@ TermCell* TermTree::TermTreeInsert(TermCell* *root, TermCell* newTerm) {
 
     if (!*root) {
         newTerm->lson = newTerm->rson = nullptr;
-        *root = newTerm;      
+        *root = newTerm;
         return nullptr;
     }
 
     *root = SplayTermTree(*root, newTerm);
-    
-    ++Env::getTb()->termStore.hashConflict;
     cmpres = TermTopCompare(newTerm, *root);
-
     if (cmpres < 0) {
         newTerm->lson = (*root)->lson;
         newTerm->rson = *root;

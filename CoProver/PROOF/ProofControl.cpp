@@ -115,60 +115,61 @@ void ProofControl::Preprocess(Formula* fol) {
     ClauseSet* oriClaset = fol->getAxioms(); //原始子句集 
 
     TermIndexing *allTermIndex = new DiscrimationIndexing();
-    fol->posUnitClaIndex = new DiscrimationIndexing();
-    fol->negUnitClaIndex = new DiscrimationIndexing();
+   // fol->posUnitClaIndex = new DiscrimationIndexing();
+ //   fol->negUnitClaIndex = new DiscrimationIndexing();
     oriClaset->SortByLitNumAsc();
 
     list<Clause*>*claLst = oriClaset->getClaSet();
 
-    for (auto claIt = claLst->cbegin(); claIt != claLst->cend();) {
+    for (auto claIt = claLst->cbegin(); claIt != claLst->cend();++claIt) {
 
         // oriClaset->ClauseSetExtractFirst();
         Clause* selCla = *claIt;
         if (Simplification::ForwardSubsumption(selCla, allTermIndex)) {
             ++uFSNum;
-            claIt = claLst->erase(claIt);
-            continue;
+            (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
+            //claIt = claLst->erase(claIt);
+            //continue;
         }
         //插入到索引中    1.单元子句索引    2.全局索引
-        Literal * lit = selCla->Lits();
-        if (selCla->IsUnitPos()) {
-            fol->posUnitClaIndex->Insert(lit);
-            fol->vPosUnitClas.push_back(selCla);
-
-        }
-        if (selCla->isUnitNeg()) {
-            fol->negUnitClaIndex->Insert(lit);
-            fol->vNegUnitClas.push_back(selCla);
-        }
-        uint32_t posLitNum = 0;
+         Literal * lit = selCla->Lits();
+//        if (selCla->IsUnitPos()) {
+//            fol->posUnitClaIndex->Insert(lit);
+//            fol->vPosUnitClas.push_back(selCla);
+//
+//        }
+//        if (selCla->isUnitNeg()) {
+//            fol->negUnitClaIndex->Insert(lit);
+//            fol->vNegUnitClas.push_back(selCla);
+//        }
+//        uint32_t posLitNum = 0;
 
         while (lit) {
-            if (lit->EqnIsEquLit()) {
-                ++(fol->uEquLitNum);
-            }
-            if (lit->IsPositive()) {
-                ++posLitNum;
-            }
+//            if (lit->EqnIsEquLit()) {
+//                ++(fol->uEquLitNum);
+//            }
+//            if (lit->IsPositive()) {
+//                ++posLitNum;
+//            }
             allTermIndex->Insert(lit);
             lit = lit->next;
         }
-        if (posLitNum > 1) ++(fol->uNonHornClaNum);
-        else if (posLitNum == 0) {//目标子句
-            fol->addGoalClas(selCla);
-        }
-        //添加到公式集 谓词全局列表中(注意单文字子句不加入谓词列表) 
-        if (selCla->LitsNumber() > 1)
-            fol->AddPredLst(selCla);
+//        if (posLitNum > 1) ++(fol->uNonHornClaNum);
+//        else if (posLitNum == 0) {//目标子句
+//            fol->addGoalClas(selCla);
+//        }
+//        //添加到公式集 谓词全局列表中(注意单文字子句不加入谓词列表) 
+//        if (selCla->LitsNumber() > 1)
+//            fol->AddPredLst(selCla);
 
-        ++claIt;
+        
     }
 
     //信息输出
     PaseTime("Preprocess_", initial_time);
     fprintf(stdout, "%12s", "# Preprocess Information===============#\n");
     fprintf(stdout, "# ForwardSubsump          %12u #\n", uFSNum);
-    fol->printInfo(stdout);
+    fol->printOrigalClasInfo(stdout);
 }
 
 void ProofControl::parseInput() {

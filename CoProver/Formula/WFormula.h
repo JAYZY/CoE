@@ -21,21 +21,21 @@ using namespace std;
 enum class WFormulaProp {
     WPIgnoreProps = 0, /* For masking properties out */
     WPInitial = 1, /* Input formula */
-    WPInputFormula = ClauseProp::CPInputFormula, /* _Really_ initial in TSTP sense */
+    WPInputFormula = (int) ClauseProp::CPInputFormula, /* _Really_ initial in TSTP sense */
     WPIniORInput = WFormulaProp::WPInitial | WFormulaProp::WPInputFormula,
-    WPType1 = ClauseProp::CPType1, /* 128 */
-    WPType2 = ClauseProp::CPType2,
-    WPType3 = ClauseProp::CPType3,
-    WPTypeMask = ClauseProp::CPTypeMask,
+    WPType1 = (int) ClauseProp::CPType1, /* 128 */
+    WPType2 = (int) ClauseProp::CPType2,
+    WPType3 = (int) ClauseProp::CPType3,
+    WPTypeMask = (int) ClauseProp::CPTypeMask,
     WPTypeUnknown = 0, /* Also used as wildcard */
-    WPTypeAxiom = ClauseProp::CPTypeAxiom, /* Formula is Axiom */
-    WPTypeHypothesis = ClauseProp::CPTypeHypothesis, /* Formula is Hypothesis */
-    WPTypeConjecture = ClauseProp::CPTypeConjecture, /* Formula is Conjecture */
-    WPTypeLemma = ClauseProp::CPTypeLemma, /* Formula is Lemma */
-    WPTypeNegConjecture = ClauseProp::CPTypeNegConjecture, /* Formula is NegConjecture */
-    WPTypeQuestion = ClauseProp::CPTypeQuestion,
-    WPIsProofClause = ClauseProp::CPIsProofClause,
-    WPIsRelevant = ClauseProp::CPIsRelevant
+    WPTypeAxiom = (int) ClauseProp::CPTypeAxiom, /* Formula is Axiom */
+    WPTypeHypothesis = (int) ClauseProp::CPTypeHypothesis, /* Formula is Hypothesis */
+    WPTypeConjecture = (int) ClauseProp::CPTypeConjecture, /* Formula is Conjecture */
+    WPTypeLemma = (int) ClauseProp::CPTypeLemma, /* Formula is Lemma */
+    WPTypeNegConjecture = (int) ClauseProp::CPTypeNegConjecture, /* Formula is NegConjecture */
+    WPTypeQuestion = (int) ClauseProp::CPTypeQuestion,
+    WPIsProofClause = (int) ClauseProp::CPIsProofClause,
+    WPIsRelevant = (int) ClauseProp::CPIsRelevant
 };
 typedef Term_p TFormula_p;
 

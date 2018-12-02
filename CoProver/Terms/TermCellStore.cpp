@@ -23,8 +23,8 @@ TermCellStore::TermCellStore() : entries(0), argCount(0) {
      }*/
     //数组初始化改为：
     memset(store, 0, sizeof (TermCell*) * TERM_STORE_HASH_SIZE);
-    storeEleNum=0;
-    this->hashConflict=0;
+    storeEleNum = 0;
+    this->hashConflict = 0;
 }
 
 TermCellStore::TermCellStore(const TermCellStore& orig) {
@@ -39,15 +39,14 @@ TermCellStore::~TermCellStore() {
 /*---------------------------------------------------------------------*/
 
 /* Insert a term cell into the store.  */
+/// 
+/// \param term
+/// \return 返回值, 若存在则返回存在的项(term是多余的) ,不存在 则返回null(term被插入hashtree中);
+
 TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
-    TermCell* ret;
-    FunCode idx=TermCellHash(term);
-    term->idx=idx;
-    ret = TermTree::TermTreeInsert(&(store[idx]), term);
-     
-//    cout<<"TermCellStore:"<<idx<<" :";
-//    term->TermPrint(stdout,DerefType::DEREF_ALWAYS);
-//    cout<<endl;
+
+    term->hashIdx = TermCellHash(term);
+    TermCell* ret = TermTree::TermTreeInsert(&(store[term->hashIdx]), term);
     if (!ret) {
         entries++;
         argCount += term->arity;
@@ -86,3 +85,24 @@ long TermCellStore::TermCellStoreCountNodes() {
     }
     return res;
 }
+
+void TermCellStore::printAllTerm(FILE* out) {
+    cout << this->entries;
+    for (TermCell* elem : this->store) {
+        if (elem == nullptr)
+            continue;
+        middleTraverseSubT(out, elem);
+        cout << endl;
+    }
+}
+
+void TermCellStore::middleTraverseSubT(FILE* out, TermCell* root) {
+    if (root == nullptr) {
+        return;
+    }
+    middleTraverseSubT(out, root->lson);
+    root->TermPrint(out);
+    cout << " ";
+    middleTraverseSubT(out, root->rson);
+}
+

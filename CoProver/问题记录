@@ -12,3 +12,23 @@
 1. 预处理模块 -- 将S 中的文字 放入 B集合中 
 A.完成 单元子句链初始化
 B.
+
+
+
+调试命令 
+ cd ~/Documents/myProg/CoE/CoProver/dist/Debug/GNU-Linux/
+
+ ./coprover //home/icdc/testTxt/CADE2017/COM145+1+short+eq_rstfp.tptp >>2.txt
+ ./coprover /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN422+1.p  >>1.txt
+
+二.完成三角形中遇到的问题
+1. 将一个子句Ci加入到三角形中后,是先检查下拉(reduce)还是 最后完成三角形再检查下拉?
+边做边检查下拉,则有可能导致 主界线文字 过早的实例化. 后续子句无法归结.
+最后检查下拉,则有可能导致  前面剩余文字中  可以下拉的文字 无法下拉.  
+
+最后选择,边左边下拉策略 
+
+2.三角形无法延伸分2种情况
+A.最后一个子句中的剩余文字 均 找不到互补文字进行延续
+B.最后一个子句中没有剩余文字,(平顶)
+目前主要的优化 在于 平顶的时候,采用truncation 操作 生成一些 单元子句.

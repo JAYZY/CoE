@@ -46,13 +46,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() {
-    properties = TermProp::TPIgnoreProps;
-    arity = 0;
-    binding = NULL;
-    args = NULL;
-    /* If no variable, will be	changed automagically later on */
-    weight = DEFAULT_VWEIGHT;
+TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), binding(nullptr), args(nullptr), weight(DEFAULT_VWEIGHT) {
     zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
@@ -60,9 +54,7 @@ TermCell::TermCell() {
 
 /*构造函数 - 创建一个constant term 如:ａ ,b */
 TermCell::TermCell(long symbol) : TermCell() {
-
     weight = DEFAULT_FWEIGHT;
-
     zjweight = 1.0f;
     fCode = symbol;
 }
@@ -343,7 +335,7 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
 
     term = TermCell::TermDeref(term, deref);
     //zj
-    cout << "idx:" << term->idx;
+    //cout << "idx:" << term->hashIdx<<" ";
 #ifdef NEVER_DEFINED
     if (TermCellQueryProp(term, TPRestricted)) {
         fprintf(out, "*");
@@ -370,6 +362,45 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
             if (!term->IsConst()) {
                 assert(term->args);
                 term->TermPrintArgList(out, term->arity, deref);
+            }
+        }
+    }
+}
+
+void TermCell::PrintDerefAlways(FILE* out) {
+    TermCell* term = this;
+    assert(term);
+    // assert(sig || term->IsVar());
+
+    term = TermCell::TermDerefAlways(term);
+    //zj
+    //cout << "idx:" << term->hashIdx<<" ";
+#ifdef NEVER_DEFINED
+    if (TermCellQueryProp(term, TPRestricted)) {
+        fprintf(out, "*");
+    }
+    if (TermCellQueryProp(term, TPIsRewritten)) {
+        if (term->TermIsTopRewritten()) {
+            fprintf(out, "=");
+        } else {
+            fprintf(out, "+");
+        }
+    }
+#endif
+    if (Sigcell::SigSupportLists && TermCell::TermPrintLists &&
+            ((term->fCode == (FunCode) DerefType::NILCODE) ||
+            (term->fCode == (FunCode) DerefType::CONSCODE))) {
+        term->print_cons_list(out, DerefType::DEREF_ALWAYS);
+    } else {
+        if (term->IsVar()) {
+            VarPrint(out);
+        } else {
+            string tmpStr;
+            Env::getSig()->SigFindName(term->fCode, tmpStr);
+            fputs(tmpStr.c_str(), out);
+            if (!term->IsConst()) {
+                assert(term->args);
+                term->TermPrintArgList(out, term->arity,  DerefType::DEREF_ALWAYS);
             }
         }
     }
@@ -697,6 +728,7 @@ bool TermCell::IsGround() {
     if (IsVar())
         return false;
     vector<TermCell*> st;
+    st.reserve(32);
     for (int i = 0; i < arity; ++i) {
         if (args[i]->IsVar()) {
             vector<TermCell*>().swap(st);
@@ -937,6 +969,25 @@ TermCell* TermCell::TermEquivCellAlloc(VarBank_p vars) {
     return handle;
 }
 
+bool TermCell::equalStruct(TermCell* term) {
+
+    TermCell* t1 = TermCell::TermDerefAlways(this);
+    TermCell* t2 = TermCell::TermDerefAlways(term);
+    if (t1 == t2) {
+        return true;
+    }
+    if (t1->fCode != t2->fCode) {
+        return false;
+    }
+    //注意,尽管 不同子句的x1 存储地方不同,地址不相同,但是fcode一定是相同的.
+    for (int i = 0; i < t1->arity; i++) {
+        if (!t1->args[i]->equalStruct(t2->args[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /*-----------------------------------------------------------------------
 //
 // Function: TermStructEqual()
@@ -953,11 +1004,8 @@ TermCell* TermCell::TermEquivCellAlloc(VarBank_p vars) {
 
 bool TermCell::TermStructEqual(TermCell* t1, TermCell* t2) {
 
-    int i;
-    DerefType deref = DerefType::DEREF_ALWAYS;
-
-    t1 = TermCell::TermDeref(t1, deref);
-    t2 = TermCell::TermDeref(t2, deref);
+    t1 = TermCell::TermDerefAlways(t1);
+    t2 = TermCell::TermDerefAlways(t2);
 
     if (t1 == t2) {
         return true;
@@ -965,7 +1013,7 @@ bool TermCell::TermStructEqual(TermCell* t1, TermCell* t2) {
     if (t1->fCode != t2->fCode) {
         return false;
     }
-    for (i = 0; i < t1->arity; i++) {
+    for (int i = 0; i < t1->arity; i++) {
         if (!TermStructEqual(t1->args[i], t2->args[i])) {
             return false;
         }

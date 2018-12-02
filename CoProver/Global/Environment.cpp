@@ -24,7 +24,7 @@ uint64_t Env::backword_Finded_counter = 0;
 
 IOFormat Env::parseFormat = IOFormat::AutoFormat;
 Scanner* Env::in = nullptr;
-TermBank* Env::termBank = nullptr;
+GTermBank_p Env::GTBank = nullptr;
 Sigcell* Env::sig = nullptr;
 
 Env::Env() {
