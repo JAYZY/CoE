@@ -9,7 +9,11 @@ title 回退算法流程图
 start
 
 :做△ -->triRes;
-if (triRes==NOMGU) then
+if (triRes==NOMGU) then (此时主动子句中的剩余文字\n无法找到linked文字进行延拓)
+
+    partition 回退到主界线上查找下一个候选文字{  
+           
+    }
     while (主界线文字不为空) is (△无法延拓)
         :找不到延拓文字\n(改变被归结文字);
         if (1.有下拉文字) then (true)

@@ -7,22 +7,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Inferences/Simplification.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Terms/TermCell.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Inferences/Simplification.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Inferences/Unify.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Terms/TermCellStore.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/CLAUSE/Literal.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/main.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Terms/TermBank.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Indexing/TermIndexing.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/HEURISTICS/SortRule.h</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Indexing/TermIndexing.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/Resolution.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Global/IncDefine.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
         </group>
     </open-files>

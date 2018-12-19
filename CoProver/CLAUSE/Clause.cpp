@@ -93,9 +93,11 @@ void Clause::bindingLits(Literal* litLst) {
     Literal* *neg_append = &neg_lits;
     Literal* next = nullptr;
 
-
+    int iLitPos = 0;
     while (litLst) {
         litLst->claPtr = this; /*指定当前文字所在子句*/
+
+        litLst->pos = ++iLitPos;
         next = litLst->next;
         if (litLst->IsPositive()) {
             posLitNo++;
@@ -246,14 +248,14 @@ void Clause::ClauseTSTPCorePrint(FILE* out, bool fullterms) {
 void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms) {
     Lit_p handle = lst;
     if (handle) {
-        fprintf(out,"{%hu}",handle->pos);
+        fprintf(out, "{%hu}", handle->pos);
         handle->EqnTSTPPrint(out, fullterms);
         while (handle->next) {
-            handle = handle->next;            
+            handle = handle->next;
             fputs(sep.c_str(), out);
-            fprintf(out,"{%hu}",handle->pos);
+            fprintf(out, "{%hu}", handle->pos);
             handle->EqnTSTPPrint(out, fullterms);
-            
+
         }
     }
 }
@@ -279,7 +281,7 @@ void Clause::SortLits() {
     //将数组转换为Literal 链表
     this->literals = sortArray[0];
     Lit_p tmpPtr = this->literals;
-   
+
     for (int i = 1; i < uLitNum; ++i) {//不需要重新编码  
         tmpPtr->next = sortArray[i];
         tmpPtr = tmpPtr->next;
@@ -463,7 +465,7 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
     while (lit) {
-        *insert = lit->renameCopy(renameVarbank);
+        *insert = lit->renameCopy(newCla);
         insert = &((*insert)->next);
         lit = lit->next;
     }
@@ -473,9 +475,74 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     return newCla;
 }
 
+//设置文字的变元共享状态
+
+void Clause::SetEqnListVarState() {
+    Lit_p lit = this->Lits();
+    //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
+    Lit_p arrVarLit[500]; //假设变元项最多不超出500
+    memset(arrVarLit, 0, 1000);
+    
+    while (lit) {
+        if (lit->IsGround()) {
+            lit->varState = VarState::noVar;
+            continue;
+        }
+
+        lit->varState = VarState::freeVar;
+        vector<TermCell*> vecT;
+        vecT.reserve(32);
+        vecT.push_back(lit->lterm);
+        while (!vecT.empty()) {
+            TermCell* t = vecT.back();
+             assert(-t->fCode<500);
+            vecT.pop_back();
+            if (t->IsVar()) {
+                Lit_p firstLit = arrVarLit[-t->fCode];                
+                if (firstLit == nullptr) {
+                    arrVarLit[-t->fCode] = lit;
+                } else {
+                    lit->varState = VarState::shareVar;
+                    firstLit->varState = VarState::shareVar;
+                }
+            }
+            for (int i = 0; i < t->arity; i++) {
+                if (t->args[i]->IsGround())
+                    continue;
+                vecT.push_back(t->args[i]);
+            }
+        }
+        if (lit->EqnIsEquLit()) {
+            vecT.push_back(lit->rterm);
+            while (!vecT.empty()) {
+                TermCell* t = vecT.back();
+                vecT.pop_back();
+                if (t->IsVar()) {
+                    Lit_p firstLit = arrVarLit[-t->fCode];
+                   
+                    if (firstLit == nullptr) {
+                        arrVarLit[-t->fCode] = lit;
+                    } else {
+                        lit->varState = VarState::shareVar;
+                        firstLit->varState = VarState::shareVar;
+                    }
+                }
+                for (int i = 0; i < t->arity; i++) {
+                    if (t->args[i]->IsGround())
+                        continue;
+                    vecT.push_back(t->args[i]);
+                }
+            }
+        }
+        lit = lit->next;
+    }
+   
+}
+
+
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();
-    //TB_p bank = Env::getTb();
+
     TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
 
     if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||

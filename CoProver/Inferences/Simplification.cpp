@@ -51,8 +51,11 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
 #endif
         //从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
-        if (termIndNode == nullptr)
+
+        if (termIndNode == nullptr) {
+            indexing->subst->SubstBacktrack(); //清除替换
             return false;
+        }
         vector<Literal*>*candVarLits = &((termIndNode)->leafs);
 
         Clause* candVarCla = nullptr; //找到可能存在归入冗余的候选子句
@@ -68,7 +71,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                 if (genCla->LitsNumber() >= candVarCla->LitsNumber() && checkedClas.find(candVarCla) == checkedClas.end()) {
                     ++Env::backword_CMP_counter;
                     if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
-                        indexing->subst->SubstBacktrackSingle(); //清除替换
+                        indexing->subst->SubstBacktrack(); //清除替换
                         //记录冗余
                         //fprintf(stdout, "[FS]c_%d by c%d\n", genCla->GetClaId(), candVarCla->GetClaId());
                         ++Env::backword_Finded_counter;
@@ -82,8 +85,10 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
             }
 
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
-            if (termIndNode == nullptr)
+            if (termIndNode == nullptr) {
+                indexing->subst->SubstBacktrack(); //清除替换   
                 return false;
+            }
             candVarLits = &((termIndNode)->leafs);
         }
 
@@ -101,12 +106,12 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
 bool Simplification::ForwardSubsumption(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal** actClaLeftLits, uint16_t uActLeftLitInd, TermIndexing* indexing) {
 
 
-   
+
     set<Clause*> checkedClas; //存储已经检查过的子句
     uint16_t uLitNum = uPosLeftLitInd + uActLeftLitInd; //总文字个数
     //只检查从被动文字出发的 匹配文字
     for (int pLeftIndA = 0; pLeftIndA < uPosLeftLitInd; ++pLeftIndA) {
-        
+
         Literal* selConLit = pasClaLeftLits[pLeftIndA];
 #ifdef OUTINFO       //debug print        
         cout << "选择文字:";
@@ -248,9 +253,9 @@ bool Simplification::ForwardSubsumption(Literal** pasClaLeftLits, uint16_t uPosL
             if (termIndNode == nullptr)
                 return false;
             candVarLits = &((termIndNode)->leafs);
-        }       
+        }
     }
-    assert(false);//不会执行到这个语句
+    assert(false); //不会执行到这个语句
     return true;
 }
 
@@ -270,6 +275,7 @@ bool Simplification::ForwardSubsumUnitCla(Literal* unitLit, TermIndexing* indexi
 /// \param genCla 被检查的子句(生成的子句)
 /// \param indexing 已有的索引
 /// \return genCla是否归入某个子句(是否被某个子句包含)
+
 bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing) {
 
 
@@ -294,7 +300,7 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing)
 
     cout << "选择文字:";
     selLit->EqnTSTPPrint(stdout, true);
-   // cout << " zjw:" << selLit->zjlitWight << " EW:" << selLit->StandardWeight() << "  ";
+    // cout << " zjw:" << selLit->zjlitWight << " EW:" << selLit->StandardWeight() << "  ";
     cout << "termcmp[selLit->lterm]:" << TermIndexing::constTermNum[selLit->lterm] << endl;
 
 #endif

@@ -50,19 +50,19 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-CSR155+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/test.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p  </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp
 </runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p </runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN422+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/F10.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN422+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/数学定理8.txt</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/cxyz1.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/cxyz2.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/F10.txt</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

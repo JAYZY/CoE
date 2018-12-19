@@ -73,8 +73,7 @@ TermCell* VarBank::Insert(const string& name) {
         handle->val1.p_val = var;
         handle->val2.i_val = var->fCode;
         StrTree_p test = extIndex.Insert(handle);
-        assert(test == NULL);
-        var->uVarCount=1; //设置变元数=1
+        assert(test == NULL);       
     }
     return var;
 }

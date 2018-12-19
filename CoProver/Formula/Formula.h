@@ -120,6 +120,7 @@ public:
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, vector<Literal*>&vNewR);
 
+    bool LeftUnitLitsIsRundacy(Literal* unitLit);
     //插入新子句到
     void insertNewCla(Cla_p cla);
 

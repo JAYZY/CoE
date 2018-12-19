@@ -242,20 +242,19 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p va
 }
 
 TermCell* TermCell::renameCopy(VarBank* vars, DerefType deref) {
-
-    if (this->IsGround())
-        return this;
+    TermCell* source = TermDeref(this, DerefType::DEREF_ALWAYS);
+    if (source->IsGround())
+        return source;
     Term_p t;
-    if (this->IsVar()) {
-        t = vars->VarBankFCodeAssertAlloc(this->fCode);
+    if (source->IsVar()) {
+        t = vars->Insert(source->fCode); // vars->VarBankFCodeAssertAlloc(this->fCode);
     } else {
-        t = TermCell::TermTopCopy(this); //创建一个 unshared term at the moment
+        t = TermCell::TermTopCopy(source); //创建一个 unshared term at the moment
         for (int i = 0; i < t->arity; i++) {
             t->args[i] = t->args[i]-> renameCopy(vars);
         }
         // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中
     }
-
     return t;
 
 }
@@ -400,7 +399,7 @@ void TermCell::PrintDerefAlways(FILE* out) {
             fputs(tmpStr.c_str(), out);
             if (!term->IsConst()) {
                 assert(term->args);
-                term->TermPrintArgList(out, term->arity,  DerefType::DEREF_ALWAYS);
+                term->TermPrintArgList(out, term->arity, DerefType::DEREF_ALWAYS);
             }
         }
     }

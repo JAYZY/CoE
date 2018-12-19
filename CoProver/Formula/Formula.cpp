@@ -125,17 +125,17 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
 
         Literal* selConLit = pasClaLeftLits[pLeftIndA];
 #ifdef OUTINFO       //debug print        
-        cout << "选择文字:"<<selConLit->claPtr->ident<<endl;
+        cout << "选择文字:" << selConLit->claPtr->ident << endl;
         selConLit->EqnTSTPPrint(stdout, true);
         cout << endl;
 #endif
         TermIndexing* indexing = (uLitNum == 1) ? this->unitClaIndex : this->allTermIndex;
         //从索引树上获取,候选节点(项)
-         TermIndNode* tIndnode=new TermIndNode(selConLit->lterm);
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
-        DelPtr(tIndnode);
-        if (termIndNode == nullptr)
+        if (termIndNode == nullptr){
+            indexing->ClearVarLst();
             return false;
+        }
 
         //候选文字
         vector<Literal*>*candVarLits = &((termIndNode)->leafs);
@@ -151,7 +151,7 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
                 candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句               
                 assert(candVarCla);
                 //要求满足条件 文字个数 less than 候选子句的文字个数
-                if (uLitNum >candVarCla->LitsNumber() || checkedClas.find(candVarCla) == checkedClas.end()) {
+                if (uLitNum > candVarCla->LitsNumber() || checkedClas.find(candVarCla) == checkedClas.end()) {
                     continue;
                 }
 
@@ -213,14 +213,9 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
                     //遍历现有的剩余文字,检查是否可以匹配(match)
                     // for (int aLeftInd = 0; aLeftInd < uPosLeftLitInd; ++aLeftInd) {
                     for (Literal* conEqn : vNewR) {
-
-
-
                         //  Literal* conEqn = actClaLeftLits[aLeftInd]; //获取主动剩余文字
-
                         if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) ////相同正,负属性 || 被归入文字的权重 > 归入文字的权重 
                             continue;
-
                         //debug print 
                         // cout << "eqn:";      varEqn->EqnTSTPPrint(stdout, true);  cout << endl;
                         // cout << "eqnCand:";  conEqn->EqnTSTPPrint(stdout, true); cout << endl;  
@@ -253,12 +248,12 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
                 }
 
                 if (isMatch) {
-
                     //说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    indexing->subst->SubstBacktrackSingle(); //清除替换
+                   
                     //记录冗余
                     fprintf(stdout, "[FS]R invalid by c%d\n", candVarCla->GetClaId());
                     ++Env::backword_Finded_counter;
+                    indexing->ClearVarLst(); //清除替换
                     return true;
 
                 }
@@ -269,7 +264,11 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
 
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
             if (termIndNode == nullptr)
+            {
+                indexing->ClearVarLst(); //清除替换
                 return false;
+                
+            }
             candVarLits = &((termIndNode)->leafs);
         }
     }
@@ -277,7 +276,21 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPasLeftLitIn
     assert(false); //不会执行到这个语句
     return true;
 }
+/// 检查单元剩余文字是否为向前归入冗余
+/// \param unitConLit  单元文字,注意没做变元更名,确保1,该文字来自于非单元文字,2只在单元索引上做冗余检查.
+/// \return 冗余 --true  无冗余 -- false;
 
+bool Formula::LeftUnitLitsIsRundacy(Literal* unitConLit) {
+    if (unitConLit == nullptr) {
+        return false;
+    }
+    //从索引树上获取,候选节点(项)
+    TermIndNode* termIndNode = this->unitClaIndex->Subsumption(unitConLit, SubsumpType::Forword);
+    if (termIndNode == nullptr)
+        return false;
+    assert( ( (termIndNode)->leafs).size()> 0);
+    return true;
+}
 
 //将子句添加到公式集中
 

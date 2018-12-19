@@ -123,6 +123,7 @@ public:
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
+   // int16_t uFirstLitPos;//若为变元项,记录第一次出现的文字序号[主要用来判断该文字中的变元是否出现在同子句的其他文字上]).初始化为-1 . 
     FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:

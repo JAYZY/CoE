@@ -24,8 +24,6 @@ Literal::Literal() {
     claPtr = nullptr;
     weight = 0;
     zjlitWight = 0;
-    
-    
 }
 
 Literal::Literal(Scanner* in, Cla_p cla) {
@@ -34,6 +32,7 @@ Literal::Literal(Scanner* in, Cla_p cla) {
     // EqnAlloc(lt, rt, positive);
     this->pos = 0;
     this->properties = EqnProp::EPNoProps;
+
 
     bool positive = eqn_parse_real(in, &lt, &rt, false);
 
@@ -260,6 +259,16 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
 
 /*---------------------------------------------------------------------*/
 
+VarState Literal::getVarState() {
+    if (this->varState != VarState::unknown) return this->varState;
+    if (this->IsGround()) {
+        varState = VarState::noVar;
+    } else {
+        this->claPtr->SetEqnListVarState();
+    }
+    return varState;
+}
+
 TermBank_p Literal::getClaTermBank() {
     return claPtr->claTB;
 }
@@ -372,12 +381,18 @@ Literal* Literal::EqnListFlatCopy() {
     *insert = nullptr;
     return newlist;
 }
+/// 根据该文字对象生成新的子句文字(变元更名)
+/// \param newCla
+/// \return 
 
-Literal* Literal::renameCopy(VarBank_p varbank) {
+Literal* Literal::renameCopy(Clause* newCla) {
 
-    Term_p lt = lterm->renameCopy(varbank);
-    Term_p rt = rterm->renameCopy(varbank);
+    Term_p lt = lterm->renameCopy(newCla->claTB->shareVars);
+    Term_p rt = rterm->renameCopy(newCla->claTB->shareVars);
     Literal* newLit = new Literal(lt, rt, false);
+
+    newLit->claPtr = newCla;
+    newLit->parentLitPtr = this;
     newLit->properties = this->properties;
     return newLit;
 }

@@ -26,17 +26,17 @@
 /* 枚举 -- 文字属性类型 */
 enum class EqnProp : uint32_t {
     EPNoProps = 0, /* No properties set or selected */
-    EPIsPositive = 1, /* s=t (as opposed to s!=t) */
+    EPIsPositive = 1, /* 正文字 s=t (as opposed to s!=t) */
     EPIsMaximal = 2, /* Eqn is maximal in a clause */
     EPIsStrictlyMaximal = 4, /* Eqn is strictly maximal */
-    EPIsEquLiteral = 8, /* s=t, not s=$true */
-    EPIsOriented = 16, /* s=>t  or s=t ? 该文字是有方向性的 */
+    EPIsEquLiteral = 8, /* 等词 s=t, not s=$true */
+    EPIsOriented = 16, /* 有序的 s=>t  or s=t ? 该文字是有方向性的 */
     EPMaxIsUpToDate = 32, /* Orientation status is up to date */
-    EPHasEquiv = 64, /* Literal has been used in	 multiset-comparison (and found an equivalent partner) */
+    EPHasEquiv = 64, /* Literal has been used in multiset-comparison (and found an equivalent partner) */
     EPIsDominated = 128, /* Literal is dominated by another one */
     EPDominates = EqnProp::EPIsDominated, /* Double use of this property in potentially maximal or minimal clauses */
     EPIsUsed = 256, /* For non-injective subsumption and  pattern-generation */
-    EPIsDel = 512, /* 该文字是否被删除 */
+    EPIsLeft = 512, /* 在三角形过程中该文字是否被剩余 */
     EPIsSelected = 1024, /* For selective superpostion */
     EPIsPMIntoLit = 2048, /* For inheriting selection */
     EPFromClauseLit = 4096, /* This comes from the from clause in a paramod step */
@@ -44,23 +44,35 @@ enum class EqnProp : uint32_t {
     EPLPatMinimal = 16384, /* Eqn l=r is Pattern-Minimal */
     EPRPatMinimal = 32768, /* Eqn r=l is Pattern-Minimal */
     EPIsSplitLit = 65636 /* This literal has been introduced by splitting */
+
 };
+
+//文字中变元状态
+
+enum class VarState : uint8_t {
+    unknown,
+    noVar,
+    freeVar,
+    shareVar
+};
+
 class Clause;
 
 class Literal {
 public:
-    EqnProp properties; /*prositive ,maximal,equational */
-    uint16_t pos;//在子句中的位置 一个子句中最大文字数 < 2^16=65536
+    VarState varState; //文字中变元状态
+    uint16_t pos; //在子句中的位置 一个子句中最大文字数 < 2^16=65536
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
+    EqnProp properties; /*prositive ,maximal,equational */
     TermCell* lterm; /*左文字*/
-    TermCell* rterm; /*等号右边文字,若非等词,则为$True;*/ 
+    TermCell* rterm; /*等号右边文字,若非等词,则为$True;*/
     Literal* next; /*下一个文字*/
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
-    int weight;
+    long weight;
     float zjlitWight;
-    
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -105,15 +117,15 @@ public:
     //比较两个文字是否是互补谓词文字.
 
     inline bool isComplementProps(Literal* lit) {
-        return (this->IsPositive()!=lit->IsPositive());
+        return (this->IsPositive() != lit->IsPositive());
     }
     /// 两个文字是否同时为正文字或同时为负文字
     /// \param lit
     /// \return 
 
     inline bool isSameProps(Literal* lit) {
-        
-        return (this->IsPositive()==lit->IsPositive())&&(this->EqnIsEquLit() == lit->EqnIsEquLit());
+
+        return (this->IsPositive() == lit->IsPositive())&&(this->EqnIsEquLit() == lit->EqnIsEquLit());
     }
 
     //是否文本被强行指定(选择)
@@ -755,8 +767,9 @@ public:
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 
-    inline long StandardWeight() const {
-        return lterm->TermStandardWeight() + rterm->TermStandardWeight();
+    inline long StandardWeight()  {
+        this->weight=( lterm->TermStandardWeight() + rterm->TermStandardWeight() );
+        return weight;
     }
 
     inline long EqnDepth() {
@@ -962,7 +975,7 @@ public:
 #endif
     }
 
-
+    VarState getVarState();
 
     TermBank_p getClaTermBank();
 
@@ -979,7 +992,7 @@ public:
     Literal * EqnListFlatCopy();
 
 
-    Literal* renameCopy(VarBank_p varbank);
+    Literal* renameCopy(Clause* newCla);
 
     Literal * EqnCopyDisjoint();
     Literal * EqnCopy(TermBank_p termbank);

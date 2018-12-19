@@ -64,10 +64,8 @@ enum class ClauseProp {
     CPWatchOnly = 2 * ClauseProp::CPIsProtected,
     CPSubsumesWatch = 2 * ClauseProp::CPWatchOnly,
     CPLimitedRW = 2 * ClauseProp::CPSubsumesWatch, /* Clause has been processed and hence can only be rewritten in limited ways. */
-    CPIsRelevant = 2 * ClauseProp::CPLimitedRW, /* Clause is selected as relevant for a proof attempt (used by SInE). */
-    
-    
-            
+    CPIsRelevant = 2 * ClauseProp::CPLimitedRW /* Clause is selected as relevant for a proof attempt (used by SInE). */
+
 };
 //子句的信息
 
@@ -133,11 +131,11 @@ public:
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息
-   
+
     uint32_t weight; //子句权重
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数
-    
+
 
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
@@ -153,7 +151,7 @@ public:
     Clause();
     Clause(const Clause* orig);
 
-    Clause(Literal *literal_s);
+    Clause(Literal* literal_s);
 
     //Clause(const Clause& orig);
 
@@ -241,9 +239,9 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
-   //重新绑定文字列表,并重新计算
+    //重新绑定文字列表,并重新计算
     void bindingLits(Literal* lit);
-    
+
     void ClausePrint(FILE* out, bool fullterms);
     void ClausePrintTPTPFormat(FILE* out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
@@ -255,7 +253,9 @@ public:
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
     Clause* renameCopy(VarBank_p renameVarbank);
 
-
+    //设置文字的变元共享状态
+    void SetEqnListVarState();
+    
     Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
@@ -296,12 +296,15 @@ public:
     bool operator<(Clause& cla)const {
         return (posLitNo + negLitNo) < cla.LitsNumber();
     }
+
+
 private:
 
     /***************************************************************************** 
      * 解析文字,生成文字列表，EqnListParse(Scanner_p in, TB_p bank, TokenType sep)
      ****************************************************************************/
-    void EqnListParse(TokenType sep) ;
+    void EqnListParse(TokenType sep);
+
 };
 typedef Clause* Cla_p;
 #endif /* CLAUSE_H */

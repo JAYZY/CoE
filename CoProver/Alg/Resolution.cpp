@@ -38,10 +38,11 @@ RESULT Resolution::BaseAlgByRecodePath(Formula* fol) {
     });
     RESULT res = RESULT::UNKNOWN;
     TriAlg triAlg(fol);
-    for (Clause* gCla : fol->goalClaset) {
-      //  gCla->ClausePrint(stdout,true);
+    for (int i = 0; i < fol->goalClaset.size(); i++) {
+        Clause* gCla = fol->goalClaset[i];
+        //  gCla->ClausePrint(stdout,true);
         res = triAlg.GenerateTriByRecodePath(gCla);
-        if (res == RESULT::UNSAT){
+        if (res == RESULT::UNSAT) {
             return res;
         }
     }
