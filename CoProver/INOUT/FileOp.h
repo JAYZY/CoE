@@ -1,9 +1,10 @@
 /*
- * 文件操作类
+ * 文件操作类 -- 采用单例模式
  * File:   FileOp.h
  * Author: zj 
  *
  * Created on 2017年3月13日, 上午10:15
+ * modify    2019-3-18  改为单例模式
  */
 
 #ifndef FILEOP_H
@@ -14,158 +15,141 @@
 #include <map>
 using namespace std;
 
-typedef enum {
+enum class OutType {
     StdOut, //控制台正常输出
     StdErr, //控制台错误输出
-    FileOut, //正常文件输出
+    Info, //info文件输出
+    Run, //run 运行记录删除        
     BinaryFile //二进制文件输出      
-} OutType;
+};
 
 class FileOp {
 private:
+
+    //1.构造函数私有
+
+    FileOp();
+    FileOp(const FileOp&); //拷贝构造函数不实现，防止拷贝产生多个实例
+    FileOp & operator=(const FileOp&); //复制构造函数不实现，防止赋值产生多个实例
+
+private:
+
+    /*--------------------------------------------------------------------------
+    /* 输出目录说明:
+     * 1.工作目录为 /output 
+     * 2.信息输出目录为: /output/判断文件的名称(不带后缀名) 
+     * 3.*.info 为整个子句集以及演绎过程中生成的新子句信息.
+     * 4.*.r为演绎过程中的过程信息.
+    /-------------------------------------------------------------------------*/
+    static string homePath; //固定的Home 路径
+
+    string workDir; //工作目录(后台输出目录)
+    string outDir; //输出目录
+    string tptpFileNameNoExt; //判断文件名称
+
+    FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
+    FILE* fRun; //.r 文件,记录整个演绎过程.
+    FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     string outName; //输出名称
-    string fileFullName; //文件完整路径
-    OutType outType; //输出类型
+    string fileFullName; //文件完整路径  
     ofstream* OutFile;
+
     static map<string, FileOp*>lsOut;
+
 public:
+
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    //
+    //Singleton
 
-    FileOp(const string name, const string fileName) : outName(name) {
-        if (fileName.empty()) {
-            OutFile = nullptr;
-            cout << "create \"{out}\" error!" << endl;
-        } else if (fileName == "stdout") {
-            OutFile = nullptr;
-            outType = StdOut;
-        } else if (fileName == "stderr") {
-            OutFile = nullptr;
-            outType = StdErr;
-        } else {
-            OutFile = new ofstream(fileName);
-            fileFullName = fileName;
-            outType = FileOut;
-        }
-    };
-
-    FileOp(const FileOp& orig) {
-    };
+    static FileOp * getInstance(){ //2.提供全局访问点    
+        static FileOp m_singletonConfig; //3.c++11保证了多线程安全，程序退出时，释放资源
+        return &m_singletonConfig;
+    }
 
     virtual ~FileOp() {
-        Close();
+        CloseAll();
     };
 
 public:
+
+    inline FILE* getInfoFile() {
+        assert(fInfo);
+        return fInfo;
+    }
+
+    inline FILE* getRunFile() {
+        assert(fRun);
+        return fRun;
+    }
+    static OutType outType; //输出类型
 
     inline bool IsOpen() {
         return OutFile && OutFile->is_open();
     }
 
-    inline void get_exe_path(char* path,int size) {
+    inline void get_exe_path(char* path, int size) {
         char link[1024];
         sprintf(link, "/proc/%d/exe", getpid()); /////////////
         readlink(link, path, size); //////////////
         //printf("%s/n", path);
-        
+
     }
 
-    /* 写入信息 */
-    inline void Write(const string&msg) {
-        switch (outType) {
-            case StdOut:
-                cout << msg << endl;
-                break;
-            case StdErr:
-                cerr << msg << endl;
-                break;
-            case FileOut:
-                //重新打开
-                if (IsOpen()) {
-                    OutFile->close();
-                }
-                OutFile->open(fileFullName, ios::out);
-                *OutFile << msg;
-                Flush();
-                break;
-        }
+    /**
+     * 写入 info 文件
+     */
+    inline void outInfo(const string&msg) {
+        fwrite(msg.c_str(), 1, msg.length(), fInfo);
+         fflush(fInfo); 
     }
-
-    /* 追加信息 */
-    inline void Append(const string&msg) {
-        switch (outType) {
-            case StdOut:
-                cout << msg << endl;
-                break;
-            case StdErr:
-                cerr << msg << endl;
-                break;
-            case FileOut:
-                if (!IsOpen())
-                    OutFile->open(fileFullName, ios::app);
-                *OutFile << msg;
-                Flush();
-                break;
-        }
+    inline void outLog(const string&msg){
+        fwrite(msg.c_str(), 1, msg.length(), fLog);
+         fflush(fLog); 
+    }
+    inline void outRun(const string&msg){
+        fwrite(msg.c_str(), 1, msg.length(), fRun);
+         fflush(fRun); 
+       
     }
 
     /* 写入缓冲区中的内容 */
     inline void Flush() {
         OutFile->flush();
     }
-
-    /* 关闭文件流 */
-    inline void Close() {
-        if (OutFile && OutFile->is_open()) {
-            assert(outType == FileOut);
-            OutFile->clear();
-            OutFile->close();
-            OutFile = nullptr;
-            //DelPtr(OutFile);
-        }
-    }
 public:
+    /* 关闭所有文件 */
+    void CloseAll();
+    /**
+     * 设置并创建目录以及 .r .i 文件*/
+    bool setWorkDirAndCreateFile(string strWorkDir);
+
+
+
+
+    // <editor-fold defaultstate="collapsed" desc="系统文件操作(文件夹,文件)">
+    /**
+     * 创建目录(包括多级目录)
+     * @param dirPath
+     * @return 
+     */
+    int mkMultiDir(string& dirPath);
+    int rmDir(std::string dir_full_path);
+
+    //获取带后缀的文件名
+    string getFileName(string &fileFullName);
+
+    //获取不带扩展名的文件名
+    string getFileNameNoExt(string fileFullName);
+    // </editor-fold>
+
+public:
+
     /*---------------------------------------------------------------------*/
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/
     //
-
-    static FILE* SecureFOpen(char* name, char* mode) {
-        FILE* res;
-        res = fopen(name, mode);
-        if (!res) {
-            TmpErrno = errno;
-            Out::SysError("Cannot open file %s", ErrorCodes::FILE_ERROR, name);
-        }
-        return res;
-    }
-
-    static void SecureFClose(FILE* fp) {
-        if (fclose(fp)) {
-            TmpErrno = errno;
-            Out::SysWarning("Problem closing file");
-        }
-    }
-
-    /* 创建一个输出文件 */
-    static void CreateFile(const string&name, const string fileName);
-
-    /* 打开一个输出文件 以创建方式 */
-    static FileOp* GetFile(const string&name);
-
-    /* 向指定文件写入内容 */
-    static void Write(const string&name, const string&msg);
-
-    /* 追加内容 */
-    static void Append(const string&name, const string&msg);
-
-    /* 关闭指定文件 */
-    static void Close(const string&name);
-
-    /* 关闭所有文件 */
-    static void CloseAll();
 
     static FILE* InputOpen(const char* name, bool fail) {
         FILE* in;
@@ -188,6 +172,10 @@ public:
     /*---------------------------------------------------------------------*/
     /*                 Static Function[fileName op]                        */
     /*---------------------------------------------------------------------*/
+
+    // <editor-fold defaultstate="collapsed" desc="Static Function">
+
+
     static string TPTP_dir;
     static long OutputLevel;
     static int TmpErrno;
@@ -209,7 +197,7 @@ public:
         return (name.substr(0, name.find_last_of('/'))).c_str();
 
     }
-    /// 提取文件的基本名称
+    /// 提取文件的基本名称,不包括后缀名
     /// \param fileFullName
     /// \param baseName
 
@@ -219,11 +207,7 @@ public:
         return fileFullName.substr(pos + 1);
 
     }
-
-
-
-
-private:
+    // </editor-fold>
 
 };
 

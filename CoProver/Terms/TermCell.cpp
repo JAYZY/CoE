@@ -46,7 +46,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), binding(nullptr), args(nullptr), weight(DEFAULT_VWEIGHT) {
+TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_VWEIGHT) {
     zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
@@ -77,6 +77,7 @@ TermCell::TermCell(TermCell& orig) : TermCell() {
     this->TermCellDelProp(TermProp::TPOutputFlag);
     fCode = orig.fCode;
     arity = orig.arity;
+    claId = orig.claId;
     args = orig.TermArgListCopy();
     binding = nullptr;
     lson = nullptr;
@@ -90,16 +91,17 @@ TermCell::TermCell(TermCell& orig) : TermCell() {
  * [重要方法]-- 根据scanner 创建term
  * Parse a term from the given scanner object into the internal termrepresentation.
  ****************************************************************************/
-TermCell* TermCell::TermParse(Scanner* in, VarBank* vars) {
+TermCell* TermCell::TermParse(Scanner* in, TermBank* tb) {
     string idStr;
     Sig_p sig = Env::getSig();
     TermCell* handle = nullptr;
+    VarBank_p vars = tb->shareVars;
     if (Sigcell::SigSupportLists && in->TestInpTok(TokenType::OpenSquare)) {
-        handle = parse_cons_list(in, vars);
+        handle = parse_cons_list(in, tb);
     } else {
         FuncSymbType idType;
         if ((idType = TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
-            handle = vars->Insert(idStr);
+            handle = vars->Insert(idStr, tb->claId);
         } else {
             handle = new TermCell();
             if (in->TestInpTok(TokenType::OpenBracket)) {
@@ -110,7 +112,7 @@ TermCell* TermCell::TermParse(Scanner* in, VarBank* vars) {
                     in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
                 }
 
-                handle->arity = TermParseArgList(in, &(handle->args), vars);
+                handle->arity = TermParseArgList(in, &(handle->args), tb);
             } else {
                 handle->arity = 0;
             }
@@ -158,14 +160,14 @@ FuncSymbType TermCell::TermParseOperator(Scanner* in, string&idStr) {
 /***************************************************************************** 
  * Parse a LOP list into an internal $cons list.
  ****************************************************************************/
-TermCell* TermCell::parse_cons_list(Scanner* in, VarBank_p vars) {
+TermCell* TermCell::parse_cons_list(Scanner* in, TermBank* tb) {
     in->AcceptInpTok(TokenType::OpenSquare);
     TermCell* current = new TermCell();
     if (!in->TestInpTok(TokenType::CloseSquare)) {
         current->fCode = (FunCode) DerefType::CONSCODE;
         current->arity = 2;
         current->args = new TermCell*[2];
-        current->args[0] = TermCell::TermParse(in, vars);
+        current->args[0] = TermCell::TermParse(in, tb);
         current->args[1] = new TermCell();
         current = current->args[1];
         while (in->TestInpTok(TokenType::Comma)) {
@@ -173,7 +175,7 @@ TermCell* TermCell::parse_cons_list(Scanner* in, VarBank_p vars) {
             current->fCode = (FunCode) DerefType::CONSCODE;
             current->arity = 2;
             current->args = new TermCell*[2];
-            current->args[0] = TermCell::TermParse(in, vars);
+            current->args[0] = TermCell::TermParse(in, tb);
             current->args[0]-> TermCellDelProp(TermProp::TPTopPos);
             current->args[1] = new TermCell();
             current = current->args[1];
@@ -203,8 +205,8 @@ TermCell* TermCell::parse_cons_list(Scanner* in, VarBank_p vars) {
 //
 /----------------------------------------------------------------------*/
 
-int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p vars) {
-
+int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb) {
+    // VarBank_p vars = tb->shareVars;
     TermCell* *handle;
     int arity;
     int size;
@@ -219,7 +221,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p va
     size = TERMS_INITIAL_ARGS;
     handle = new TermCell*[size]; // (TermCell**)SizeMalloc(size*sizeof(TermCell*));
     arity = 0;
-    handle[arity] = TermCell::TermParse(in, vars);
+    handle[arity] = TermCell::TermParse(in, tb);
     arity++;
     while (in->TestInpTok(TokenType::Comma)) {
         in->NextToken();
@@ -227,7 +229,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p va
             size += TERMS_INITIAL_ARGS;
             handle = new TermCell*[size]; // (TermCell**)SecureRealloc(handle, size*sizeof(TermCell*));
         }
-        handle[arity] = TermCell::TermParse(in, vars);
+        handle[arity] = TermCell::TermParse(in, tb);
         arity++;
     }
     in-> AcceptInpTok(TokenType::CloseBracket);
@@ -241,32 +243,38 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank_p va
     return arity;
 }
 
-TermCell* TermCell::renameCopy(VarBank* vars, DerefType deref) {
-    TermCell* source = TermDeref(this, DerefType::DEREF_ALWAYS);
-    if (source->IsGround())
+TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
+
+    TermCell* source = TermDeref(this, deref);
+    if (source->IsGround())//存放在 全局共享termbank中 因此 直接返回 shareterm
         return source;
     Term_p t;
     if (source->IsVar()) {
-        t = vars->Insert(source->fCode); // vars->VarBankFCodeAssertAlloc(this->fCode);
+        string varName;
+        source->getVarName(varName);
+        t = tb->shareVars->Insert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
+        t->uVarCount = 1;
     } else {
         t = TermCell::TermTopCopy(source); //创建一个 unshared term at the moment
         for (int i = 0; i < t->arity; i++) {
-            t->args[i] = t->args[i]-> renameCopy(vars);
+            t->args[i] = t->args[i]-> renameCopy(tb);
+            t->uVarCount += t->args[i]->uVarCount;
         }
         // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中
+        t = tb->TBTermTopInsert(t);
     }
     return t;
-
 }
+
 //P1(f(x1))  x1-y1->a1;   P1(f(a1))
 
-TermCell* TermCell::TermCopy(VarBank* vars, DerefType deref) {
+TermCell* TermCell::TermCopy(TermBank* tb, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
-    TermCell* handle = source->TermEquivCellAlloc(vars);
+    TermCell* handle = source->TermEquivCellAlloc(tb);
 
     for (int i = 0; i < handle->arity; ++i) /* Hack: Loop will not be entered if arity = 0 */ {
-        handle->args[i] = handle->args[i]->TermCopy(vars, deref);
+        handle->args[i] = handle->args[i]->TermCopy(tb, deref);
     }
     return handle;
 }
@@ -319,12 +327,14 @@ TermCell* TermCell::TermTopCopy(TermCell* source) {
 //变元项输出
 
 void TermCell::VarPrint(FILE* ot) {
-    assert(fCode < 0);
-    char id = 'X';
-    if (fCode % 2) {
-        id = 'Y';
-    }
-    fprintf(ot, "%c%ld", id, -((fCode - 1) / 2));
+    //    assert(fCode < 0);
+    //    char id = 'X';
+    //    if (fCode % 2) {
+    //        id = 'Y';
+    //    }
+    //    fprintf(ot, "%c%ld", id, -((fCode - 1) / 2));
+    string varName = "";
+    fprintf(ot, "X%s", this->getVarName(varName));
 }
 
 void TermCell::TermPrint(FILE* out, DerefType deref) {
@@ -353,7 +363,7 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
         term->print_cons_list(out, deref);
     } else {
         if (term->IsVar()) {
-            VarPrint(out);
+            term->VarPrint(out);
         } else {
             string tmpStr;
             Env::getSig()->SigFindName(term->fCode, tmpStr);
@@ -364,6 +374,36 @@ void TermCell::TermPrint(FILE* out, DerefType deref) {
             }
         }
     }
+}
+
+void TermCell::getStrOfTerm(string&outStr, DerefType deref) {
+
+    TermCell* term = TermCell::TermDeref(this, deref);
+    //zj     //cout << "idx:" << term->hashIdx<<" ";
+
+    if (Sigcell::SigSupportLists && TermCell::TermPrintLists &&
+            ((term->fCode == (FunCode) DerefType::NILCODE) ||
+            (term->fCode == (FunCode) DerefType::CONSCODE))) {
+        cout << "该输入格式暂时不支持" << endl;
+        assert(false); //暂时无法实现
+        //term->print_cons_list(out, deref);
+    } else {
+        if (term->IsVar()) {
+            string varName = "";
+            term->getVarName(varName);
+            outStr += "X" + varName;
+
+        } else {
+            string tmpStr;
+            Env::getSig()->SigFindName(term->fCode, tmpStr);
+            outStr += tmpStr;
+            if (!term->IsConst()) {
+                assert(term->args);
+                term->getStrOfTermArgList(outStr, term->arity, deref);
+            }
+        }
+    }
+
 }
 
 void TermCell::PrintDerefAlways(FILE* out) {
@@ -417,6 +457,19 @@ void TermCell::TermPrintArgList(FILE* out, int arity, DerefType deref) {
     putc(')', out);
 }
 
+void TermCell::getStrOfTermArgList(string&outStr, int arity, DerefType deref) {
+    assert(arity >= 1);
+    outStr += '(';
+    args[0]->getStrOfTerm(outStr, deref);
+
+    for (int i = 1; i < arity; ++i) {
+        outStr += ',';
+
+        args[i]->getStrOfTerm(outStr, deref);
+    }
+    outStr += ')';
+}
+
 void TermCell::PrintTermSig(FILE* out) {
     string sigName;
     Env::getSig()->SigFindName(this->fCode, sigName);
@@ -427,7 +480,6 @@ void TermCell::PrintTermSig(FILE* out) {
 /*-----------------------------------------------------------------------
 //   Print a list of $cons'ed terms, terminated with $nil. Abort on
 //   not well-formed lists (no cons pairs!).
-//
 /----------------------------------------------------------------------*/
 
 void TermCell::print_cons_list(FILE* out, DerefType deref) {
@@ -724,6 +776,8 @@ FunCode TermCell::TermSigInsert(Sig_p sig, const string& name, int arity, bool s
  * 注意不检查　变元绑定情况 
  ****************************************************************************/
 bool TermCell::IsGround() {
+    if (TBTermIsGround())return true;
+
     if (IsVar())
         return false;
     vector<TermCell*> st;
@@ -750,6 +804,7 @@ bool TermCell::IsGround() {
     }
     //释放内存
     vector<TermCell*>().swap(st);
+    this->TermCellSetProp(TermProp::TPIsGround);
     return true;
 }
 
@@ -955,12 +1010,12 @@ TermCell* TermCell::TermCopyKeepVars(DerefType deref) {
  * 注：非共享项，指变元项和不存储到TermBank中的项． 
  ****************************************************************************/
 
-TermCell* TermCell::TermEquivCellAlloc(VarBank_p vars) {
+TermCell* TermCell::TermEquivCellAlloc(TermBank* tb) {
     TermCell* handle = nullptr; //new TermCell();
 
     if (IsVar()) //变元项　
     {
-        handle = vars->Insert(fCode);
+        handle = tb->shareVars->Insert(fCode, tb->claId);
     } else {
         // handle=new TermCell(*this);
         handle = TermCell::TermTopCopy(this);
@@ -1344,13 +1399,13 @@ long TermCell::TermWeight(long vweight, long fweight) {
     TermCell* term = this;
     long res = 0;
     stack<TermCell*> myStack;
-    TermCell* handle;
     assert(term);
-
+    TermCell* handle = nullptr;
     myStack.push(term);
     while (!myStack.empty()/*!PStackEmpty(stack)*/) {
         handle = myStack.top();
         myStack.pop();
+         handle = TermCell::TermDerefAlways(handle);
         if (handle->IsVar()) {
             res += vweight;
         } else {
@@ -1361,7 +1416,7 @@ long TermCell::TermWeight(long vweight, long fweight) {
             }
         }
     }
-
+    weight = res;
     return res;
 }
 

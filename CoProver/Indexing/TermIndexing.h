@@ -45,10 +45,10 @@ public:
     }
 
     TermIndNode(TermCell* term) {
-        
-        curTermSymbol = term; 
-        size = 0;             
-        
+
+        curTermSymbol = term;
+        size = 0;
+
     }
 
     virtual ~TermIndNode() {
@@ -221,14 +221,14 @@ public:
 class DiscrimationIndexing : public TermIndexing {
 private:
 
-    vector<TermCell*> varLst[1000]; //上限 一个term中最多只能有1000个变元
+    vector<TermCell*> varLst[128]; //上限 一个term中最多只能有128个变元
     vector<uint32_t> stVarChId; //记录有存在替换的变量ID
     vector<BackPoint*> backpoint; /*回退点*/
     /// 在节点treeNode 后面插入 项t的所有符号
     /// \param treeNode
     /// \param t
     TermIndNode* InsertTerm(TermIndNode** treeNode, TermCell * term);
-
+    vector<TermCell*> varBinding; // 用于存储 变元绑定 下标为变元-fcode 存储的内容为绑定的项.
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -282,21 +282,24 @@ public:
 
     TermIndNode* Subsumption(Literal* lit, SubsumpType subsumtype);
 
+    // <editor-fold defaultstate="collapsed" desc="BackwardSubsump(向后归入冗余检查)">
+
     TermIndNode* FindBackwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextBackSubsump();
 
+    // </editor-fold>
 
-
+    // <editor-fold defaultstate="collapsed" desc="ForwardSubsump(向前归入冗余检查)">    
     TermIndNode* FindForwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextForwordSubsump();
 
+    TermCell* FindVarBindByFCode(FunCode idx);
+    void varAddBinding(FunCode idx, TermCell* t);
+    void varClearBingding();
 
-
-
-
-
+    // </editor-fold>
 
     Literal* FindNextDemodulator(TermCell *t, bool isEqual = false);
     Literal* FindDemodulator(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt, set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
@@ -309,8 +312,6 @@ public:
 
     bool CheckVarBinding(TermCell* qTerm, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subPosIt);
-
-
 
     bool CheckOccurs();
 

@@ -47,6 +47,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Global/IncDefine.o \
 	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
+	${OBJECTDIR}/HEURISTICS/SortRule.o \
 	${OBJECTDIR}/HEURISTICS/StrategyParam.o \
 	${OBJECTDIR}/INOUT/CommandLine.o \
 	${OBJECTDIR}/INOUT/FileOp.o \
@@ -54,6 +55,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
 	${OBJECTDIR}/Indexing/TermIndexing.o \
+	${OBJECTDIR}/Inferences/InferenceInfo.o \
 	${OBJECTDIR}/Inferences/Simplification.o \
 	${OBJECTDIR}/Inferences/Subst.o \
 	${OBJECTDIR}/Inferences/Unify.o \
@@ -157,6 +159,11 @@ ${OBJECTDIR}/HEURISTICS/Options.o: HEURISTICS/Options.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/Options.o HEURISTICS/Options.cpp
 
+${OBJECTDIR}/HEURISTICS/SortRule.o: HEURISTICS/SortRule.cpp
+	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/SortRule.o HEURISTICS/SortRule.cpp
+
 ${OBJECTDIR}/HEURISTICS/StrategyParam.o: HEURISTICS/StrategyParam.cpp
 	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
 	${RM} "$@.d"
@@ -191,6 +198,11 @@ ${OBJECTDIR}/Indexing/TermIndexing.o: Indexing/TermIndexing.cpp
 	${MKDIR} -p ${OBJECTDIR}/Indexing
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/TermIndexing.o Indexing/TermIndexing.cpp
+
+${OBJECTDIR}/Inferences/InferenceInfo.o: Inferences/InferenceInfo.cpp
+	${MKDIR} -p ${OBJECTDIR}/Inferences
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Inferences/InferenceInfo.o Inferences/InferenceInfo.cpp
 
 ${OBJECTDIR}/Inferences/Simplification.o: Inferences/Simplification.cpp
 	${MKDIR} -p ${OBJECTDIR}/Inferences

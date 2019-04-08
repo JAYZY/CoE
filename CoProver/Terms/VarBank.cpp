@@ -10,6 +10,8 @@
  * 
  * Created on 2017年2月24日, 下午4:50
  */
+#include <bits/stdint-uintn.h>
+
 #include "VarBank.h"
 #include "BASIC/TreeNodeDef.h"
 #include "TermCell.h"
@@ -43,11 +45,12 @@ void VarBank::VarBankVarsDelProp(TermProp prop) {
  * 插入一个变元项到varBanks中－[根据插入的变元项编码　fCode]
  * 如果存在返回varTerm的指针．否则，插入到varBank中   
  ****************************************************************************/
-TermCell* VarBank::Insert(FunCode fCode) {
+TermCell* VarBank::Insert(FunCode fCode,uint16_t claId) {
     assert(fCode < 0);
     TermCell* var = FindByFCode(fCode); //通过FCode 查找变元项
     if (var == nullptr) {
         var = new TermCell();
+        var->claId=claId;
         var->fCode = fCode;
         var->entryNo = fCode;
         SetProp(var->properties, TermProp::TPIsShared); //给变元项－shared 属性
@@ -59,21 +62,40 @@ TermCell* VarBank::Insert(FunCode fCode) {
     return var;
 }
 
+TermCell* VarBank::InsertOldVar(TermCell* varT) {
+     
+    PTree_p entry = freeVarSets.FindByKey(varT);
+    TermCell* var = nullptr;
+//    
+//    if (entry) {        
+//        var = (TermCell*) entry->val1.p_val;
+//    } else {
+//        var = VarBankGetFreshVar();
+//        PTree_p handle = new PTreeCell();      
+//        handle->key=varT;
+//        handle->val1.p_val = var;
+//        handle->val2.i_val = var->fCode;
+//        PTree_p test = freeVarSets.Insert(handle);
+//        assert(test == NULL);
+//    }
+    return var;
+}
+
 /*****************************************************************************
  * 插入一个变元项到varBanks中－[根据插入的变元项名称]
  * 如果存在返回varTerm的指针．
  * 否则，插入到varBank中
  ****************************************************************************/
-TermCell* VarBank::Insert(const string& name) {
+TermCell* VarBank::Insert(const string& name,uint16_t claId) {
     TermCell* var = VarBankExtNameFind(name);
     if (!var) {
-        var = VarBankGetFreshVar();
+        var = VarBankGetFreshVar(claId);
         StrTree_p handle = new StrTreeCell();
         handle->key = name;
         handle->val1.p_val = var;
         handle->val2.i_val = var->fCode;
         StrTree_p test = extIndex.Insert(handle);
-        assert(test == NULL);       
+        assert(test == NULL);
     }
     return var;
 }
@@ -84,10 +106,10 @@ TermCell* VarBank::Insert(const string& name) {
  * 奇数下标保留作为创建子句备份
  * （create clause copies that are　guaranteed to be variable-disjoint.）
  **************************************************************************/
-TermCell* VarBank::VarBankGetFreshVar() {
+TermCell* VarBank::VarBankGetFreshVar(uint16_t claId) {
     vCount += 2;
     vctFCodes.push_back(NULL); //奇数下标保留        
-    TermCell* var = Insert(-vCount);
+    TermCell* var = Insert(-vCount,claId);
     assert(var);
     return var;
 }
@@ -97,11 +119,11 @@ TermCell* VarBank::VarBankGetFreshVar() {
 //   source is a variable, get the cell from the varbank, otherwise
 //   copy the cell via TermTopCopy().
 
-TermCell* VarBank::TermEquivCellAlloc(TermCell* term) {
+TermCell* VarBank::TermEquivCellAlloc(TermCell* term,uint16_t claId) {
     TermCell* handle;
     VarBank* vars = this;
     if (term->IsVar()) {
-        handle = vars->Insert(term->fCode);
+        handle = vars->Insert(term->fCode,claId);
     } else {
         handle = TermCell::TermTopCopy(term);
     }

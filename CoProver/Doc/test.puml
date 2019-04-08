@@ -40,7 +40,6 @@ if (triRes==NOMGU) then (此时主动子句中的剩余文字\n无法找到linke
     endwhile (重做△)
 endif
 :改变参数下一次△延拓;
-
 stop 
 @enduml
 

@@ -102,8 +102,8 @@ Sigcell::~Sigcell() {
 void Sigcell::SigPrintOperator(FILE* out, FunCode op, bool comments) {
     Func_p fp = fInfo[op];
     if (comments) {
-        fprintf(out, "   %-13s : %2d    #  %2ld %2d \n", fInfo[op]->name.c_str(), fInfo[op]->arity, op,
-                fp->properties);
+        fprintf(out, "   %-13s : %2d    #  %2ld %2d %2d %2d\n", fInfo[op]->name.c_str(), fInfo[op]->arity, op,
+                fp->properties, SigQueryFuncProp(op,FunctionProperties::FPSpecial),SigQueryFuncProp(op,FunctionProperties::FPPredSymbol));
     } else {
         fprintf(out, "   %-13s : %2d\n", fp->name.c_str(), fp->arity);
     }
@@ -238,15 +238,7 @@ void Sigcell::SigSetPredicate(FunCode f_code, bool isDel) {
     }
 }
 
-/*****************************************************************************
- * Return the value of the predicate field for a function symbol.
- * 查询该元素是否是一个谓词元素.
- ****************************************************************************/
-bool Sigcell::SigIsPredicate(FunCode f_code) {
-    assert(f_code > 0);         //确保不是变元
-    assert(f_code <= fCount()); //确保一定是存在的
-    return SigQueryFuncProp(f_code, FPPredSymbol);
-}
+
 
 /***************************************************************************** 
  * Set the value of the function field for a function symbol.
@@ -262,15 +254,7 @@ void Sigcell::SigSetFunction(FunCode f_code, bool isDel) {
     }
 }
 
-/*****************************************************************************
- * Return the value of the Function field for a function symbol. 
- * 查询该元素是否是一个函数元素.
- ****************************************************************************/
-bool Sigcell::SigIsFunction(FunCode f_code) {
-    assert(f_code > 0);
-    assert(f_code <= fCount());
-    return SigQueryFuncProp(f_code, FPFuncSymbol);
-}
+
 
 /*****************************************************************************
  * Set the special value of all symbols in sig. 
@@ -296,15 +280,7 @@ void Sigcell::SigSetSpecial(FunCode f_code, bool isDel) {
     }
 }
 
-/***************************************************************************** 
- * Return the value of the special field for a function symbol.
- * 查询该元素是否是一个特殊项
- ****************************************************************************/
-bool Sigcell::SigIsSpecial(FunCode f_code) {
-    assert(f_code > 0);
-    assert(f_code <= fCount());
-    return SigQueryFuncProp(f_code, FPSpecial);
-}
+
 
 /*****************************************************************************
  * Given an function symbol code, return the symbols alpha-rank.

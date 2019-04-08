@@ -19,6 +19,8 @@
 #include "Sigcell.h"
 #include <stack>
 #include <stdint.h>
+#include <bits/stdint-uintn.h>
+#include "HEURISTICS/StrategyParam.h"
 
 enum class DerefType : uint8_t {
     TRUECODE = 1,
@@ -90,6 +92,7 @@ enum class TermProp : int32_t {
 
 
 class Clause;
+class TermBank;
 class VarBank;
 
 class TermCell {
@@ -110,6 +113,7 @@ public:
     static bool TermPrintLists;
     FunCode fCode; /* Top symbol of term */
     TermProp properties; /* Like basic, lhs, top */
+    uint32_t claId; //增加项所在子句编号,主要用于变元项的识别
     int arity; /* Redundant, but saves handing around the signature all the time */
     TermCell* *args; /* Pointer to array of arguments */
     TermCell* binding; /* For variable bindings,potentially for temporary a rewrites 
@@ -123,11 +127,10 @@ public:
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
-   // int16_t uFirstLitPos;//若为变元项,记录第一次出现的文字序号[主要用来判断该文字中的变元是否出现在同子句的其他文字上]).初始化为-1 . 
     FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
-    static TermCell* parse_cons_list(Scanner* in, VarBank* vars);
+    static TermCell* parse_cons_list(Scanner* in, TermBank* tb);
     TermCell* term_check_consistency_rek(SplayTree<PTreeCell> &branch, DerefType deref);
     void print_cons_list(FILE* out, DerefType deref);
 public:
@@ -237,7 +240,7 @@ public:
     long TermCollectPropVariables(SplayTree<PTreeCell> *tree, TermProp prop);
 
     inline long TermStandardWeight() {
-        return IsShared() ? weight : TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
+        return this->IsGround() ? weight : TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
     }
 
     /* Return the depth of a term. */
@@ -248,6 +251,22 @@ public:
             maxdepth = MAX(maxdepth, ldepth);
         }
         return maxdepth + 1;
+    }
+    //检查最大函数嵌套层限制. >0 -- 符合限制 -1 -- 不符合限制
+
+    inline int CheckFuncLayerLimit() {
+        long maxdepth = 0, ldepth;
+        for (int i = 0; i < arity; ++i) {
+            TermCell* term=TermCell::TermDerefAlways(args[i]);
+            ldepth =term->CheckFuncLayerLimit();
+            if(-1==ldepth) return -1;
+            if (maxdepth < ldepth) {
+                maxdepth = ldepth;
+                if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
+                    return -1;
+            }
+        }
+        return  maxdepth + 1;
     }
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
@@ -264,6 +283,11 @@ public:
         return handle;
     }
 
+    inline const char* getVarName(string &termName, string splitCh = "") {
+        termName = to_string(this->claId) + splitCh;
+        termName += to_string(-((fCode - 1) / 2));
+        return termName.c_str();
+    }
     //#define TermIsTopRewritten(term) (TermIsRewritten(term)&&TermRWDemodField(term))
 
     //    inline bool TermIsTopRewritten() {
@@ -339,9 +363,17 @@ public:
     /* 变元项输出 */
     void VarPrint(FILE* out);
     void TermPrint(FILE* out, DerefType deref = DerefType::DEREF_ALWAYS);
-    void PrintDerefAlways(FILE* out) ;
-    
+    /**
+     * 得到项的输出字符串
+     */
+    void getStrOfTerm(string&outStr, DerefType deref = DerefType::DEREF_ALWAYS);
+    void PrintDerefAlways(FILE* out);
+
     void TermPrintArgList(FILE* out, int arity, DerefType deref);
+    /**
+     * 得到项的子项字符串
+     */
+    void getStrOfTermArgList(string&outStr, int arit, DerefType deref);
     void PrintTermSig(FILE* out);
 
     void TermSetProp(DerefType dt, TermProp prop);
@@ -368,9 +400,9 @@ public:
 
 
     FunCode TermFindMaxVarCode();
-    TermCell* TermEquivCellAlloc(VarBank* vars);
-    TermCell* renameCopy(VarBank* vars, DerefType deref = DerefType::DEREF_ALWAYS);
-    TermCell* TermCopy(VarBank* vars, DerefType deref);
+    TermCell* TermEquivCellAlloc(TermBank* tb);
+    TermCell* renameCopy(TermBank* tb, DerefType deref = DerefType::DEREF_ALWAYS);
+    TermCell* TermCopy(TermBank* tb, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);
 
@@ -435,7 +467,7 @@ public:
         res->fCode = f_code;
         res->arity = arity;
         if (arity) {
-            res->args = new TermCell*[arity]; //创建一个冬天二维数组
+            res->args = new TermCell*[arity]; //创建一个动态二维数组
         }
         return res;
     }
@@ -473,8 +505,8 @@ public:
     }
 
     static FuncSymbType TermParseOperator(Scanner* in, string&idStr);
-    static int TermParseArgList(Scanner* in, TermCell*** arg_anchor, VarBank* vars);
-    static TermCell* TermParse(Scanner* in, VarBank* vars);
+    static int TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb);
+    static TermCell* TermParse(Scanner* in, TermBank* tb);
 
 
     static FunCode TermSigInsert(Sigcell* sig, const string &name, int arity, bool special_id, FuncSymbType type);

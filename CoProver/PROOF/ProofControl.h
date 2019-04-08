@@ -99,7 +99,7 @@ public:
     };
 
     virtual ~UnProcessed() {
-        unprocClaSet->FreeClauses();
+        unprocClaSet->FreeAllClas();
     };
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */

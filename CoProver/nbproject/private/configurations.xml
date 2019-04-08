@@ -50,19 +50,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp
-</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/test.tptp </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/F10.txt</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN422+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/数学定理8.txt</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/cxyz1.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/cxyz2.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/CASC-2018/CONVERT/CSR030+6.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/数学定理证明8.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/CASC-J9-2017/1/FNE-KRS180+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/DL8.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/一般公式2.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/程序验证2.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/数学定理证明10.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/一般公式10.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN320+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS180+1.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS180+1.p</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -117,18 +116,19 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNE-CSR026+3.p >>/home/icdc/Problems/1.out</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-CSR026+3.p >>/home/icdc/Problems/1.out</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p >>/home/icdc/Problems/1.out</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN725+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN725+1.pp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-CSR111+3.p </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL665+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL645+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp >>/home/icdc/Problems/1.out
+</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp </runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-NLP263+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/myprob/originSample/baseSample/数学定理证明8.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/CASC-2018/CONVERT/CSR030+6.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/一般公式10.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN320+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL665+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/CSR032+3.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-NLP263+1.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/CSR032+3.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

@@ -10,6 +10,7 @@
 #include "Indexing/TermIndexing.h"
 #include "Unify.h"
 #include "CLAUSE/LiteralCompare.h"
+#include "INOUT/FileOp.h"
 //map<TermCell*, int> Simplification::termcmp;
 
 Simplification::Simplification() {
@@ -56,44 +57,51 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
             indexing->subst->SubstBacktrack(); //清除替换
             return false;
         }
+        //候选文字
         vector<Literal*>*candVarLits = &((termIndNode)->leafs);
-
         Clause* candVarCla = nullptr; //找到可能存在归入冗余的候选子句
         Literal* candVarLit = nullptr;
+        const uint16_t uLitNum=genCla->LitsNumber();
+        //确保所有的匹配节点都能找到.
         while (true) {
-
+            //遍历候选文字集合.查找满足向前归入的文字
             for (int ind = 0; ind < candVarLits->size(); ++ind) {
+
                 candVarLit = candVarLits->at(ind);
                 int substPos = indexing->subst->Size();
                 candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句               
                 assert(candVarCla);
 
-                if (genCla->LitsNumber() >= candVarCla->LitsNumber() && checkedClas.find(candVarCla) == checkedClas.end()) {
-                    ++Env::backword_CMP_counter;
-                    if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
-                        indexing->subst->SubstBacktrack(); //清除替换
-                        //记录冗余
-                        //fprintf(stdout, "[FS]c_%d by c%d\n", genCla->GetClaId(), candVarCla->GetClaId());
-                        ++Env::backword_Finded_counter;
-
-                        return true;
-                    }
+                //条件 候选子句文字个数 <=查询子句文字个数 && 不能是检查过的子句
+                if (uLitNum < candVarCla->LitsNumber() || checkedClas.find(candVarCla) != checkedClas.end()) {
+                    continue;
                 }
-                //没有找到 indexing->chgVars->SubstBacktrackToPos(substPos);
-                assert(substPos == indexing->subst->Size());
+                ++Env::backword_CMP_counter;
+                //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
+                // if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
+                if (ClauseSubsumeArrayLit(candVarCla, genCla)) {
+                    //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
+                    fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
+                    FileOp::getInstance()->outRun(tmpstr);
+                    FileOp::getInstance()->outLog("[FS]c" + to_string(genCla->GetClaId()) + " by c" + to_string(candVarCla->GetClaId()) + "\n");
+                    ++Env::backword_Finded_counter;
+                    return true;
+                }
+
+
+                //没有找到1.添加已经检查过的子句;2.查找下一个候选子句
                 checkedClas.insert(candVarCla); //添加已经检查过的子句
             }
-
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
-            if (termIndNode == nullptr) {
-                indexing->subst->SubstBacktrack(); //清除替换   
+            if (termIndNode == nullptr) {                
                 return false;
             }
             candVarLits = &((termIndNode)->leafs);
         }
-
         selConLit = selConLit->next;
     }
+    return false;
 }
 
 /// 对三角形过程中的剩余文字进行向前归入冗余检查
@@ -276,14 +284,14 @@ bool Simplification::ForwardSubsumUnitCla(Literal* unitLit, TermIndexing* indexi
 /// \param indexing 已有的索引
 /// \return genCla是否归入某个子句(是否被某个子句包含)
 
-bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing) {
+bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing, set<Clause*>&outDelClas) {
 
 
 #ifdef New
     //Literal* selLit = genCla->FileMaxLit<XYSteadyCMP,TermIndexing>(XYSteadyCMP(),indexing);
     // Literal* selLit = genCla->FileMaxLit<StandardWCMP, TermIndexing>(StandardWCMP(), indexing);
-    Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
-    //Literal* selLit = genCla->FileMaxLit<EqnCompareKBO6, TermIndexing>(EqnCompareKBO6(), indexing);
+    // Literal* selLit = genCla->FileMaxLit<ImprovementCMP, TermIndexing>(ImprovementCMP(), indexing);
+    Literal* selLit = genCla->FileMaxLit<EqnCompareKBO6, TermIndexing>(EqnCompareKBO6(), indexing);
 
 #else
     Literal* selLit = genCla->Lits();
@@ -307,7 +315,7 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing)
     //#ifdef OUTINFO
     int tmpTest = 0;
     //#endif
-    set<Clause*> subsumedCla;
+
     Clause* candCla = nullptr;
     TermIndNode* candTermNode = indexing->Subsumption(selLit, SubsumpType::Backword);
     if (candTermNode == nullptr) {
@@ -335,29 +343,17 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing)
                 continue;
 
             cmpedCla.insert(candCla->GetClaId());
-
-            //            if (candCla->GetClaId() == 6) {
-            //                cout << "test-candCla:";
-            //                candCla->ClausePrint(stdout, true);
-            //                cout << endl;
-            //                cout << "匹配的文字:";
-            //                candLit->EqnTSTPPrint(stdout, true);
-            //                cout << endl;
-            //            }
-
-
-            //  cout<<"candClaId"<<candCla->GetClaId()<<endl; 
-
-            if (subsumedCla.find(candCla) == subsumedCla.end() && candCla->LitsNumber() >= genCla->LitsNumber()) {
+            if (outDelClas.find(candCla) == outDelClas.end() && candCla->LitsNumber() >= genCla->LitsNumber()) {
                 ++Env::backword_CMP_counter;
 
                 //#ifdef OUTINFO
                 ++tmpTest;
                 //#endif
-                if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
+                if(ClauseSubsumeArrayLit(candCla,genCla)){
+               // if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
                     //记录找到的冗余子句
                     ++Env::backword_Finded_counter;
-                    subsumedCla.insert(candCla);
+                    outDelClas.insert(candCla);
                 }
             }
             subst->SubstBacktrackToPos(substPos);
@@ -375,14 +371,14 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing)
     //对找到的冗余子句进行处理
     TermIndexing::constTermNum[selLit->lterm] += tmpTest;
 #ifdef OUTINFO   
-    if (subsumedCla.empty()) {
+    if (outDelClas.empty()) {
         // cout << "No found backsubsumption!" << endl;
     } else {
 
-        cout << "\nfound backsubsumption!,size:" << subsumedCla.size() << " " << endl;
+        cout << "\nfound backsubsumption!,size:" << outDelClas.size() << " " << endl;
         genCla->ClausePrint(stdout, true);
         cout << " ==> ";
-        (*subsumedCla.begin())->ClausePrint(stdout, true);
+        (*outDelClas.begin())->ClausePrint(stdout, true);
 
     }
 
@@ -417,10 +413,6 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
             uint32_t substPos = subst->Size();
             if (conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 continue;
-            //test
-            //                        cout << "eqn:";     varEqn->EqnTSTPPrint(stdout, true);  cout << endl;
-            //                         cout << "eqnCand:";  conEqn->EqnTSTPPrint(stdout, true); cout << endl;
-
             if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, subst)) {
                 if (unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, subst)) {
                     res = true;
@@ -446,23 +438,113 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
     return true;
 }
 
-/*-----------------------------------------------------------------------
-//   Test wether an equation subsumes another one. If yes, return true
-//   and extend subst to give the substitution, otherwise just return
-//   false and let subst unmodified. Don't deal with commutativity of equality. 
-//----------------------------------------------------------------------*/
+//检查 subsumerVarcla子句归入 subsumConCla子句
 
-bool Simplification::LitSubsume(Literal* subsumer, Literal* subsumed, Subst * subst) {
-    //PStackPointer backtrack = PStackGetSP(subst);
-    int backtrack = subst->Size();
-    bool res;
+bool Simplification::ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsumerVarcla) {
+    assert(subsumConCla);
+    assert(subsumerVarcla);
     Unify unify;
-    res = unify.SubstComputeMatch(subsumer->lterm, subsumed->lterm, subst);
-    if (res) {
-        res = unify.SubstComputeMatch(subsumer->rterm, subsumed->rterm, subst);
+    Subst subst;
+    
+    if (subsumConCla->LitsNumber() < subsumerVarcla->LitsNumber())
+        return false;
+    uint32_t iniSubstPos = subst.Size();
+    for (Literal* varEqn = subsumerVarcla->literals; varEqn; varEqn = varEqn->next) {
+        bool res = false;
+        //debug              cout << "varEqn";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;   
+        
+        for (Literal* conEqn = subsumConCla->literals; conEqn; conEqn = conEqn->next) {
+               //debug                   cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
+                continue;
+            uint32_t substPos = subst.Size();
+            if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst)) {
+                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
+                    res = true;
+                    break; //该文字检查通过,检查下一个
+                }
+            }
+            subst.SubstBacktrackToPos(substPos);
+            /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
+            if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) &&
+                    unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
+                res = true;
+                break;
+            }
+            subst.SubstBacktrackToPos(substPos);
+        }
+        if (!res) {
+            //失败还原所有的替换改变--只要有一个文字 没有找到匹配的文字 则匹配失败
+            subst.SubstBacktrackToPos(iniSubstPos);
+            return false;
+        }
     }
-    if (!res) {
-        subst->SubstBacktrackToPos(backtrack);
-    }
-    return res;
+    subst.Clear();
+    return true;
 }
+
+bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t arraySize, Clause* varCal) {
+    assert(arrayConLit);
+    if (arraySize < varCal->LitsNumber()) //子句文字数不能大于文字集合数
+        return false;
+    Unify unify;
+    Subst subst;
+    uint32_t iniSubstPos = subst.Size();
+    for (Literal* varEqn = varCal->literals; varEqn; varEqn = varEqn->next) {
+        bool res = false;
+        //debug         cout << "varEqn";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;        
+        for (size_t ind = 0; ind < arraySize; ++ind) {
+            Literal* conEqn = arrayConLit[ind];
+            //debug                       cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+
+            if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
+                continue;
+
+            uint32_t substPos = subst.Size();
+            if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst)) {
+                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
+                    res = true;
+                    break; //该文字检查通过,检查下一个
+                }
+            }
+            subst.SubstBacktrackToPos(substPos);
+            /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
+            if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) &&
+                    unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
+                res = true;
+                break;
+            }
+            subst.SubstBacktrackToPos(substPos);
+        }
+        if (!res) {
+            //失败还原所有的替换改变--只要有一个文字 没有找到匹配的文字 则匹配失败
+            subst.SubstBacktrackToPos(iniSubstPos);
+            return false;
+        }
+    }
+    subst.Clear();
+    return true;
+}
+
+///*-----------------------------------------------------------------------
+////   Test wether an equation subsumes another one. If yes, return true
+////   and extend subst to give the substitution, otherwise just return
+////   false and let subst unmodified. Don't deal with commutativity of equality. 
+////----------------------------------------------------------------------*/
+//
+//bool Simplification::LitSubsume(Literal* subsumer, Literal* subsumed, Subst * subst) {
+//    //PStackPointer backtrack = PStackGetSP(subst);
+//    int backtrack = subst->Size();
+//    bool res;
+//    Unify unify;
+//    res = unify.SubstComputeMatch(subsumer->lterm, subsumed->lterm, subst);
+//    if (res) {
+//        res = unify.SubstComputeMatch(subsumer->rterm, subsumed->rterm, subst);
+//    }
+//    if (!res) {
+//        subst->SubstBacktrackToPos(backtrack);
+//    }
+//    return res;
+//}
+
+

@@ -89,7 +89,7 @@ void TermIndexing::FlattenTerm(TermCell* term) {
         for (int32_t i = t->arity - 1; i>-1; --i)
             vecTmp.push_back(t->args[i]);
     }
-     vector<TermCell*>().swap(vecTmp);
+    vector<TermCell*>().swap(vecTmp);
 }
 
 void TermIndexing::PrintFlattenTerms(FILE* out) {
@@ -137,7 +137,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
         ++constTermNum[term];
     vector<TermCell*> vecTerm;
 
-    vecTerm.reserve(MAX_SUBTERM_SIZE); //假设大部分项的符号个数不超过32个;
+    vecTerm.reserve(MAX_SUBTERM_SIZE); //假设大部分项的符号个数不超过16个;
 
     TermCell *node;
 
@@ -189,12 +189,12 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
 
 
     backpoint.clear();
-    TermIndNode* rootNode = getRoot(lit);    
-    TermIndNode* tIndnode=new TermIndNode(lit->lterm);
-    
+    TermIndNode* rootNode = getRoot(lit);
+    TermIndNode* tIndnode = new TermIndNode(lit->lterm);
+
     set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = rootNode->subTerms.find(tIndnode);
     DelPtr(tIndnode);
-    
+
     if (parentNodeIt == rootNode->subTerms.end()) return nullptr; //谓词不存在
     //queryTerm的位置,排除谓词符号
 
@@ -244,6 +244,7 @@ TermIndNode* DiscrimationIndexing::FindBackwordSubsumption(uint32_t qTermPos,
         set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
         set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt) {
 
+
     TermCell *queryTerm = nullptr;
 
     //遍历项Term
@@ -262,9 +263,7 @@ TermIndNode* DiscrimationIndexing::FindBackwordSubsumption(uint32_t qTermPos,
                 BindingVar(qTermPos, 0, parentNodeIt, subNodeIt); //变元没有绑定则进行绑定 且 记录回退点
 
             } else {//变元有绑定进行检查,1.成功 skip {1}; 2.不成功回退 rollBack{2}
-
                 isRollback = !this->CheckVarBinding(queryTerm, parentNodeIt, subNodeIt);
-
             }
 
         } else { //查询项非变元 在索引树上查找子项
@@ -366,41 +365,51 @@ TermIndNode* DiscrimationIndexing::NextBackSubsump() {
     return FindBackwordSubsumption(++qTermPos, parentNodeIt, subNodeIt);
 }
 
-/// 在indexing Tree中查找与query Term冗余的节点
-/// forwordSubsumption 
+
+
+// <editor-fold defaultstate="collapsed" desc="ForwardSubsump(向前归入冗余检查)">    
+
+/// 在indexing Tree中查找与query Term冗余的节点 ?自己找到自己
+/// forwordSubsumption  找到一个文字l 存在一个替换r 使得 lc=q 
 /// \param qTermPos
 /// \param parentNodeIt
 /// \param subNodeIt
 /// \return 
 
 TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
-        set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
-        set<TermIndNode*, TermIndNode::cmp>::iterator & subNodeIt) {
+        set<TermIndNode*, TermIndNode::cmp>::iterator &parentNodeIt,
+        set<TermIndNode*, TermIndNode::cmp>::iterator &subNodeIt) {
 
     TermCell* queryTerm = nullptr;
     uint32_t* chgVPos;
+    varBinding.resize(16); //初始化为16个变元 注意变元fcode/2; --- 这里的变元 均为x 没有y    
     //遍历项Term
     while (qTermPos < flattenTerm.size()) {
         queryTerm = flattenTerm[qTermPos];
         bool isRollback = false;
         if ((*subNodeIt)->IsVar()) {//若为变元 检查绑定记录回退点
-            if ((*subNodeIt)->curTermSymbol->binding == nullptr) {
-                //  (*subNodeIt)->curTermSymbol->binding = queryTerm;  chgVars->push_back((*subNodeIt)->curTermSymbol);
-                set<TermIndNode*, TermIndNode::cmp>::iterator tmpIt = subNodeIt;
-                if ((++tmpIt) != (*parentNodeIt)->subTerms.end()) {
-                    //记录回退点
-                    chgVPos = new uint32_t[1];
-                    chgVPos[0] = subst->Size();
-                    backpoint.push_back(new BackPoint(qTermPos, chgVPos, parentNodeIt, tmpIt));
-                }
-                subst->SubstAddBinding((*subNodeIt)->curTermSymbol, queryTerm); //记录已经有绑定的变元项   
-            } else if (!(*subNodeIt)->curTermSymbol->binding->TermIsSubterm(queryTerm, DerefType::DEREF_NEVER, TermEqulType::StructEqual)) {
+
+            //记录回退点                    
+            set<TermIndNode*, TermIndNode::cmp>::iterator tmpIt = subNodeIt;
+            if ((++tmpIt) != (*parentNodeIt)->subTerms.end()) {
+                chgVPos = new uint32_t[1];
+                chgVPos[0] = stVarChId.size();
+                backpoint.push_back(new BackPoint(qTermPos, chgVPos, parentNodeIt, tmpIt));
+            }
+
+            TermCell* bindTerm = FindVarBindByFCode((*subNodeIt)->curTermSymbol->fCode);
+            if (nullptr == bindTerm) { //不存在绑定                
+                this->varAddBinding((*subNodeIt)->curTermSymbol->fCode, queryTerm); //绑定变元项  
+
+            } else if (!bindTerm->TermIsSubterm(queryTerm, DerefType::DEREF_NEVER, TermEqulType::StructEqual)) {
                 isRollback = true; //比较是否相同
             }
-            uint32_t funLevel = queryTerm->arity;
-            //skip 该函数
-            while (funLevel > 0) {
-                funLevel += flattenTerm[++qTermPos]->arity - 1;
+            if (!isRollback) {
+                uint32_t funLevel = queryTerm->arity;
+                //skip 该函数项
+                while (funLevel > 0) {
+                    funLevel += flattenTerm[++qTermPos]->arity - 1;
+                }
             }
         } else {
             subNodeIt = (*parentNodeIt)->subTerms.find(new TermIndNode(queryTerm));
@@ -417,7 +426,11 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
             parentNodeIt = backpoint.back()->parentNodeIt;
             subNodeIt = backpoint.back()->subNodeIt;
             uint32_t chgVarPos = backpoint.back()->chgVarPos[0];
-            subst->SubstBacktrackToPos(chgVarPos);
+            while (stVarChId.size() > chgVarPos) {
+                this->varBinding[stVarChId.back()] = nullptr;
+                stVarChId.pop_back();
+            }
+            //subst->SubstBacktrackToPos(chgVarPos);
             backpoint.pop_back();
         } else {
             parentNodeIt = subNodeIt;
@@ -439,13 +452,45 @@ TermIndNode * DiscrimationIndexing::NextForwordSubsump() {
     set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = backpoint.back()->parentNodeIt;
     set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = backpoint.back()->subNodeIt;
     uint32_t chgVarPos = backpoint.back()->chgVarPos[0];
-    subst->SubstBacktrackToPos(chgVarPos);
+    while (stVarChId.size() > chgVarPos) {
+        this->varBinding[stVarChId.back()] = nullptr;
+        stVarChId.pop_back();
+    }
     backpoint.pop_back();
 
     TermIndNode * rtnLit = FindForwordSubsumption(qTermPos, parentNodeIt, subNodeIt);
-
     return rtnLit;
 }
+
+TermCell* DiscrimationIndexing::FindVarBindByFCode(FunCode idx) {
+    assert(idx < 0);
+    FunCode id = -idx;
+    assert(0 == id % 2);
+    id = id / 2;
+    if (!(id < varBinding.size())) {
+        int s = varBinding.size();
+        for (int i = s; i <= id; ++i)
+            this->varBinding.push_back(nullptr);
+        //vctFCodes.resize(id+1);            
+    }
+    return varBinding[id];
+};
+
+void DiscrimationIndexing::varAddBinding(FunCode idx, TermCell* t) {
+
+    assert(idx < 0);
+    FunCode id = -idx;
+    assert(0 == id % 2);
+    id = id / 2;
+    assert(id < this->varBinding.size());
+    stVarChId.push_back(id);
+    this->varBinding[id] = t;
+};
+
+void DiscrimationIndexing::varClearBingding() {
+    varBinding.clear(); //注意并没有释放空间.
+}
+// </editor-fold>
 
 Literal * DiscrimationIndexing::FindNextDemodulator(TermCell *term, bool isEqual) {
 
@@ -502,7 +547,7 @@ void DiscrimationIndexing::TraverseTerm(TermIndNode* indNode, bool isPosLit, int
 /// \return     
 
 bool DiscrimationIndexing::CheckVarBinding(TermCell* qTerm, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
-        set<TermIndNode*, TermIndNode::cmp>::iterator&subPosIt) {
+        set<TermIndNode*, TermIndNode::cmp>::iterator & subPosIt) {
 
     assert(qTerm->IsVar());
 
@@ -537,7 +582,7 @@ bool DiscrimationIndexing::CheckVarBinding(TermCell* qTerm, set<TermIndNode*, Te
 
 void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel,
         std::set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
-        std::set<TermIndNode*, TermIndNode::cmp>::iterator& subNodeIt) {
+        std::set<TermIndNode*, TermIndNode::cmp>::iterator & subNodeIt) {
 
     assert(!flattenTerm.empty() && flattenTerm[qTermPos]->IsVar());
 
@@ -593,13 +638,15 @@ void DiscrimationIndexing::BindingVar(const uint32_t qTermPos, int32_t funcLevel
 
 void DiscrimationIndexing::ClearVarLst() {
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < varLst->size(); ++i) {
         //varLst[i].clear();
         vector<TermCell*>().swap(varLst[i]);
     }
-    
+
     vector<BackPoint*>().swap(backpoint);
     vector<uint32_t>().swap(stVarChId);
-    this->subst->Clear();
+    //this->subst->Clear();
+    varBinding.clear(); //注意并没有释放空间.
+
 
 }

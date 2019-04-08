@@ -16,6 +16,8 @@
 
 #ifndef TERMBANK_H
 #define TERMBANK_H
+#include <bits/stdint-uintn.h>
+
 #include "VarBank.h"
 #include "TermCellStore.h"
 #include "INOUT/Scanner.h"
@@ -26,6 +28,7 @@ private:
     static bool TBPrintInternalInfo;
     static bool TBPrintDetails;
 public:
+    uint16_t claId;
     unsigned long inCount; /* TermBank中项个数统计 不需要!!! -- How many terms have been inserted? */
     //Sig_p sig; /* Store sig info */
     VarBank* shareVars; /* 共享变元存储对象 -- Information about (shared) variables */
@@ -53,7 +56,7 @@ public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermBank(); //Sig_p sig);
+    TermBank(uint16_t claId); //Sig_p sig);
     TermBank(const TermBank& orig);
     virtual ~TermBank();
 
@@ -130,7 +133,7 @@ public:
     TermCell* DefaultSharedTermCellAlloc(void);
 
     /* 解析scanner对象为一个Term,并存储到termbank中. */
-    TermCell* TBTermParseReal(Scanner* in, bool isCheckSymbProp);
+    TermCell* TBTermParseReal(Scanner* in,  bool isCheckSymbProp);
 
     /* Make ref point to a term of the same structure as *ref, but with properties prop set. 
      * Properties do not work for variables! */
@@ -163,7 +166,7 @@ public:
 
     /*--输出--*/
     void TBPrintBankInOrder(FILE* out);
-    void TBPrintTerm(FILE* out, TermCell* term, bool fullterms);
+    void TBPrintTerm(FILE* out, TermCell* term, bool fullterms,DerefType deref=DerefType::DEREF_ALWAYS);
     void TBPrintTermCompact(FILE* out, TermCell* term);
     TermCell* TBInsertDisjoint(TermCell* term);
 };

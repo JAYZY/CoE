@@ -35,6 +35,7 @@ int Subst::SubstAddBinding(TermCell* var, TermCell* bind) {
     /* printf("# %ld <- %ld \n", var->f_code, bind->f_code); */   
     var->binding = bind;   
     vecSubst.push_back(var);
+    return vecSubst.size();
 }
 
 /***************************************************************************** 
@@ -98,7 +99,7 @@ int Subst::SubstBacktrack() {
         vecStack.pop_back();
         if (term->IsVar()) {
             if (!term->TermCellQueryProp(TermProp::TPSpecialFlag)) {
-                newvar = vars->VarBankGetFreshVar();
+                newvar = vars->VarBankGetFreshVar(0);
                 newvar->TermCellSetProp(TermProp::TPSpecialFlag);
                 SubstAddBinding(term, newvar);
             }

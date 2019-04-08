@@ -659,7 +659,7 @@ TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TermBank_p terms, 
     long column = in->AktToken()->column;
     source_name = in->AktToken()->source;
     StreamType type = in->AktToken()->streamType;
-    var = terms->TBTermParseReal(in, true);
+    var = terms->TBTermParseReal(in,true);
 
     if (!var->IsVar()) {
         errpos += in->PosRep(type, source_name, line, column);

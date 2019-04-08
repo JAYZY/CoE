@@ -19,11 +19,11 @@ private:
     static GTermBank_p GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
     static Sig_p sig; // 全局唯一一个sig 存储项相关的符号 只存储不删除
 public:
-    static uint64_t global_formula_counter;
-    static uint64_t global_clause_counter;
-    static uint64_t backword_CMP_counter; //backword 比较次数
-    static uint64_t backword_Finded_counter; //backword 找到冗余次数
-
+    static uint32_t global_formula_counter;
+    static uint32_t global_clause_counter;
+    static uint32_t backword_CMP_counter; //backword 比较次数
+    static uint32_t backword_Finded_counter; //backword 找到冗余次数
+ static uint32_t forward_Finded_counter; //backword 找到冗余次数
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */

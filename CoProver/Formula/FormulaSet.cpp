@@ -106,7 +106,7 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
 
                     assert(ncset->ClauseSetEmpty());
                     assert(nfset->FormulaSetEmpty());
-                    ncset->FreeClauses();
+                    ncset->FreeAllClas();
                     DelPtr(nfset); //ClauseSetFree();
                     //FormulaSetFree(nfset);
                 } else {

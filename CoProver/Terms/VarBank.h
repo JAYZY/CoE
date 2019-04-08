@@ -10,6 +10,8 @@
 #define VARBANK_H
 
 //#include "Sigcell.h"
+#include <bits/stdint-uintn.h>
+
 #include "TermCell.h"
 //class TermCell;
 
@@ -19,6 +21,7 @@ public:
     FunCode maxVar; /* Largest variable ever created */
     /* 使用splayTree 来存储与该变量相关的名称　Associate names and cells */
     SplayTree<StrTreeCell>extIndex;
+    SplayTree<PTreeCell> freeVarSets;
     /* 使用动态数组 来存储与该变量相关的变元ID(变元项) Associate FunCodes and cells */
     vector<TermCell*> vctFCodes;
 
@@ -61,6 +64,8 @@ public:
         extIndex.Destroy();
     }
 
+    
+
     inline void VarBankClearExtNames() {
         VarBankClearExtNamesNoReset();
         vCount = 0;
@@ -84,17 +89,18 @@ public:
 
     /* 根据编码插入一个变元项到varBanks中－查找变元项编码fCode 存在返回varTerm的指针．
      * 否则，构造新的变元项插入到varBank中 */
-    TermCell* Insert(FunCode fCode);
+    TermCell* Insert(FunCode fCode,uint16_t claId);
 
+    TermCell* InsertOldVar(TermCell* varT);
     /* 根据变元项名称插入一个变元项到varBanks中 */
-    TermCell* Insert(const string& name);
+    TermCell* Insert(const string& name,uint16_t claId);
 
     /* 返回 vector中最后一个变元项.
      * 注意　整个vector只有　偶数下标存储变元项，奇数下标保留作为创建子句备份
      * （create clause copies that are　guaranteed to be variable-disjoint.） */
-    TermCell* VarBankGetFreshVar();
+    TermCell* VarBankGetFreshVar( uint16_t claId);
 
-    TermCell* TermEquivCellAlloc(TermCell* term);
+    TermCell* TermEquivCellAlloc(TermCell* term,uint16_t claId);
 
     long VarBankCheckBindings(FILE* out, Sigcell* sig);
 

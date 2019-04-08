@@ -33,7 +33,7 @@
 #include <cassert>
 using namespace std;
 #define New
-//#define  OUTINFO
+ //#define  OUTINFO
 #define WEI 0.0f
 
 #define MAX_ERRMSG_ADD   512
@@ -69,9 +69,10 @@ enum class CompareResult : uint8_t {
 //-101 文件格式错误
 
 enum class RESULT {
-    READERR = -101, READOK = -100, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
-    ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, UnknownFile,
-    NOMGU/*合一失败*/ , SUCCES,RollBack, FAIL
+    READERR = -101, READOK = -100, NO_ERROR=-1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
+    ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE,OUT_OF_MEMORY=204,CPU_LIMIT_ERROR,SYS_ERROR, UnknownFile,
+    
+    NOMGU/*没有合一*/, SUCCES, RollBack, FAIL
 };
 
 /*---------------------------------------------------------------------*/
@@ -208,6 +209,7 @@ inline bool PropsAreEquiv(T&obj1, T&obj2, V prop) {
  * getrusage()函数的精确度是纳秒(ns)。
  */
 static inline double CPUTime(void);
+static inline double GetTotalCPUTime(void);
 
 static inline double CPUTime(void) {
     struct rusage ru;
@@ -217,23 +219,71 @@ static inline double CPUTime(void) {
 
 static inline void PaseTime(const char* tip, double initial_time) {
     printf("|  %stime:           %12.2f s                 |\n", tip, CPUTime() - initial_time);
+}
 
+static inline void PaseTime(const char* tip) {
+    printf("|  %stime:           %12.2f ms                 |\n", tip, GetTotalCPUTime());
 }
 
 static inline long long GetUSecTime(void) {
     struct timeval tv;
-
     gettimeofday(&tv, NULL);
-
     return (long long) tv.tv_sec * 1000000ll + tv.tv_usec;
 }
 
 static inline long long GetUSecClock(void) {
     long long res = (clock()*1000000ll) / CLOCKS_PER_SEC;
-
     return res;
 }
 
+/*--------------------------------------------------------------------------
+/* 得到程序运行时间
+/-------------------------------------------------------------------------*/
+static inline double GetTotalCPUTime(void) {
+    double res = -1;
+    struct rusage usage;
+    if (!getrusage(RUSAGE_SELF, &usage)) {
+        res = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+    }
+    return res;
+}
+
+/*--------------------------------------------------------------------------
+/* Print resource usage to given stream.
+/-------------------------------------------------------------------------*/
+static inline void PrintRusage(FILE* out) {
+    struct rusage usage, cusage;
+
+    if (getrusage(RUSAGE_SELF, &usage)) {
+        TmpErrno = errno;
+        Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+    }
+    if (getrusage(RUSAGE_CHILDREN, &cusage)) {
+        TmpErrno = errno;
+        Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+    }
+    usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
+    usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
+    usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
+    usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
+
+    fprintf(out,
+            "\n# -------------------------------------------------\n");
+    fprintf(out,
+            "# User time                : %.3f s\n",
+            (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
+    fprintf(out,
+            "# System time              : %.3f s\n",
+            (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
+    fprintf(out,
+            "# Total time               : %.3f s\n",
+            (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+            ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
+    fprintf(out,
+            "# Maximum resident set size: %ld pages\n",
+            usage.ru_maxrss);
+}
 
 
 

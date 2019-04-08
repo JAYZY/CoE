@@ -98,9 +98,10 @@ public:
 
 
     /* 返回,所有项个数 -- Return the number of nodes in the term cell store. */
-    long TermCellStoreCountNodes();
-    
+    long TermCellStoreCountNodes();    
     void printAllTerm(FILE* out);
+    
+    
 private:
     void middleTraverseSubT(FILE*  out,TermCell* root);
 };

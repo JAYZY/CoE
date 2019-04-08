@@ -12,6 +12,7 @@
  */
 
 #include "ClauseSet.h"
+#include "INOUT/FileOp.h"
 
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
@@ -19,8 +20,8 @@
 //
 
 ClauseSet::ClauseSet() {
-   // this->members = 0;
-    this->literals = 0;
+    this->members = 0;
+    this->litNum = 0;
     this->date = SysDateCreationTime();
     SysDateInc(&this->date);
 
@@ -35,54 +36,65 @@ ClauseSet::ClauseSet(const ClauseSet& orig) {
 }
 
 ClauseSet::~ClauseSet() {
-    FreeClauses();
+    FreeAllClas();
 }
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
 //插入子句
-void ClauseSet::InsertCla( Clause* newCla) {
-    
-    claSet.push_back(newCla);
-    this->literals+=newCla->LitsNumber();
+
+void ClauseSet::InsertCla(Clause* newCla) {
+    claLst.push_back(newCla);
+    ++members;
+    this->litNum += newCla->LitsNumber();
 }
 //插入子句集
-long ClauseSet::InsertSet(ClauseSet* otherSet){
+
+long ClauseSet::InsertSet(ClauseSet* otherSet) {
     Clause* handle;
     long res = 0;
     while (!otherSet->ClauseSetEmpty()) {
         handle = otherSet->ClauseSetExtractFirst();
         this->InsertCla(handle);
-        res++;
+        ++res;
     }
+    members += res;
     return res;
 }
 
-
- void ClauseSet::CopyClalst(list<Clause*>&retClaSet){
-     for(auto&cla:this->claSet){
-         retClaSet.push_back(cla);
-     }
- }
-void ClauseSet::Print(FILE* out){
-    for(auto&cla:this->claSet){
-        cla->ClausePrint(out,true);
-        
-        cout<<endl;
+void ClauseSet::CopyClalst(list<Clause*>&retClaSet) {
+    for (auto&cla : this->claLst) {
+        retClaSet.push_back(cla);
     }
+}
+
+void ClauseSet::Print(FILE* out) {
+    string oriCla = "";
+    for (auto&cla : this->claLst) {
+        cla->getStrOfClause(oriCla);
+        //  cla->ClausePrint(out,true); 
+    }
+    FileOp::getInstance()->outInfo(oriCla);
 }
 //删除子句集中所有子句
-void ClauseSet::FreeClauses() {
+
+void ClauseSet::FreeAllClas() {
     Clause* handle;
-    while (!claSet.empty()) {
-        handle = claSet.front();
-        claSet.pop_front();
-        RemoveClause(handle);
+    while (!claLst.empty()) {
+        handle = claLst.front();
+        claLst.pop_front();
+        DelPtr(handle);     
     }
+    this->litNum=0;
+    this->members=0;
+            
 }
-//删除子句
+//删除子句,只是从集合中删除并不是真正删除该子句
 void ClauseSet::RemoveClause(Clause* cla) {
-    this->literals -= cla->LitsNumber();       
-    DelPtr(cla);
+    cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
+    this->claLst.remove(cla);
+    this->litNum-= cla->LitsNumber();
+    --this->members;
+    //DelPtr(cla);
 }
 

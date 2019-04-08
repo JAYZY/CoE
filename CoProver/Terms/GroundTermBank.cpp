@@ -83,6 +83,7 @@ TermCell* GroundTermBank::GTermTopInsert(TermCell* t) {
                 t->TermCellDelProp(TermProp::TPIsGround);
             }
         }
+       
         assert(t->TermStandardWeight() == t->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
         assert((t->IsGround() == 0) == (t->TBTermIsGround() == 0));
     }

@@ -9,14 +9,17 @@
 #ifndef RESOLUTION_H
 #define RESOLUTION_H
 #include "Formula/Formula.h"
+#include "HEURISTICS/StrategyParam.h"
 
 class Resolution {
 public:
     Resolution();
     Resolution(const Resolution& orig);
     virtual ~Resolution();
-
-
+    /*****************************************************************************
+     * 基础三角形算法
+     ****************************************************************************/
+    RESULT BaseAlg(Formula *fol);
     RESULT BaseAlgByRecodePath(Formula *fol);
 private:
 

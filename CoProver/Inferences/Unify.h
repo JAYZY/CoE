@@ -15,6 +15,9 @@
 #define UNIFY_H
 #include "CLAUSE/Literal.h"
 #include "Subst.h"
+
+
+
 class TermCell;
 
 class Unify {

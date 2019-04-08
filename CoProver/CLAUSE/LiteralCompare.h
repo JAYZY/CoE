@@ -19,8 +19,8 @@
  */
 class UnitClaCompareWithWeight {
 public:
-    int operator()(Clause* cA, Clause* cB) {
-        return cA->Lits()->StandardWeight() - cB->Lits()->StandardWeight();
+    bool operator()(Clause* cA, Clause* cB) {
+        return cA->Lits()->StandardWeight() > cB->Lits()->StandardWeight();
     }
 };
 

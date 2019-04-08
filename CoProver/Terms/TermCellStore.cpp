@@ -12,7 +12,7 @@
  */
 
 #include <vector>
-
+#include "Global/Environment.h"
 #include "TermCellStore.h"
 #include "TermCell.h"
 
@@ -45,8 +45,8 @@ TermCellStore::~TermCellStore() {
 
 TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
 
-    term->hashIdx = TermCellHash(term);
-    TermCell* ret = TermTree::TermTreeInsert(&(store[term->hashIdx]), term);
+    //term->hashIdx = TermCellHash(term);
+    TermCell* ret = TermTree::TermTreeInsert(&(store[ TermCellHash(term) ]), term);
     if (!ret) {
         entries++;
         argCount += term->arity;

@@ -18,6 +18,11 @@
       <itemPath>CLAUSE/Literal.h</itemPath>
       <itemPath>CLAUSE/LiteralCompare.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="f1" displayName="Doc" projectFiles="true">
+      <itemPath>Doc/myAlgorithm.puml</itemPath>
+      <itemPath>Doc/test.puml</itemPath>
+      <itemPath>Doc/问题记录</itemPath>
+    </logicalFolder>
     <logicalFolder name="Formula" displayName="Formula" projectFiles="true">
       <itemPath>Formula/ClauseSet.cpp</itemPath>
       <itemPath>Formula/ClauseSet.h</itemPath>
@@ -34,11 +39,13 @@
       <itemPath>Global/GlobalStrOp.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
+      <itemPath>Global/SysDate.cpp</itemPath>
       <itemPath>Global/SysDate.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HEURISTICS" displayName="HEURISTICS" projectFiles="true">
       <itemPath>HEURISTICS/Options.cpp</itemPath>
       <itemPath>HEURISTICS/Options.h</itemPath>
+      <itemPath>HEURISTICS/SortRule.cpp</itemPath>
       <itemPath>HEURISTICS/SortRule.h</itemPath>
       <itemPath>HEURISTICS/StrategyParam.cpp</itemPath>
       <itemPath>HEURISTICS/StrategyParam.h</itemPath>
@@ -48,6 +55,8 @@
       <itemPath>Indexing/TermIndexing.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Inferences" displayName="Inferences" projectFiles="true">
+      <itemPath>Inferences/InferenceInfo.cpp</itemPath>
+      <itemPath>Inferences/InferenceInfo.h</itemPath>
       <itemPath>Inferences/Simplification.cpp</itemPath>
       <itemPath>Inferences/Simplification.h</itemPath>
       <itemPath>Inferences/Subst.cpp</itemPath>
@@ -103,6 +112,8 @@
       <itemPath>Terms/VarHash.cpp</itemPath>
       <itemPath>Terms/VarHash.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="Tool" displayName="Tool" projectFiles="true">
+    </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -127,10 +138,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>Global/SysDate.cpp</itemPath>
     <itemPath>main.cpp</itemPath>
-    <itemPath>test.puml</itemPath>
-    <itemPath>问题记录</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -188,6 +196,12 @@
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
@@ -222,6 +236,8 @@
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="HEURISTICS/SortRule.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="HEURISTICS/SortRule.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="HEURISTICS/StrategyParam.cpp" ex="false" tool="1" flavor2="0">
@@ -251,6 +267,10 @@
       <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -317,10 +337,6 @@
       <item path="Terms/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="test.puml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -378,6 +394,12 @@
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
@@ -412,6 +434,8 @@
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="HEURISTICS/SortRule.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="HEURISTICS/SortRule.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="HEURISTICS/StrategyParam.cpp" ex="false" tool="1" flavor2="0">
@@ -441,6 +465,10 @@
       <item path="Indexing/TermIndexing.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -507,10 +535,6 @@
       <item path="Terms/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="test.puml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

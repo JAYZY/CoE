@@ -36,7 +36,7 @@ enum class EqnProp : uint32_t {
     EPIsDominated = 128, /* Literal is dominated by another one */
     EPDominates = EqnProp::EPIsDominated, /* Double use of this property in potentially maximal or minimal clauses */
     EPIsUsed = 256, /* For non-injective subsumption and  pattern-generation */
-    EPIsLeft = 512, /* 在三角形过程中该文字是否被剩余 */
+    EPIsHold = 512, /* 在三角形过程中该文字是否被剩余 */
     EPIsSelected = 1024, /* For selective superpostion */
     EPIsPMIntoLit = 2048, /* For inheriting selection */
     EPFromClauseLit = 4096, /* This comes from the from clause in a paramod step */
@@ -60,6 +60,7 @@ class Clause;
 
 class Literal {
 public:
+    uint8_t usedCount;// 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
     VarState varState; //文字中变元状态
     uint16_t pos; //在子句中的位置 一个子句中最大文字数 < 2^16=65536
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
@@ -71,6 +72,7 @@ public:
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
     long weight;
+    
     float zjlitWight;
 
 public:
@@ -89,6 +91,7 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
+    // <editor-fold defaultstate="collapsed" desc="Inline  Function">
 
     inline void EqnSetProp(EqnProp prop) {
         SetProp(this->properties, prop);
@@ -155,7 +158,8 @@ public:
     }
 
     inline bool IsGround() {
-        return this->lterm->TBTermIsGround() && (this->rterm->TBTermIsGround());
+        //return this->lterm->TBTermIsGround() && (this->rterm->TBTermIsGround());
+        return this->lterm->IsGround() && (this->rterm->IsGround());
     }
 
     inline bool IsPropFalse() {
@@ -767,8 +771,8 @@ public:
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 
-    inline long StandardWeight()  {
-        this->weight=( lterm->TermStandardWeight() + rterm->TermStandardWeight() );
+    inline long StandardWeight() {
+        this->weight = (lterm->TermStandardWeight() + rterm->TermStandardWeight());
         return weight;
     }
 
@@ -805,7 +809,7 @@ public:
         handle->next = nullptr;
         return handle;
     }
-
+    // </editor-fold>
 
 
     /*---------------------------------------------------------------------*/
@@ -889,7 +893,7 @@ public:
         //zjlitWight = DepV();
 
         // zjlitWight = DepFunc();
-        zjlitWight = DepToOneFunc();
+        //zjlitWight = DepToOneFunc();
         //zjlitWight = NewW();
         //zjlitWight = NewW2();
         //改进的稳定度算法1
@@ -983,7 +987,12 @@ public:
     /*****************************************************************************
      * Print a literal in TSTP format.
      ****************************************************************************/
-    void EqnTSTPPrint(FILE* out, bool fullterms);
+    void EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref = DerefType::DEREF_ALWAYS);
+    void getStrOfEqnTSTP(string&outStr, DerefType deref = DerefType::DEREF_ALWAYS);
+
+    //返回父文字的信息
+    void getParentLitInfo(string& parentLitInfo);
+    const char* getLitInfo(string& strLitInfo);
 
     bool EqnOrient();
 
@@ -992,7 +1001,7 @@ public:
     Literal * EqnListFlatCopy();
 
 
-    Literal* renameCopy(Clause* newCla);
+    Literal * eqnRenameCopy(Clause * newCla, DerefType deref = DerefType::DEREF_ALWAYS);
 
     Literal * EqnCopyDisjoint();
     Literal * EqnCopy(TermBank_p termbank);
@@ -1014,9 +1023,9 @@ public:
 
     void EqnFOFParse(Scanner* in, TermBank_p bank);
 
-    bool equalsStuct(Literal* lit);
+    bool equalsStuct(Literal * lit);
     //根据选定的启发式策略来判断两个文字的比较结果
-    CompareResult Compare(Literal* lit);
+    CompareResult Compare(Literal * lit);
 
     /*---------------------------------------------------------------------*/
     /*                          Static Function                            */

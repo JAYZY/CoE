@@ -17,10 +17,12 @@
 /*                          Static Function                            */
 /*---------------------------------------------------------------------*/
 
-uint64_t Env::global_formula_counter = 0;
-uint64_t Env::global_clause_counter = 0; //全局子句个数,从1开始编号
-uint64_t Env::backword_CMP_counter = 0;
-uint64_t Env::backword_Finded_counter = 0;
+uint32_t Env::global_formula_counter = 0u;
+uint32_t Env::global_clause_counter = 0u; //全局子句个数,从1开始编号
+uint32_t Env::backword_CMP_counter = 0u;
+uint32_t Env::backword_Finded_counter = 0u;
+uint32_t Env::forward_Finded_counter = 0u;
+
 
 IOFormat Env::parseFormat = IOFormat::AutoFormat;
 Scanner* Env::in = nullptr;

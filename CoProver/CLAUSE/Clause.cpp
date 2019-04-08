@@ -18,8 +18,9 @@
 
 Clause::Clause()
 : ident(++Env::global_clause_counter), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(0), parent1(nullptr), parent2(nullptr) {
-    claTB = new TermBank();
+, negLitNo(0), posLitNo(0), weight(0), priority(0.0f), parent1(nullptr), parent2(nullptr) {
+
+    claTB = new TermBank(ident);
 }
 
 Clause::Clause(const Clause* orig) {
@@ -31,6 +32,7 @@ Clause::Clause(const Clause* orig) {
     this->negLitNo = 0; //负文字个数
     this->posLitNo = 0; //正文字个数
     this->weight = 0; //子句权重
+    this->priority = 0.0f;
     this->claTB = orig->claTB;
 
     this->parent1 = orig->parent1; //父子句1;
@@ -47,6 +49,7 @@ Clause::Clause(Literal* lits) : Clause() {
 
     while (lits) {
         lits->claPtr = this; /*指定当前文字所在子句*/
+        lits->EqnSetProp(EqnProp::EPIsHold);
         next = lits->next;
         if (lits->IsPositive()) {
             posLitNo++;
@@ -71,6 +74,7 @@ Clause::~Clause() {
     Literal::EqnListFree(literals);
     // children.Destroy(); //PTreeFree( );
     DelPtr(info); //ClauseInfoFree(junk->info);
+    DelPtr(claTB);
     // if (!derivation.empty()) {
     //    derivation.clear();
     //   vector<IntOrP>().swap(derivation);
@@ -95,8 +99,8 @@ void Clause::bindingLits(Literal* litLst) {
 
     int iLitPos = 0;
     while (litLst) {
+        litLst->EqnSetProp(EqnProp::EPIsHold);
         litLst->claPtr = this; /*指定当前文字所在子句*/
-
         litLst->pos = ++iLitPos;
         next = litLst->next;
         if (litLst->IsPositive()) {
@@ -109,6 +113,36 @@ void Clause::bindingLits(Literal* litLst) {
             neg_append = &((*neg_append)->next);
         }
         litLst = next;
+    }
+    *pos_append = neg_lits;
+    *neg_append = nullptr;
+    literals = pos_lits;
+}
+
+void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
+    //插入新子句
+    Literal *pos_lits = nullptr, *neg_lits = nullptr;
+    Literal* *pos_append = &pos_lits;
+    Literal* *neg_append = &neg_lits;
+    Literal* next = nullptr;
+    uint16_t iLitPos = 0;
+    auto litTmpPtr = vNewR.begin();
+    while (litTmpPtr != vNewR.end()) {
+
+        Literal* newLitP = (*litTmpPtr)->eqnRenameCopy(this);
+        newLitP->claPtr = this; /*指定当前文字所在子句*/
+        newLitP->pos = ++iLitPos;
+        newLitP->EqnSetProp(EqnProp::EPIsHold);
+        if (newLitP->IsPositive()) {
+            posLitNo++;
+            *pos_append = newLitP;
+            pos_append = &((*pos_append)->next);
+        } else {
+            negLitNo++;
+            *neg_append = newLitP;
+            neg_append = &((*neg_append)->next);
+        }
+        ++litTmpPtr;
     }
     *pos_append = neg_lits;
     *neg_append = nullptr;
@@ -142,6 +176,56 @@ void Clause::ClausePrint(FILE* out, bool fullterms) {
     //else {
     //ClausePrintLOPFormat(out, fullterms);
     //}
+}
+
+void Clause::getStrOfClause(string&outStr, bool complete ) {
+    if (Options::OutputFormat != IOFormat::TSTPFormat) {
+        Out::Error("File Formate is Error!",ErrorCodes::FILE_ERROR);
+    }
+    string type_name = "plain";
+
+    switch (ClauseQueryTPTPType()) {
+        case (int) ClauseProp::CPTypeAxiom:
+            if (ClauseQueryProp(ClauseProp::CPInputFormula)) {
+                type_name = "axiom";
+            }
+            break;
+        case (int) ClauseProp::CPTypeHypothesis:
+            type_name = "hypothesis";
+            break;
+        case (int) ClauseProp::CPTypeConjecture:
+            type_name = "conjecture";
+            break;
+        case (int) ClauseProp::CPTypeLemma:
+            type_name = "lemma";
+            break;
+        case (int) ClauseProp::CPTypeWatchClause:
+            type_name = "watchlist";
+            break;
+        case (int) ClauseProp::CPTypeNegConjecture:
+            type_name = "negated_conjecture";
+            break;
+        default:
+            break;
+    }
+    int source = ClauseQueryCSSCPASource();
+    if (ident >= 0) {
+        outStr += "cnf(c" /*+ to_string(source) + "_"*/ + to_string(ident) + ", ";
+    } else {
+        outStr += "cnf(i" /*+ to_string(source) + "_"*/ + to_string(ident - INT_MIN) + ", ";
+    }
+    outStr += type_name;
+
+    // ClauseTSTPCorePrint(out, fullterms);
+    outStr += ", (";
+    if (ClauseIsEmpty()) {
+        outStr += "$false";
+    } else {
+        this->getEqnListTSTP(outStr, "|", false);
+        //EqnListTSTPPrint(out, literals, "|", fullterms);
+    }
+    outStr += (complete==true)? ") ).\n" :") ";
+    
 }
 
 /***************************************************************************** 
@@ -225,7 +309,7 @@ void Clause::ClauseTSTPPrint(FILE* out, bool fullterms, bool complete) {
     fprintf(out, "%s, ", type_name.c_str());
     ClauseTSTPCorePrint(out, fullterms);
     if (complete) {
-        fprintf(out, ").");
+        fprintf(out, ").\n");
     }
 }
 
@@ -242,30 +326,71 @@ void Clause::ClauseTSTPCorePrint(FILE* out, bool fullterms) {
     fputc(')', out);
 }
 
+/*-----------------------------------------------------------------------
+// Function: ClauseStandardWeight()
+//   Compute the standard weight of a clause (Vars = 1, Funs = 2,
+//   everything counts equally.
+/----------------------------------------------------------------------*/
+void Clause::ClauseStandardWeight() {
+    Literal* handle;
+    for (handle = this->literals; handle; handle = handle->next) {
+        this->weight += handle->StandardWeight();
+    }
+}
+
 /*****************************************************************************
  * Same as above, but without negation and uses TSTP literal format. 
  ****************************************************************************/
 void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms) {
     Lit_p handle = lst;
     if (handle) {
-        fprintf(out, "{%hu}", handle->pos);
+        string litInfo;
+        handle->getParentLitInfo(litInfo);
+        litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
         handle->EqnTSTPPrint(out, fullterms);
         while (handle->next) {
             handle = handle->next;
             fputs(sep.c_str(), out);
-            fprintf(out, "{%hu}", handle->pos);
+            handle->getParentLitInfo(litInfo);
+            litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
             handle->EqnTSTPPrint(out, fullterms);
 
         }
     }
 }
 
+void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
+    Lit_p handle = this->literals;
+    if (handle) {
+        if (colInfo) {
+            string litInfo;
+            handle->getParentLitInfo(litInfo);
+            string str1 = "{" + to_string(handle->pos) + "}";
+            string str2 = ",[" + litInfo + "]";
+            outStr = litInfo.empty() ? str1 : str1 + str2;
+        }
+        handle->getStrOfEqnTSTP(outStr);
+        while (handle->next) {
+            handle = handle->next;
+            outStr += sep;
+            if (colInfo) {
+                string litInfo;
+                handle->getParentLitInfo(litInfo);
+                string str1 = "{" + to_string(handle->pos) + "}";
+                string str2 = ",[" + litInfo + "]";
+                outStr = litInfo.empty() ? str1 : str1 + str2;
+            }
+            handle->getStrOfEqnTSTP(outStr);
+        }
+    }
+}
 //对子句中的文字进行排序
 
 /*建议 先负后正,先稳定低后稳定高  */
 void Clause::SortLits() {
-    if (this->ClauseQueryProp(ClauseProp::CPIsOriented))//已经排序后的子句不再排序
-        return;
+    
+//    if (this->ClauseQueryProp(ClauseProp::CPIsOriented))//已经排序后的子句不再排序
+//        return;
     uint32_t uLitNum = LitsNumber();
     if (1 == uLitNum) return;
     //this->ClausePrint(stdout,true);    cout<<endl;
@@ -329,8 +454,6 @@ void Clause::ClauseParse(Scanner* in) {
 
     //Scanner* in = Env::getIn();
     //TermBank* t = Env::getTb();
-
-
     this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
 
     ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
@@ -340,7 +463,6 @@ void Clause::ClauseParse(Scanner* in) {
 
     //创建文字
     //Literal* concl = new Literal();
-
     if (in->format == IOFormat::TPTPFormat) {
         in->AcceptInpId("input_clause");
         in->AcceptInpTok(TokenType::OpenBracket);
@@ -465,7 +587,7 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
     while (lit) {
-        *insert = lit->renameCopy(newCla);
+        *insert = lit->eqnRenameCopy(newCla);
         insert = &((*insert)->next);
         lit = lit->next;
     }
@@ -482,7 +604,7 @@ void Clause::SetEqnListVarState() {
     //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
     Lit_p arrVarLit[500]; //假设变元项最多不超出500
     memset(arrVarLit, 0, 1000);
-    
+
     while (lit) {
         if (lit->IsGround()) {
             lit->varState = VarState::noVar;
@@ -495,10 +617,10 @@ void Clause::SetEqnListVarState() {
         vecT.push_back(lit->lterm);
         while (!vecT.empty()) {
             TermCell* t = vecT.back();
-             assert(-t->fCode<500);
+            assert(-t->fCode < 500);
             vecT.pop_back();
             if (t->IsVar()) {
-                Lit_p firstLit = arrVarLit[-t->fCode];                
+                Lit_p firstLit = arrVarLit[-t->fCode];
                 if (firstLit == nullptr) {
                     arrVarLit[-t->fCode] = lit;
                 } else {
@@ -519,7 +641,7 @@ void Clause::SetEqnListVarState() {
                 vecT.pop_back();
                 if (t->IsVar()) {
                     Lit_p firstLit = arrVarLit[-t->fCode];
-                   
+
                     if (firstLit == nullptr) {
                         arrVarLit[-t->fCode] = lit;
                     } else {
@@ -536,9 +658,8 @@ void Clause::SetEqnListVarState() {
         }
         lit = lit->next;
     }
-   
-}
 
+}
 
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();

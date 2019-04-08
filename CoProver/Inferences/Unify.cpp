@@ -33,7 +33,7 @@ Unify::~Unify() {
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
 //
-/// 检查 匹配项通过变元替换是否与被
+/// 检查 匹配项通过变元替换是否为相同变元
 
 /*-----------------------------------------------------------------------
 //
@@ -68,7 +68,16 @@ bool Unify::OccurCheck(Term_p term, Term_p var) {
 /// \return 
 
 bool Unify::SubstComputeMatch(TermCell* varMatcher, TermCell* ConMatched, Subst* subst) {
+    if (ConMatched->TermCellQueryProp(TermProp::TPPredPos)) {
 
+        //均为谓词 但不相同
+        if (varMatcher->TermCellQueryProp(TermProp::TPPredPos) && ConMatched->fCode != varMatcher->fCode) {
+            return false;
+        }
+        //ps:变元符号不与谓词符号匹配
+        if (varMatcher->IsVar())
+            return false;
+    }
     long matcher_weight = varMatcher->TermStandardWeight(),
             to_match_weight = ConMatched->TermStandardWeight();
     bool res = true;
@@ -83,10 +92,7 @@ bool Unify::SubstComputeMatch(TermCell* varMatcher, TermCell* ConMatched, Subst*
     if (matcher_weight > to_match_weight) { //ps:需要检查的项to_match中变元数量< matcher中的变元数
         return false;
     }
-    if (ConMatched->TermCellQueryProp(TermProp::TPPredPos) && varMatcher->IsVar()) {
-        //ps:变元符号不与谓词符号匹配
-        return false;
-    }
+
     /* New block to get fresh local variables */
     {
         vector<TermCell*> jobs;
@@ -100,25 +106,28 @@ bool Unify::SubstComputeMatch(TermCell* varMatcher, TermCell* ConMatched, Subst*
         while (!jobs.empty()) {
 
             ConMatched = jobs.back();
+            ConMatched = TermCell::TermDerefAlways(ConMatched); //因为 con为固定的 因此可以 获取该文字变元项的绑定            
             jobs.pop_back();
-            varMatcher = jobs.back();
+            
+            varMatcher = jobs.back();            
             jobs.pop_back();
-
+            
             if (varMatcher->IsVar()) {
-                if (varMatcher->binding) {
+                if (varMatcher->binding) { //若存在绑定 检查是否与固定项相同 注意 不同子句中的 变元 x1 是不相同的
                     if (varMatcher->binding != ConMatched) {
                         res = false;
                         break;
                     }
-                } else {
+                } else if (varMatcher != ConMatched) {
                     subst->SubstAddBinding(varMatcher, ConMatched);
                 }
-                matcher_weight += (ConMatched->TermStandardWeight() - DEFAULT_VWEIGHT);
 
-                if (matcher_weight > to_match_weight) {
-                    res = false;
-                    break;
-                }
+                //                matcher_weight += (ConMatched->TermStandardWeight() - DEFAULT_VWEIGHT);
+                //
+                //                if (matcher_weight > to_match_weight) {
+                //                    res = false;
+                //                    break;
+                //                }
             } else {
                 if (varMatcher->fCode != ConMatched->fCode) {
                     res = false;
@@ -223,6 +232,7 @@ bool Unify::literalMgu(Literal* litA, Literal* litB, Subst_p subst) {
     }
     return res;
 }
+
 /*等词合一测试---需要检查等词的可交换性[deal with commutativity of  equality.] 
  * Test wether two equations are unifyable. If yes, return true
  * and extend subst to give the substitution, otherwise just return true 
@@ -234,11 +244,11 @@ bool Unify::literalEMgu(Literal* litA, Literal* litB, Subst_p subst) {
     if (res || (litA->IsOriented() && litB->IsOriented())) {
         return res;
     }
-    
+
     litA->swapSides();
     res = literalMgu(litA, litB, subst);
     litA->swapSides();
-    
+
     return res;
 }
 

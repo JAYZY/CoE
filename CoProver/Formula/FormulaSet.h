@@ -109,6 +109,8 @@ public:
 
     long FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* clauseset, TermBank_p terms, VarBank* fresh_vars);
     long FormulaSetSimplify(TermBank_p terms);
+    
+   
 };
 
 #endif /* FORMULASET_H */

@@ -12,6 +12,8 @@
 #define TRIALG_H
 #include <stdint.h>
 #include <bits/stdint-uintn.h>
+#include <stdbool.h>
+#include "Inferences/InferenceInfo.h"
 #include "Inferences/Unify.h"
 #include "Formula/Formula.h"
 
@@ -26,7 +28,7 @@ enum class ResRule : uint8_t {
     ALitSameALits,
     ALitSameBLits, /*与前面剩余文字相同(A文字与B文字相同)*/
     BLitSameBLits, /*剩余文字与前面剩余文字相同(B文字与B文字相同)*/
-    ChgPosLit, //换被归结文字
+    ChgPasLit, //换被归结文字
     ChgActLit, //换主界线文字(主动归结文字)
     MoreFunclayer/*函数复合层过多*/, MoreLit/*剩余文字过多*/, NoLeftLit/*没有剩余文字*/, SingleLit, TAUTOLOGY/*R为恒真*/,
     EqnTautology, RSubsump/*R包含冗余*/, RULEOK/*规则检查通过*/
@@ -35,9 +37,10 @@ enum class ResRule : uint8_t {
 //主界线文字
 
 typedef struct alit {
+    uint16_t reduceNum; //记录,后续的主界线下拉次数
+    int16_t unitLitInd; //单文字列表中的下标 默认为 -1; 
     Literal* alit; //主动文字
     Literal* blit; //只记录第一次配对的延拓文字
-    uint32_t reduceNum; //记录,后续的主界线下拉次数
 } ALit, *ALit_p;
 
 //记录被下拉的文字 
@@ -48,7 +51,7 @@ typedef struct reduceLit {
 } RLit, *RLit_p;
 
 class TriAlg {
-private:
+public:
     Unify unify;
     Subst* subst; //一次三角形过程中合一
 
@@ -57,13 +60,16 @@ private:
     vector<RLit_p> vReduceLit; //被下拉的文字集合
 
     vector<Literal*>vNewR; //剩余文字(B 文字)
+
+    vector<Clause*> newClas;//产生的新子句 -- 要确保这些子句不是冗余的(无恒真,无向前归入)
+    
     set<uint32_t> setRedundClaId; //记录导致冗余的子句，在路径回退的时候不在与之归结
     set<Cla_p> setUsedCla; //已经归结过的子句，不再比较；
 
     //uint32_t uReduceNum;
     Formula* fol;
 
-    bool unitResolutionByIndex(Literal* lit);
+    bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
     bool unitResolutionBySet(Literal* lit, int ind = 0);
 public:
     TriAlg(Formula* _fol);
@@ -83,7 +89,8 @@ public:
         vNewR.reserve(32);
         setRedundClaId.clear();
         setUsedCla.clear();
-
+        vector<Clause*>().swap(this->newClas);
+        this->newClas.reserve(2);
 
     }
 
@@ -93,11 +100,40 @@ public:
     /*---------------------------------------------------------------------*/
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
+    RESULT GenreateTriLastHope(Clause* givenCla);
     RESULT GenerateTriByRecodePath(Clause* givenCla);
+    RESULT GenerateOrigalTriByRecodePath(Clause* givenCla);
+
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 
-    void printTri(Clause* pasLit);
+    //原始的规则检查.不涉及过多的 合一替换
+    ResRule RuleCheckOri(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
+
+    //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
+    ResRule RuleCheckLastHope(Literal*actLit);
+    //清楚三角形的所有变元绑定
+    void ClearResVTBinding();
+
+
+    //对主动归结子句进行处理 并添加到剩余子句集
+    ResRule actClaProcAddNewR(Lit_p actLit);
+
+    //对被动归结子句进行处理 
+    ResRule pasClaProc(Lit_p candLit, uint16_t& uPasHoldLitNum);
+
+    //生成新子句
+    Clause* getNewCluase(Clause* pasCla);
+
+    // <editor-fold defaultstate="collapsed" desc="输出相关">
+    void printTri(FILE* out);
+
+    void printR(FILE* out, Literal* lit);
     
+    void outTri();
+    void outR(Literal* lit);
+    void outNewClaInfo(Clause* newCla,InfereType infereType);
+
+    // </editor-fold>
 
 
 private:

@@ -89,6 +89,7 @@ typedef FuncCell *Func_p;
 
 class Scanner;
 class Clause;
+
 class Sigcell {
 public:
     static bool SigSupportLists;
@@ -153,13 +154,13 @@ public:
         SetProp(fp->properties, prop);
     }
 
-    inline void SigDelFuncProp(FunCode fcode, int prop) {
+    inline void SigDelFuncProp(FunCode fcode, FunctionProperties prop) {
         Func_p fp = fInfo[fcode];
         DelProp(fp->properties, prop);
     }
 
     /* 查询某个属性是否存在 */
-    inline bool SigQueryFuncProp(FunCode fcode, int prop) {
+    inline bool SigQueryFuncProp(FunCode fcode, FunctionProperties prop) {
         Func_p fp = fInfo[fcode];
         return QueryProp(fp->properties, prop); //2017-03-21 wgf add ->properties
     }
@@ -183,6 +184,31 @@ public:
     /* 是否为简单的 answerPred ?*/
     inline bool SigIsSimpleAnswerPred(FunCode fcode) {
         return fcode == answerCode;
+    }
+
+    /* Return the value of the Function field for a function symbol. 
+     * 查询该元素是否是一个函数元素.     */
+    inline bool SigIsFunction(FunCode fcode) {
+        assert(fcode > 0);
+        assert(fcode <= fCount());
+        return SigFindArity(fcode) > 0 && SigQueryFuncProp(fcode, FPFuncSymbol);
+    }
+
+    /* Return the value of the predicate field for a function symbol.
+     * 查询该元素是否是一个谓词元素.*/
+    inline bool SigIsPredicate(FunCode f_code) {
+        assert(f_code > 0); //确保不是变元
+        assert(f_code <= fCount()); //确保一定是存在的
+        return SigQueryFuncProp(f_code, FPPredSymbol);
+    }
+
+    /*  Return the value of the special field for a function symbol.
+     * 查询该元素是否是一个特殊项 */
+
+    inline bool SigIsSpecial(FunCode f_code) {
+        assert(f_code > 0);
+        assert(f_code <= fCount());
+        return SigQueryFuncProp(f_code, FPSpecial);
     }
 
     /*****************************************************************************
@@ -274,19 +300,13 @@ public:
     void SigSetPredicate(FunCode f_code, bool isDel);
     /* 将一个元素设置为函数项属性.  * isDel - 是否删除该属性 */
     void SigSetFunction(FunCode f_code, bool isDel);
-    /* 将一个元素设置为谓词项属性.  * isDel - 是否删除该属性 */
+    /* 将一个元素设置为特殊项属性.  * isDel - 是否删除该属性 */
     void SigSetSpecial(FunCode f_code, bool isDel);
-    /* 将一个元素设置为函数项属性.  * isDel - 是否删除该属性 */
-    bool SigIsFunction(FunCode f_code);
-    /* 查询该元素是否是一个谓词元素. */
-    bool SigIsPredicate(FunCode f_code);
-    /* 查询该元素是否是一个特殊项 */
-    bool SigIsSpecial(FunCode f_code);
+
 
 
     /* 给定一个fCode,查询对应元素(项)的 alphaRank; */
     int SigGetAlphaRank(FunCode f_code);
-
     int SigFindMaxUsedArity();
     int SigFindMaxPredicateArity();
     int SigFindMinPredicateArity();

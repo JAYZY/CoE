@@ -16,17 +16,21 @@
 #include "Clause.h"
 
 Literal::Literal() {
+    usedCount = 0;
     this->properties = EqnProp::EPNoProps;
     pos = 0;
+    reduceTime = 0;
     lterm = nullptr;
     rterm = nullptr;
     next = nullptr;
     claPtr = nullptr;
+    parentLitPtr = nullptr;
     weight = 0;
     zjlitWight = 0;
+
 }
 
-Literal::Literal(Scanner* in, Cla_p cla) {
+Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     Term_p lt = nullptr, rt = nullptr;
     this->claPtr = cla;
     // EqnAlloc(lt, rt, positive);
@@ -276,24 +280,71 @@ TermBank_p Literal::getClaTermBank() {
 /*****************************************************************************
  * Print a literal in TSTP format.
  ****************************************************************************/
-void Literal::EqnTSTPPrint(FILE* out, bool fullterms) {
+void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
     if (IsPropFalse()) {
         fputs("$false", out);
     } else {
         if (EqnIsEquLit()) {
 
-            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);
             fprintf(out, "%s", IsNegative() ? "!=" : "=");
-            this->getClaTermBank()->TBPrintTerm(out, rterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, rterm, fullterms, deref);
         } else {
             if (IsNegative()) {
                 fputc('~', out);
             }
-            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms);
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);
             // bank->TBPrintTerm(out, lterm, fullterms);
         }
     }
 }
+
+/**
+ * 得到文字的字符串
+ */
+void Literal::getStrOfEqnTSTP(string&outStr, DerefType deref) {
+    if (IsPropFalse()) {
+        outStr += "$false";
+    } else {
+        if (EqnIsEquLit()) {
+            lterm->getStrOfTerm(outStr, deref);
+            outStr += IsNegative() ? "!=" : "=";
+            rterm->getStrOfTerm(outStr, deref);
+        } else {
+            if (IsNegative()) {
+                outStr += '~';
+            }
+            lterm->getStrOfTerm(outStr, deref);
+            // bank->TBPrintTerm(out, lterm, fullterms);
+        }
+    }
+}
+
+/*-----------------------------------------------------------------------
+ *返回 父文字的信息
+/*---------------------------------------------------------------------*/
+//
+
+void Literal::getParentLitInfo(string& parentLitInfo) {
+    // parentLitInfo = "";
+    if (this->parentLitPtr) {
+        this->parentLitPtr->getLitInfo(parentLitInfo);
+        //parentLitInfo += "C" + to_string(this->parentLitPtr->claPtr->ident);
+        //parentLitInfo += "_" + to_string(this->parentLitPtr->pos);
+    }
+}
+
+const char* Literal::getLitInfo(string& strLitInfo) {
+    // strLitInfo = "";
+    strLitInfo += "[C" + to_string(this->claPtr->ident);
+    strLitInfo += "_" + to_string(this->pos) + "]";
+    return strLitInfo.c_str();
+
+}
+//void Literal::getLitPosInfo(string& posInfo) {
+//    posInfo += "C" + this->claPtr->ident;
+//    posInfo += "_" + this->pos;
+//}
 
 /*-----------------------------------------------------------------------
 // Function: EqnOrient()
@@ -381,14 +432,15 @@ Literal* Literal::EqnListFlatCopy() {
     *insert = nullptr;
     return newlist;
 }
-/// 根据该文字对象生成新的子句文字(变元更名)
+
+/// 根据该文字对象生成新子句中的文字(变元更名)
 /// \param newCla
 /// \return 
 
-Literal* Literal::renameCopy(Clause* newCla) {
+Literal* Literal::eqnRenameCopy(Clause* newCla, DerefType deref) {
 
-    Term_p lt = lterm->renameCopy(newCla->claTB->shareVars);
-    Term_p rt = rterm->renameCopy(newCla->claTB->shareVars);
+    Term_p lt = lterm->renameCopy(newCla->claTB, deref);
+    Term_p rt = rterm->renameCopy(newCla->claTB, deref);
     Literal* newLit = new Literal(lt, rt, false);
 
     newLit->claPtr = newCla;
@@ -420,6 +472,7 @@ Literal* Literal::EqnCopy(TermBank_p termbank) {
 
     Term_p ltermCpy = termbank->TBInsertNoProps(this->lterm, DerefType::DEREF_ALWAYS);
     Term_p rtermCpy = termbank->TBInsertNoProps(this->rterm, DerefType::DEREF_ALWAYS);
+
     /* Properties will be taken care of later! */
     Literal* handle = new Literal(ltermCpy, rtermCpy, false);
     handle->properties = this->properties;

@@ -124,23 +124,22 @@ public:
     inline void ClauseSourceInfoPrintPCL(FILE* out) {
         ClauseSourceInfoPrint(out, "initial", "\"");
     }
+
 };
 
 class Clause {
 public:
-    uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号 
-    ClauseProp properties; //子句属性
-    ClauseInfo* info; //子句信息
-
-    uint32_t weight; //子句权重
     uint16_t negLitNo; //负文字个数
-    uint16_t posLitNo; //正文字个数
-
-
+    uint16_t posLitNo; //正文字个数    
+    uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
+    uint32_t weight; //子句权重
+    float priority;  //优先级    
+    ClauseProp properties; //子句属性
+    ClauseInfo* info; //子句信息    
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
-
     Literal* literals; //文字列表
+    
     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
     TermBank_p claTB;
 public:
@@ -150,17 +149,16 @@ public:
     //
     Clause();
     Clause(const Clause* orig);
-
-    Clause(Literal* literal_s);
+    Clause(Literal* literal_s);   
 
     //Clause(const Clause& orig);
-
     //
     /// 解析成子句
     /// \param in 
     /// \param bank
     /// \return 
     void ClauseParse(Scanner* in);
+
     virtual ~Clause();
 
     //传入的文字加入到文字链中
@@ -187,7 +185,7 @@ public:
         return weight;
     }
 
-    inline uint32_t LitsNumber() {
+    inline uint16_t LitsNumber() const{
         return posLitNo + negLitNo;
     }
 
@@ -207,6 +205,9 @@ public:
 
     inline bool isUnitNeg() {
         return (0 == posLitNo && 1 == negLitNo);
+    }
+    inline bool isDel(){
+        return this->ClauseQueryProp(ClauseProp::CPDeleteClause);
     }
     //modify ClauseProperties to int
 
@@ -241,12 +242,20 @@ public:
     //
     //重新绑定文字列表,并重新计算
     void bindingLits(Literal* lit);
+    void bindingAndRecopyLits(const vector<Literal*>&vNewR);
 
     void ClausePrint(FILE* out, bool fullterms);
+    void getStrOfClause(string&outStr, bool complete=true);
+    
     void ClausePrintTPTPFormat(FILE* out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
+    
+    void ClauseStandardWeight();    
+    
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
+    //得到字符串
+    void getEqnListTSTP(string&outStr, string sep, bool colInfo);
     void SortLits(); //对子句中 单文字进行排序
 
     void ClauseNormalizeVars(VarBank_p fresh_vars);
@@ -255,7 +264,7 @@ public:
 
     //设置文字的变元共享状态
     void SetEqnListVarState();
-    
+
     Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
