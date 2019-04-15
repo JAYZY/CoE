@@ -30,7 +30,7 @@ TermBank::TermBank(uint16_t claIdent):claId(claIdent) {
 
     //assert(sig);
     inCount = 0;
-    rewriteSteps = 0; //replace次数 
+    //rewriteSteps = 0; //replace次数 
     //extIndex.reserve(10000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
     garbageState = TermProp::TPIgnoreProps;
 
@@ -113,7 +113,7 @@ void TermBank::tb_print_dag(FILE *out, NumTree_p spNode) {
         printf("   =   ");
         term->TermPrint(out, DerefType::DEREF_NEVER);
         //zj-add
-        fprintf(out, " :weight->%lf", term->zjweight);
+        //fprintf(out, " :weight->%lf", term->zjweight);
     }
     if (TermBank::TBPrintInternalInfo) {
         fprintf(out, "\t/*  Properties: %10d */", (int) term->properties);

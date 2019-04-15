@@ -71,7 +71,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 return RESULT::UNKNOWN;
             }
             fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
-            (*itSelCla)->priority -= 2.0f;
+            (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
             if ((++itSelCla) == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
             continue;
@@ -110,26 +110,22 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 }
 
             }
-            float pri = 0.0f;
+            int pri = 0;
             for_each(triAlg.vNewR.begin(), triAlg.vNewR.end(), [&pri](Literal * lit) {
                 pri += lit->claPtr->priority;
             }
             );
-            /*改变R的权重	 R的权重为文字权重的平均--遍历第一个△路径除外*/
-            newCla->priority = pri / (1.0f * triAlg.vNewR.size());
+            /*改变R的权重	 R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+            newCla->priority = pri / (triAlg.vNewR.size());
             fol->insertNewCla(newCla);
             triAlg.outNewClaInfo(newCla, InfereType::SCS);
         }
 
         //改变参与归结的子句优先级,减1;
         for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
-            cla->priority += -0.1f;
-            //claWight.find(cla) != claWight.end() ? --claWight[cla] : claWight[cla] = -1;
+            --cla->priority;
         });
-
         itSelCla = fol->getNextStartClause();
-
-
     }
 
 }

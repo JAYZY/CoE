@@ -15,12 +15,19 @@
 #include "Clause.h"
 
 /**
- * 单元子句排序规则-根据文字权重排序
+ * 单元子句排序规则
+ * 1.优先使用次数少的,
+ * 2.再根据文字权重排序
+ * 可以考虑 KBO 序
  */
 class UnitClaCompareWithWeight {
 public:
+
     bool operator()(Clause* cA, Clause* cB) {
-        return cA->Lits()->StandardWeight() > cB->Lits()->StandardWeight();
+        int uesdCount = cA->literals->usedCount - cB->literals->usedCount;
+        if (uesdCount == 0)
+            return cA->Lits()->StandardWeight() > cB->Lits()->StandardWeight();
+        return uesdCount<0; //优先使用使用次数少的
     }
 };
 
@@ -41,7 +48,7 @@ public:
     int operator()(Literal*t1, Literal* t2) {
         t1->zjLitWeight();
         t2->zjLitWeight();
-        return (t1->zjlitWight - t2->zjlitWight);
+        return 1; // return (t1->zjlitWight - t2->zjlitWight);
     }
 };
 //只是简单统计变元项
@@ -69,7 +76,7 @@ public:
             return 1;
 
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->zjlitWight - t2->zjlitWight;
+        return 1; //return t1->zjlitWight - t2->zjlitWight;
     }
 };
 //比较每个项
@@ -86,7 +93,7 @@ public:
         //无位置<变元<常元
 
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->zjlitWight - t2->zjlitWight;
+        return 1; //t1->zjlitWight - t2->zjlitWight;
     }
 };
 

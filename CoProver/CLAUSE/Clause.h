@@ -133,7 +133,7 @@ public:
     uint16_t posLitNo; //正文字个数    
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
     uint32_t weight; //子句权重
-    float priority;  //优先级    
+    int priority;  //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息    
     Clause* parent1; //父子句1;

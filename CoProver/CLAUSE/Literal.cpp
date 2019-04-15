@@ -26,7 +26,7 @@ Literal::Literal() {
     claPtr = nullptr;
     parentLitPtr = nullptr;
     weight = 0;
-    zjlitWight = 0;
+  //  zjlitWight = 0;
 
 }
 

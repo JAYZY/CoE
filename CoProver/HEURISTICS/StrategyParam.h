@@ -47,6 +47,13 @@ public:
     /*                          Static  Param                              */
     /*---------------------------------------------------------------------*/
     //
+    static uint8_t CLA_NOMGU_WIGHT;//子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
+    static uint8_t CLA_REDUNDANCY_WIGHT; //子句归结中发现冗余,改变的优先级 
+    static uint8_t CLA_OVERLIMIT_WIGHT;//子句超过限制,改变的优先级
+    
+    static uint8_t LIT_REDUNDANCY_WIGHT; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
+    static uint8_t LIT_OVERLIMIT_WIGHT;//文字超过限制,改变的优先级
+    
     static string tptpFileName;
     //新的启发式策略
     // static INT32 SEL_STARTLit_STRATEGY; //起步文字选择策略

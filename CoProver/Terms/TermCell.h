@@ -121,13 +121,13 @@ public:
     long entryNo; /* Counter for terms in a given termbank - needed for administration and external representation */
     long weight; /* Weight of the term, if term is in term bank */
 
-    float zjweight;
+    //float zjweight;
     // RewriteState rw_data; /* See above */
     TermCell* lson; /* For storing shared term nodes in */
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
-    FunCode hashIdx; //hash列表中存储的index(hash值)
+    //FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
     static TermCell* parse_cons_list(Scanner* in, TermBank* tb);

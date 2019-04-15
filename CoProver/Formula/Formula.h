@@ -305,6 +305,8 @@ public:
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal* actLits, uint16_t uActLeftLitInd, vector<Literal*>&vNewR);
     bool leftLitsIsRundacy(Literal*  pasClaHoldLits, uint16_t uPasHoldLitInd, vector<Literal*>&vNewR, set<Cla_p>&setUsedCla);
+    
+    bool holdLitsIsRundacy(Literal**  arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla);
 
     bool LeftUnitLitsIsRundacy(Literal * unitLit);
  

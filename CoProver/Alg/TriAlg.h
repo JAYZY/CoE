@@ -61,8 +61,8 @@ public:
 
     vector<Literal*>vNewR; //剩余文字(B 文字)
 
-    vector<Clause*> newClas;//产生的新子句 -- 要确保这些子句不是冗余的(无恒真,无向前归入)
-    
+    vector<Clause*> newClas; //产生的新子句 -- 要确保这些子句不是冗余的(无恒真,无向前归入)
+
     set<uint32_t> setRedundClaId; //记录导致冗余的子句，在路径回退的时候不在与之归结
     set<Cla_p> setUsedCla; //已经归结过的子句，不再比较；
 
@@ -107,10 +107,16 @@ public:
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 
     //原始的规则检查.不涉及过多的 合一替换
-    ResRule RuleCheckOri(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
+    ResRule RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg);
+
+    //单元子句约减后的规则检查
+    ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits);
 
     //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
     ResRule RuleCheckLastHope(Literal*actLit);
+
+
+
     //清楚三角形的所有变元绑定
     void ClearResVTBinding();
 
@@ -128,10 +134,10 @@ public:
     void printTri(FILE* out);
 
     void printR(FILE* out, Literal* lit);
-    
+
     void outTri();
     void outR(Literal* lit);
-    void outNewClaInfo(Clause* newCla,InfereType infereType);
+    void outNewClaInfo(Clause* newCla, InfereType infereType);
 
     // </editor-fold>
 

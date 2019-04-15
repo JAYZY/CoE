@@ -73,7 +73,7 @@ public:
     Literal* parentLitPtr; //父子句文字
     long weight;
     
-    float zjlitWight;
+    //float zjlitWight;
 
 public:
     /*---------------------------------------------------------------------*/
@@ -767,7 +767,7 @@ public:
                 }
             }
         }
-        this->zjlitWight = sumKinds; //最大变元数
+       // this->zjlitWight = sumKinds; //最大变元数
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 

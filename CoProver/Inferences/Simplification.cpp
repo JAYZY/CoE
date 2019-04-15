@@ -21,6 +21,21 @@ Simplification::Simplification(const Simplification& orig) {
 
 Simplification::~Simplification() {
 }
+
+bool Simplification::isTautology(Clause* cla) {
+
+    for (Literal* litA = cla->literals; litA; litA = litA->next) {
+        for (Literal* litB = litA->next; litB; litB = litB->next) {
+            if(litA->isComplementProps(litB)&&litA->equalsStuct(litB)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
 /// 检查子句genCla 是否存在替换 使得候选子句 C 归入到查询子句 G, 目的检查查询子句G是否冗余
 /*  算法流程:  C {L1,L2..Ln} 
  * 1.从C中按照规则选择文字Li 查找indexTree.找到候选文字集{candLits}
@@ -61,7 +76,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
         vector<Literal*>*candVarLits = &((termIndNode)->leafs);
         Clause* candVarCla = nullptr; //找到可能存在归入冗余的候选子句
         Literal* candVarLit = nullptr;
-        const uint16_t uLitNum=genCla->LitsNumber();
+        const uint16_t uLitNum = genCla->LitsNumber();
         //确保所有的匹配节点都能找到.
         while (true) {
             //遍历候选文字集合.查找满足向前归入的文字
@@ -94,7 +109,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                 checkedClas.insert(candVarCla); //添加已经检查过的子句
             }
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
-            if (termIndNode == nullptr) {                
+            if (termIndNode == nullptr) {
                 return false;
             }
             candVarLits = &((termIndNode)->leafs);
@@ -349,8 +364,8 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing,
                 //#ifdef OUTINFO
                 ++tmpTest;
                 //#endif
-                if(ClauseSubsumeArrayLit(candCla,genCla)){
-               // if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
+                if (ClauseSubsumeArrayLit(candCla, genCla)) {
+                    // if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
                     //记录找到的冗余子句
                     ++Env::backword_Finded_counter;
                     outDelClas.insert(candCla);
@@ -445,16 +460,16 @@ bool Simplification::ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsume
     assert(subsumerVarcla);
     Unify unify;
     Subst subst;
-    
+
     if (subsumConCla->LitsNumber() < subsumerVarcla->LitsNumber())
         return false;
     uint32_t iniSubstPos = subst.Size();
     for (Literal* varEqn = subsumerVarcla->literals; varEqn; varEqn = varEqn->next) {
         bool res = false;
         //debug              cout << "varEqn";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;   
-        
+
         for (Literal* conEqn = subsumConCla->literals; conEqn; conEqn = conEqn->next) {
-               //debug                   cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug                   cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 continue;
             uint32_t substPos = subst.Size();

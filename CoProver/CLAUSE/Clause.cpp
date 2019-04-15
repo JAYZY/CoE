@@ -18,7 +18,7 @@
 
 Clause::Clause()
 : ident(++Env::global_clause_counter), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(0), priority(0.0f), parent1(nullptr), parent2(nullptr) {
+, negLitNo(0), posLitNo(0), weight(0), priority(0), parent1(nullptr), parent2(nullptr) {
 
     claTB = new TermBank(ident);
 }
@@ -32,7 +32,7 @@ Clause::Clause(const Clause* orig) {
     this->negLitNo = 0; //负文字个数
     this->posLitNo = 0; //正文字个数
     this->weight = 0; //子句权重
-    this->priority = 0.0f;
+    this->priority = 0;
     this->claTB = orig->claTB;
 
     this->parent1 = orig->parent1; //父子句1;
@@ -388,9 +388,7 @@ void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
 
 /*建议 先负后正,先稳定低后稳定高  */
 void Clause::SortLits() {
-    
-//    if (this->ClauseQueryProp(ClauseProp::CPIsOriented))//已经排序后的子句不再排序
-//        return;
+
     uint32_t uLitNum = LitsNumber();
     if (1 == uLitNum) return;
     //this->ClausePrint(stdout,true);    cout<<endl;

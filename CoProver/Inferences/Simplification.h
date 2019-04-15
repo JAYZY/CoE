@@ -24,6 +24,10 @@ public:
 public:
     static map<TermCell*, int> termcmp;
 
+    //检查子句是否为恒真
+    static bool isTautology(Clause* cla);
+    
+    
     //检查子句 genCla是否有效,有任意替换r使得 g*r = c ?
     static bool ForwardSubsumption(Clause* genCla, TermIndexing* indexing);
     //检查单元子句(文字)是否有效,有任意替换r使得 g r =c?

@@ -47,7 +47,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 
 /*---------------------------------------------------------------------*/
 TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_VWEIGHT) {
-    zjweight = 0.0f;
+    // zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
 }
@@ -55,7 +55,7 @@ TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(
 /*构造函数 - 创建一个constant term 如:ａ ,b */
 TermCell::TermCell(long symbol) : TermCell() {
     weight = DEFAULT_FWEIGHT;
-    zjweight = 1.0f;
+    //  zjweight = 1.0f;
     fCode = symbol;
 }
 
@@ -1024,7 +1024,12 @@ TermCell* TermCell::TermEquivCellAlloc(TermBank* tb) {
 }
 
 bool TermCell::equalStruct(TermCell* term) {
-
+    if(this->TBTermIsGround()){
+        if(this==term) //都是基文字且相同 
+            return true;
+        else
+            return false;
+    }
     TermCell* t1 = TermCell::TermDerefAlways(this);
     TermCell* t2 = TermCell::TermDerefAlways(term);
     if (t1 == t2) {
@@ -1405,7 +1410,7 @@ long TermCell::TermWeight(long vweight, long fweight) {
     while (!myStack.empty()/*!PStackEmpty(stack)*/) {
         handle = myStack.top();
         myStack.pop();
-         handle = TermCell::TermDerefAlways(handle);
+        handle = TermCell::TermDerefAlways(handle);
         if (handle->IsVar()) {
             res += vweight;
         } else {

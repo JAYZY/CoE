@@ -35,7 +35,7 @@ public:
   //  TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
    // TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
    // TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
-    unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
+   // unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
     SplayTree<PTreeCell>freeVarSets; /*项中的自由变元,不能共享的. Associates a term (or Tformula) with the set of its free variables.
                                         * Only initalized for specific operations and then reset again */
     TermProp garbageState; /* For the mark-and sweep garbage collection.

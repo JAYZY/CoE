@@ -23,14 +23,17 @@ public:
     static inline bool LitCmp(Literal* litA, Literal* litB) {
 
         //对子句中的文字进行排序
-        /*1. 优先使用次数少的文字;2.优先使用负文字;3,优先使用稳定低的文字  */
-        if(litA->usedCount!=litB->usedCount)
-            return litA->usedCount<litB->usedCount;
-//        if (litA->IsNegative() && litB->IsPositive())
-//            return true;
-//        if (litB->IsNegative() && litA->IsPositive())
-//            return false;
-        return litA->StandardWeight() < litB->StandardWeight(); //稳定度由低到高
+        /*1. 优先使用次数少的文字;2,优先使用稳定低的文字 3.优先使用负文字; */
+        if (litA->usedCount != litB->usedCount)
+            return litA->usedCount < litB->usedCount; //优先使用次数少的文字
+        long weight = litA->StandardWeight() - litB->StandardWeight(); //稳定度由低到高
+        if (0 == weight) {
+            if (litA->IsNegative() && litB->IsPositive())
+                return true;
+            if (litB->IsNegative() && litA->IsPositive())
+                return false;
+        }
+        return weight<0; //稳定度由低到高
     }
 
     /*--------------------------------------------------------------------------
