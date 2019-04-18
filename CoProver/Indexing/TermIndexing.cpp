@@ -187,7 +187,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
 
 TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsumptype) {
 
-
+   
     backpoint.clear();
     TermIndNode* rootNode = getRoot(lit);
     TermIndNode* tIndnode = new TermIndNode(lit->lterm);
@@ -217,6 +217,7 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
     TermIndNode * rtnLit = nullptr;
     switch (subsumptype) {
         case SubsumpType::Forword:
+            assert(stVarChId.empty());
             rtnLit = FindForwordSubsumption(1, parentNodeIt, subNodeIt);
             break;
         case SubsumpType::Backword:
@@ -419,7 +420,11 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
         if (isRollback) {
             /*回退*/
-            if (backpoint.empty()) return nullptr;
+            if (backpoint.empty()) {
+                this->varClearBingding();
+                //assert(stVarChId.empty());
+                return nullptr;
+            }
             //回滚
             //roll back 回滚
             qTermPos = backpoint.back()->queryTermPos;
@@ -440,7 +445,7 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
     }
     assert(!(*parentNodeIt)->leafs.empty());
-
+  
     return (*parentNodeIt);
 
 }
@@ -488,6 +493,10 @@ void DiscrimationIndexing::varAddBinding(FunCode idx, TermCell* t) {
 };
 
 void DiscrimationIndexing::varClearBingding() {
+    for(uint32_t ind :stVarChId){
+        varBinding[ind]=nullptr;
+    }
+    vector<uint32_t>().swap(stVarChId); 
     varBinding.clear(); //注意并没有释放空间.
 }
 // </editor-fold>
@@ -644,9 +653,8 @@ void DiscrimationIndexing::ClearVarLst() {
     }
 
     vector<BackPoint*>().swap(backpoint);
-    vector<uint32_t>().swap(stVarChId);
+    varClearBingding() ;
+    
     //this->subst->Clear();
-    varBinding.clear(); //注意并没有释放空间.
-
-
+   // varBinding.clear(); //注意并没有释放空间.
 }

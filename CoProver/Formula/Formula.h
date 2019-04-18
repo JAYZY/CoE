@@ -18,6 +18,7 @@
 #include "Indexing/TermIndexing.h"
 #include "CLAUSE/LiteralCompare.h"
 #include "INOUT/FileOp.h"
+
 class Formula {
 private:
     //谓词索引------
@@ -95,11 +96,11 @@ public:
     //    }
 
     inline void printOrigalClaSet() {
-        FILE* out=FileOp::getInstance()->getInfoFile();
-        string sinfo="#------ input clause ------\n";
+        FILE* out = FileOp::getInstance()->getInfoFile();
+        string sinfo = "#------ input clause ------\n";
         FileOp::getInstance()->outInfo(sinfo);
         origalClaSet->Print(out);
-        sinfo="\n#------ new clause ------\n";
+        sinfo = "\n#------ new clause ------\n";
         FileOp::getInstance()->outInfo(sinfo);
     }
 
@@ -133,7 +134,7 @@ public:
         //(1) Reflexivity: X1=X1
         Clause* claReflex = new Clause();
         claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
-        TermCell* t = claReflex->claTB->shareVars->Insert("A",claReflex->ident);
+        TermCell* t = claReflex->claTB->shareVars->Insert("A", claReflex->ident);
         Lit_p reflexLit = new Literal(t, t, true); //Reflexivity: X1=X1
         reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
         reflexLit->EqnSetProp(EqnProp::EPIsPositive);
@@ -143,8 +144,8 @@ public:
         vEqulityAxiom.push_back(claReflex);
         //(2) Symmetry: X1~=X2 | X2 =X1
         Clause* claSymmetry = new Clause();
-        TermCell* lt = claSymmetry->claTB->shareVars->Insert("A",claSymmetry->ident);
-        TermCell* rt = claSymmetry->claTB->shareVars->Insert("B",claSymmetry->ident);
+        TermCell* lt = claSymmetry->claTB->shareVars->Insert("A", claSymmetry->ident);
+        TermCell* rt = claSymmetry->claTB->shareVars->Insert("B", claSymmetry->ident);
         Lit_p symLitA = new Literal(lt, rt, false);
         Lit_p symLitB = new Literal(rt, lt, true);
         symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
@@ -158,9 +159,9 @@ public:
 
         //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
         Clause* claTrans = new Clause();
-        TermCell* tA = claTrans->claTB->shareVars->Insert("A",claTrans->ident);
-        TermCell* tB = claTrans->claTB->shareVars->Insert("B",claTrans->ident);
-        TermCell* tC = claTrans->claTB->shareVars->Insert("C",claTrans->ident);
+        TermCell* tA = claTrans->claTB->shareVars->Insert("A", claTrans->ident);
+        TermCell* tB = claTrans->claTB->shareVars->Insert("B", claTrans->ident);
+        TermCell* tC = claTrans->claTB->shareVars->Insert("C", claTrans->ident);
         Lit_p transA = new Literal(tA, tB, false);
         transA->EqnSetProp(EqnProp::EPIsEquLiteral);
         Lit_p transB = new Literal(tB, tC, false);
@@ -195,9 +196,9 @@ public:
                     Clause* c1 = new Clause();
                     //c1->info->name = (claName + to_string(i)).c_st();
                     c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
-                    TermCell* lt = c1->claTB->shareVars->Insert("X",c1->ident);
+                    TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
                     lt->TermCellSetProp(TermProp::TPIsShared);
-                    TermCell* rt = c1->claTB->shareVars->Insert("Y",c1->ident);
+                    TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
                     rt->TermCellSetProp(TermProp::TPIsShared);
                     Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
                     litA->EqnSetProp(EqnProp::EPIsEquLiteral);
@@ -205,7 +206,7 @@ public:
                     //创建n-1个项
                     TermCell** arrTerm = new TermCell*[arity];
                     for (int j = 1; j <= arity; j++) {
-                        arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j),c1->ident);
+                        arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
                         arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                     }
                     //create left term  e.g f3(A,C,D)
@@ -246,8 +247,8 @@ public:
                     c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
                     //c1->info->name = (claName + to_string(i));
 
-                    TermCell* lt = c1->claTB->shareVars->Insert("X",c1->ident);
-                    TermCell* rt = c1->claTB->shareVars->Insert("Y",c1->ident);
+                    TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
+                    TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
                     lt->TermCellSetProp(TermProp::TPIsShared);
                     rt->TermCellSetProp(TermProp::TPIsShared);
                     Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
@@ -256,7 +257,7 @@ public:
                     //创建n-1个项
                     TermCell** arrTerm = new TermCell*[arity];
                     for (int j = 1; j <= arity; j++) {
-                        arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j),c1->ident);
+                        arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
                         arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                     }
                     /*====== Create first negative literal ======*/
@@ -304,14 +305,13 @@ public:
     RESULT preProcess();
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal* actLits, uint16_t uActLeftLitInd, vector<Literal*>&vNewR);
-    bool leftLitsIsRundacy(Literal*  pasClaHoldLits, uint16_t uPasHoldLitInd, vector<Literal*>&vNewR, set<Cla_p>&setUsedCla);
-    
-    bool holdLitsIsRundacy(Literal**  arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla);
+    bool leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd, vector<Literal*>&vNewR, set<Cla_p>&setUsedCla);
 
-    bool LeftUnitLitsIsRundacy(Literal * unitLit);
- 
-  
-    
+    bool holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla, Clause* pasCla);
+
+
+
+
     //插入新子句到
     void insertNewCla(Cla_p cla);
     //删除子句

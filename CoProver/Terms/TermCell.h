@@ -27,7 +27,7 @@ enum class DerefType : uint8_t {
     FLASECODE = 2,
     NILCODE = 3,
     CONSCODE = 4,
-    DEREF_NEVER = 0,
+    DEREF_NEVER = 5,
     DEREF_ONCE,
     DEREF_ALWAYS
 };

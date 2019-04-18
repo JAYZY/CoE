@@ -116,7 +116,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             }
             );
             /*改变R的权重	 R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
-            newCla->priority = pri / (triAlg.vNewR.size());
+            newCla->priority = pri /(triAlg.vNewR.size());
             fol->insertNewCla(newCla);
             triAlg.outNewClaInfo(newCla, InfereType::SCS);
         }

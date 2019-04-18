@@ -115,7 +115,8 @@ public:
     //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
     ResRule RuleCheckLastHope(Literal*actLit);
 
-
+    //生成一个新的子句时,遍历主界线对剩余文字进行合一下拉
+   int TriMguReduct(); 
 
     //清楚三角形的所有变元绑定
     void ClearResVTBinding();
