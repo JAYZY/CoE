@@ -57,8 +57,8 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/问题求解1.TPTP</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-SWB009+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-LCL638+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS180+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-NLP261+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS180+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommand>
@@ -120,14 +120,14 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/DL8.tptp</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Problems/CASC-2018/CONVERT/CSR030+6.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-SYN320+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/CSR032+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample/一般公式10.TPTP</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample//程序验证2.TPTP</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/myprob/originSample/baseSample//数学定理证明10.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL665+1.020.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNN/FNN-LCL665+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/CSR032+3.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/CSR032+3.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

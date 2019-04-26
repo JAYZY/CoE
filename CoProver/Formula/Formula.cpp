@@ -151,7 +151,7 @@ RESULT Formula::preProcess() {
     }
     
     StrategyParam::R_MAX_LITNUM=1;
-    StrategyParam::HoldLits_NUM_LIMIT=3;
+    StrategyParam::HoldLits_NUM_LIMIT=1;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");    

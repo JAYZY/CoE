@@ -73,11 +73,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
                 if (++modifyLitNumCount > 3)
                     return RESULT::UNKNOWN;
-              
+
                 //修改文字个数限制
                 ++StrategyParam::R_MAX_LITNUM;
                 StrategyParam::HoldLits_NUM_LIMIT += 2;
-                  FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" +to_string(StrategyParam::R_MAX_LITNUM)+"\n");
+                FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::R_MAX_LITNUM) + "\n");
             }
 
             fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
@@ -86,14 +86,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 itSelCla = fol->getWorkClas()->begin();
             continue;
         }
-        if (StrategyParam::S_OverMaxLitLimit_Num > 50000 && StrategyParam::HoldLits_NUM_LIMIT <fol->uMaxLitNum+2 ) {
+        if (0==StrategyParam::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
             StrategyParam::S_OverMaxLitLimit_Num = 0;
             //修改文字个数限制          
             ++StrategyParam::HoldLits_NUM_LIMIT;
-            FileOp::getInstance()->outLog("修改R长度限制:" +to_string(StrategyParam::HoldLits_NUM_LIMIT)+"\n");
-            
-
-
+            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
         }
         //记录三角形构建次数
         ++iterNum;

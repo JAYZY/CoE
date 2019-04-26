@@ -772,7 +772,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
     FileOp::getInstance()->outRun(strOut);
 
     cout << strOut << endl;
-  
+
     clearVect();
     subst->Clear();
     RESULT resTri = RESULT::NOMGU;
@@ -822,9 +822,9 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
             if (unitResolutionrReduct(&actLit, uActHoldLitNum)) {
                 isDeduct = true;
             }
-  //debug    
-    if (Env::global_clause_counter == 3125)
-        cout << "debug" << endl;
+            //debug    
+            if (Env::global_clause_counter == 3125)
+                cout << "debug" << endl;
 
             //主动归结子句,被单元子句约减后没有剩余文字。 三角形停止延拓,并输出主界线和R
             if (actLit == nullptr) {
@@ -873,6 +873,14 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
                 {
                     if (pasLit->claPtr->ClauseQueryProp(ClauseProp::CPDeleteClause))//若当前子句被删除,注意后续优化 若文字所在子句被删除,则在排序的时候 就可以删除掉
                         continue;
+                    
+                    /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
+                    uPasHoldLitNum = pasLit->claPtr->LitsNumber() - 1;
+                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
+                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+                        ++StrategyParam::S_OverMaxLitLimit_Num;
+                        continue;
+                    }
                     /*同一子句中文字不进行比较;归结过的子句不在归结;文字条件限制*/
                     if (pasLit->claPtr == actLit->claPtr || setUsedCla.find(pasLit->claPtr) != setUsedCla.end())
                         continue;
@@ -912,13 +920,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
                     subst->SubstBacktrackToPos(backpoint);
                     continue;
                 }
-//                /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-//                uPasHoldLitNum = pasLit->claPtr->LitsNumber() - 1;
-//                if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
-//                    pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-//                    ++StrategyParam::S_OverMaxLitLimit_Num;
-//                    continue;
-//                }
+
                 //==================三角形构建成功,后续处理 ====================
                 {
 
@@ -1336,7 +1338,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
      */
     Clause* pasCla = candLit->claPtr;
     Clause* actCla = actLit->claPtr;
-    uint16_t holdLitSize = 0;
+    uint16_t holdLitSize = 0; //剩余文字总个数
     uint16_t uActClaHoldLitSize = actCla->LitsNumber();
 
     uPasClaHoldLitSize = pasCla->LitsNumber() - 1;
@@ -1529,7 +1531,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
 
     }
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (holdLitSize - vNewR.size()) > StrategyParam::HoldLits_NUM_LIMIT) {
+    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int)(holdLitSize + vNewR.size()) > StrategyParam::HoldLits_NUM_LIMIT) {
         //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
         ++StrategyParam::S_OverMaxLitLimit_Num;
         return ResRule::ChgPasLit;
@@ -1613,7 +1615,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
 
     //来,再加一个 剩余文字判断, come 来啊!相互伤害啊~~
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (holdLitSize - delRNum) > StrategyParam::HoldLits_NUM_LIMIT) {
+    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int)(holdLitSize - delRNum) > (int)StrategyParam::HoldLits_NUM_LIMIT) {
         //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
         ++StrategyParam::S_OverMaxLitLimit_Num;
         return ResRule::ChgPasLit;
