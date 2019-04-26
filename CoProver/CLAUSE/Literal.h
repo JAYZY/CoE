@@ -60,7 +60,7 @@ class Clause;
 
 class Literal {
 public:
-    uint8_t usedCount;// 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
+    uint8_t usedCount; // 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
     VarState varState; //文字中变元状态
     uint16_t pos; //在子句中的位置 一个子句中最大文字数 < 2^16=65536
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
@@ -71,8 +71,8 @@ public:
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
-    long weight;
-    
+    //long weight;
+
     //float zjlitWight;
 
 public:
@@ -767,17 +767,22 @@ public:
                 }
             }
         }
-       // this->zjlitWight = sumKinds; //最大变元数
+        // this->zjlitWight = sumKinds; //最大变元数
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 
-    inline long StandardWeight() {
-        this->weight = (lterm->TermStandardWeight() + rterm->TermStandardWeight());
-        return weight;
+    inline long StandardWeight(bool isReCla = true) {
+        if (isReCla)
+            return (lterm->TermStandardWeight() + rterm->TermStandardWeight());
+        else
+            return lterm->weight + rterm->weight;
     }
 
-    inline long EqnDepth() {
-        return lterm->TermDepth() + rterm->TermDepth();
+    inline uint16_t TermDepth() {
+        
+        uint16_t termDepth = MAX(lterm->TermDepth(), rterm->TermDepth());
+        return (this->EqnIsEquLit()) ? termDepth + 1 : termDepth;
+
     }
 
     /***************************************************************************** 
@@ -953,15 +958,19 @@ public:
         } else {//非等词文字
 
             assert(rt->TermCellQueryProp(TermProp::TPPredPos));
+
             /*printf("# lterm->f_code: %ld <%s>\n", lterm->f_code,
               SigFindName(bank->sig,lterm->f_code));
               SigPrint(stdout,bank->sig);
               fflush(stdout); */
+
             assert(!lt->IsVar());
+
             /* TermPrint(stdout, lterm, bank->sig, DEREF_NEVER);
             printf("===");
             TermPrint(stdout, rterm, bank->sig, DEREF_NEVER);
             printf("\n"); */
+
             assert(Env::getSig()->SigQueryFuncProp(lt->fCode, FPPredSymbol));
 
             lt->TermCellSetProp(TermProp::TPPredPos);
@@ -996,15 +1005,13 @@ public:
 
     bool EqnOrient();
 
-
     Literal * EqnListCopyDisjoint();
     Literal * EqnListFlatCopy();
-
 
     Literal * eqnRenameCopy(Clause * newCla, DerefType deref = DerefType::DEREF_ALWAYS);
 
     Literal * EqnCopyDisjoint();
-    Literal * EqnCopy(TermBank_p termbank);
+    //  Literal * EqnCopy(TermBank_p termbank);
     Literal * EqnFlatCopy();
     Literal * EqnCopyOpt();
 

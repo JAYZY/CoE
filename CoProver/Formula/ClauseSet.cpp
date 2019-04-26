@@ -22,12 +22,12 @@
 ClauseSet::ClauseSet() {
     this->members = 0;
     this->litNum = 0;
-    this->date = SysDateCreationTime();
-    SysDateInc(&this->date);
+    //this->date = SysDateCreationTime();
+   //SysDateInc(&this->date);
 
     //    this->demod_index = NULL;
     //    this->fvindex = NULL;
-    this->eval_indices.resize(4); // = PDArrayAlloc(4, 4);
+    //this->eval_indices.resize(4); // = PDArrayAlloc(4, 4);
     //    this->eval_no = 0;
     this->identifier = "";
 }
@@ -72,7 +72,7 @@ void ClauseSet::Print(FILE* out) {
     string oriCla = "";
     for (auto&cla : this->claLst) {
         cla->getStrOfClause(oriCla);
-        //  cla->ClausePrint(out,true); 
+        cla->ClausePrint(out,true); 
     }
     FileOp::getInstance()->outInfo(oriCla);
 }

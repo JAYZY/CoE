@@ -29,13 +29,13 @@ private:
     static bool TBPrintDetails;
 public:
     uint16_t claId;
-    unsigned long inCount; /* TermBank中项个数统计 不需要!!! -- How many terms have been inserted? */
+    unsigned long inCount; /* TermBank中项个数统计 -- How many terms have been inserted? */
     //Sig_p sig; /* Store sig info */
     VarBank* shareVars; /* 共享变元存储对象 -- Information about (shared) variables */
-  //  TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
-   // TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
-   // TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
-   // unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
+    //  TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
+    // TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
+    // TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
+    // unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
     SplayTree<PTreeCell>freeVarSets; /*项中的自由变元,不能共享的. Associates a term (or Tformula) with the set of its free variables.
                                         * Only initalized for specific operations and then reset again */
     TermProp garbageState; /* For the mark-and sweep garbage collection.
@@ -133,7 +133,7 @@ public:
     TermCell* DefaultSharedTermCellAlloc(void);
 
     /* 解析scanner对象为一个Term,并存储到termbank中. */
-    TermCell* TBTermParseReal(Scanner* in,  bool isCheckSymbProp);
+    TermCell* TBTermParseReal(Scanner* in, bool isCheckSymbProp);
 
     /* Make ref point to a term of the same structure as *ref, but with properties prop set. 
      * Properties do not work for variables! */
@@ -145,18 +145,18 @@ public:
     //  TermCell* TermEquivCellAlloc(TermCell* source, VarBank_p vars);
 
     /* 插入一个Term　项到　termbank中 */
-    TermCell* TBInsert(TermCell* term, VarBank_p varbank, DerefType deref);
+    //  TermCell* TBInsert(TermCell* term, VarBank_p varbank, DerefType deref);
     /* 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0; */
-    TermCell* TBInsertNoProps(TermCell* term, DerefType deref);
+    // TermCell* TBInsertNoProps(TermCell* term, DerefType deref);
 
-    TermCell* TBInsertOpt(TermCell* term,  DerefType deref);
+    TermCell* TBInsertOpt(TermCell* term, DerefType deref);
 
-    TermCell* TBInsertRepl(TermCell* term, DerefType deref, TermCell* old, TermCell* repl);
+    //TermCell* TBInsertRepl(TermCell* term, DerefType deref, TermCell* old, TermCell* repl);
     /* 插入项t到TermBank 中,判断是否为基项或存在绑定,该方法用于rewrite  */
-    TermCell* TBInsertInstantiated(TermCell* term);
+    // TermCell* TBInsertInstantiated(TermCell* term);
 
     /* 实际的插入实现. Insert a term cell into the store-[termStore].*/
-    TermCell* TermTopInsert(TermCell* t);
+    //TermCell* TermTopInsert(TermCell* t);
 
     /* Find a term in the term cell bank and return it. */
     TermCell* TBFind(TermCell* term);
@@ -166,7 +166,7 @@ public:
 
     /*--输出--*/
     void TBPrintBankInOrder(FILE* out);
-    void TBPrintTerm(FILE* out, TermCell* term, bool fullterms,DerefType deref=DerefType::DEREF_ALWAYS);
+    void TBPrintTerm(FILE* out, TermCell* term, bool fullterms, DerefType deref = DerefType::DEREF_ALWAYS);
     void TBPrintTermCompact(FILE* out, TermCell* term);
     TermCell* TBInsertDisjoint(TermCell* term);
 };

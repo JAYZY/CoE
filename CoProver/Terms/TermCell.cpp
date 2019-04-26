@@ -46,7 +46,7 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_VWEIGHT) {
+TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_FWEIGHT) {
     // zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
@@ -246,7 +246,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb
 TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
-    if (source->IsGround())//存放在 全局共享termbank中 因此 直接返回 shareterm
+    if (source->TBTermIsGround())//若已经在GTermBank中存放的全局共享基项,则直接返回
         return source;
     Term_p t;
     if (source->IsVar()) {
@@ -254,15 +254,29 @@ TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
         source->getVarName(varName);
         t = tb->shareVars->Insert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
         t->uVarCount = 1;
+        t->weight = DEFAULT_VWEIGHT;        
+        t->uMaxFuncLayer = 0;
     } else {
-        t = TermCell::TermTopCopy(source); //创建一个 unshared term at the moment
-        for (int i = 0; i < t->arity; i++) {
-            t->args[i] = t->args[i]-> renameCopy(tb);
-            t->uVarCount += t->args[i]->uVarCount;
+        uint16_t uFuncLayer=0;
+        t = new TermCell(source->fCode);
+        t->arity = source->arity;
+        t->properties = (TermProp) ((int32_t) source->properties & (int32_t) TermProp::TPPredPos); // t = TermCell::TermTopCopy(source); //创建一个 unshared term at the moment
+      
+        if (t->arity > 0) {
+            t->args = new TermCell*[t->arity];
+            for (int i = 0; i < t->arity; ++i) {
+                t->args[i] = source->args[i]-> renameCopy(tb);
+                t->weight += t->args[i]->weight;
+                t->uVarCount += t->args[i]->uVarCount;
+                uFuncLayer=MAX(uFuncLayer,t->args[i]->uMaxFuncLayer);
+            }     
+            ++uFuncLayer;
         }
-        // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中
+        t->uMaxFuncLayer =uFuncLayer;
+        // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中        
         t = tb->TBTermTopInsert(t);
     }
+
     return t;
 }
 
@@ -299,9 +313,6 @@ void TermCell::TermTopFree() {
     }
 }
 
-
-
-
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
@@ -315,7 +326,6 @@ TermCell* TermCell::TermTopCopy(TermCell* source) {
 
     /* As it gets a new id below */
     t->TermCellDelProp(TermProp::TPOutputFlag);
-
     t->arity = source->arity;
     t->binding = nullptr;
     t->args = source->TermArgListCopy();
@@ -1024,8 +1034,8 @@ TermCell* TermCell::TermEquivCellAlloc(TermBank* tb) {
 }
 
 bool TermCell::equalStruct(TermCell* term) {
-    if(this->TBTermIsGround()){
-        if(this==term) //都是基文字且相同 
+    if (this->TBTermIsGround()) {
+        if (this == term) //都是基文字且相同 
             return true;
         else
             return false;
@@ -1407,7 +1417,7 @@ long TermCell::TermWeight(long vweight, long fweight) {
     assert(term);
     TermCell* handle = nullptr;
     myStack.push(term);
-    while (!myStack.empty()/*!PStackEmpty(stack)*/) {
+    while (!myStack.empty()) {
         handle = myStack.top();
         myStack.pop();
         handle = TermCell::TermDerefAlways(handle);
@@ -1421,7 +1431,7 @@ long TermCell::TermWeight(long vweight, long fweight) {
             }
         }
     }
-    weight = res;
+    //weight = res;
     return res;
 }
 

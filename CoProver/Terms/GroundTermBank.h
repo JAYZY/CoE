@@ -1,7 +1,7 @@
 /* 
  * File:   GroundTermBank.h
  * Author: Zhong Jian<77367632@qq.com>
- * Contents: 全局基项存储
+ * Contents: 全局基项存储, 该全局项是不会被删除的
  * Created on 2018年11月1日, 上午10:37
  */
 

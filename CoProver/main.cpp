@@ -66,8 +66,9 @@ int main(int argc, char** argv) {
 
     //预处理操作---------------------       
     RESULT res = fol->preProcess();
-    if (res == RESULT::SUCCES) {
-        
+       //输出预处理后子句 
+    //fol->printProcessedClaSet(stdout);
+    if (res == RESULT::SUCCES) {        
         //演绎推理
         Resolution resolution;
         res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退

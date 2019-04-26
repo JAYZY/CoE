@@ -131,6 +131,7 @@ class Clause {
 public:
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数    
+    uint16_t maxFuncLayer; //文字中最大的函数嵌套层数
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
     uint32_t weight; //子句权重
     int priority;  //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
@@ -189,6 +190,7 @@ public:
         return posLitNo + negLitNo;
     }
 
+    
     inline bool ClauseIsEmpty() {
         return 0 == LitsNumber();
     }
@@ -236,6 +238,7 @@ public:
         return ((int) properties & (int) ClauseProp::CP_CSSCPA_Mask) / (int) ClauseProp::CP_CSSCPA_1;
     }
 
+    
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
@@ -265,6 +268,8 @@ public:
     //设置文字的变元共享状态
     void SetEqnListVarState();
 
+    uint16_t calcMaxFuncLayer() const ;
+    
     Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal

@@ -221,7 +221,7 @@ public:
 class DiscrimationIndexing : public TermIndexing {
 private:
 
-    vector<TermCell*> varLst[128]; //上限 一个term中最多只能有128个变元
+    vector<TermCell*> varLst[1000]; //上限 一个term中最多只能有128个变元
     vector<uint32_t> stVarChId; //记录有存在替换的变量ID
     vector<BackPoint*> backpoint; /*回退点*/
     /// 在节点treeNode 后面插入 项t的所有符号

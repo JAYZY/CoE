@@ -139,7 +139,7 @@ public:
 
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->EqnDepth() - t2->EqnDepth(); //变元越多越不稳定
+        return t1->TermDepth() - t2->TermDepth(); //变元越多越不稳定
     }
 };
 

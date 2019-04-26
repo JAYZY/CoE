@@ -69,7 +69,7 @@ enum class TermProp : int32_t {
     TPPosPolarity = 1 << 18, /* In the term encoding of a formula,this occurs with positive polarity. */
     TPNegPolarity = 1 << 19, /* In the term encoding of a formula,this occurs with negative polarity. */
 
-    TPShareGround = (TermProp::TPIsShared | TermProp::TPIsGround),
+  //  TPShareGround = (TermProp::TPIsShared | TermProp::TPIsGround),
 };
 
 
@@ -118,7 +118,7 @@ public:
     TermCell* *args; /* Pointer to array of arguments */
     TermCell* binding; /* For variable bindings,potentially for temporary a rewrites 
                     * - it might be possible to combine the previous two in a union. */
-    long entryNo; /* Counter for terms in a given termbank - needed for administration and external representation */
+    long entryNo; /* 在TermBank中的下标 == TermBank.inCount; Counter for terms in a given termbank - needed for administration and external representation */
     long weight; /* Weight of the term, if term is in term bank */
 
     //float zjweight;
@@ -127,6 +127,7 @@ public:
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
+    uint16_t uMaxFuncLayer;//函数嵌套层
     //FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
@@ -244,8 +245,8 @@ public:
     }
 
     /* Return the depth of a term. */
-    inline long TermDepth() {
-        long maxdepth = 0, ldepth;
+    inline uint16_t TermDepth() {
+        uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
             ldepth = args[i]->TermDepth();
             maxdepth = MAX(maxdepth, ldepth);
@@ -254,11 +255,11 @@ public:
     }
     //检查最大函数嵌套层限制. >0 -- 符合限制 -1 -- 不符合限制
 
-    inline int CheckFuncLayerLimit() {
-        long maxdepth = 0, ldepth;
+    inline int CheckTermDepthLimit() {
+        uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
             TermCell* term=TermCell::TermDerefAlways(args[i]);
-            ldepth =term->CheckFuncLayerLimit();
+            ldepth =term->CheckTermDepthLimit();
             if(-1==ldepth) return -1;
             if (maxdepth < ldepth) {
                 maxdepth = ldepth;

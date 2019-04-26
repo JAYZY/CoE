@@ -43,9 +43,11 @@ public:
     //公式集的相关信息
     uint32_t uEquLitNum; //等词个数
     uint32_t uNonHornClaNum; //非Horn子句个数
+    uint32_t uMaxLitNum; //最大文字个数
+    uint32_t uMaxFuncLayer; //最大函数嵌套层数
+
 
     TermIndexing* unitClaIndex; //正单元子句索引
-    //TermIndexing* posUnitClaIndex; //负单元子句索引
     TermIndexing *allTermIndex; //Discrimation Indexing 主要用于forward subsume
 
     vector<Clause*> goalClaset; //目标子句集--注意,包括单元子句,也包括其他子句
@@ -62,8 +64,16 @@ private:
 public:
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
-
     /*---------------------------------------------------------------------*/
+    //
+    //初始化公式信息
+    inline void iniFolInfo() {
+        this->uEquLitNum = 0; //等词个数
+        this->uNonHornClaNum = 0; //非Horn子句个数
+        this->uMaxLitNum = 0; //最大文字个数
+        this->uMaxFuncLayer = 0; //最大函数嵌套层数
+    }
+
     inline ClauseSet* getAxioms() {
         return origalClaSet;
     }
@@ -106,6 +116,7 @@ public:
 
     inline void printProcessedClaSet(FILE* out) {
         workClaSet->Print(out);
+        cout << endl;
     }
 
     inline void printEqulityAxioms(FILE* out) {

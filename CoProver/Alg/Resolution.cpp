@@ -38,6 +38,7 @@ Resolution::~Resolution() {
 //
 
 RESULT Resolution::BaseAlg(Formula* fol) {
+    uint16_t modifyLitNumCount = 0; //修改文字长度次数
     //定义起步子句
     Clause* selCla = nullptr;
     map<Clause*, int16_t> claWight;
@@ -54,12 +55,13 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         //            return RESULT::SAT;
         //        }
         //构建三角形
-
         if ((*itSelCla)->isDel()) {
             ++itSelCla;
             if (itSelCla == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
+            ++iterNum;
             continue;
+
         }
         res = triAlg.GenreateTriLastHope(*itSelCla);
 
@@ -68,13 +70,30 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-                return RESULT::UNKNOWN;
+
+                if (++modifyLitNumCount > 3)
+                    return RESULT::UNKNOWN;
+              
+                //修改文字个数限制
+                ++StrategyParam::R_MAX_LITNUM;
+                StrategyParam::HoldLits_NUM_LIMIT += 2;
+                  FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" +to_string(StrategyParam::R_MAX_LITNUM)+"\n");
             }
+
             fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
             (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
             if ((++itSelCla) == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
             continue;
+        }
+        if (StrategyParam::S_OverMaxLitLimit_Num > 50000 && StrategyParam::HoldLits_NUM_LIMIT <fol->uMaxLitNum+2 ) {
+            StrategyParam::S_OverMaxLitLimit_Num = 0;
+            //修改文字个数限制          
+            ++StrategyParam::HoldLits_NUM_LIMIT;
+            FileOp::getInstance()->outLog("修改R长度限制:" +to_string(StrategyParam::HoldLits_NUM_LIMIT)+"\n");
+            
+
+
         }
         //记录三角形构建次数
         ++iterNum;
@@ -116,8 +135,10 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             }
             );
             /*改变R的权重	 R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
-            newCla->priority = pri /(triAlg.vNewR.size());
+            newCla->priority = pri / (int) (triAlg.vNewR.size());
             fol->insertNewCla(newCla);
+            newCla->ClausePrint(stdout, true);
+            //输出新子句到文件
             triAlg.outNewClaInfo(newCla, InfereType::SCS);
         }
 

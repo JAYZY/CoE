@@ -344,13 +344,14 @@ void Clause::ClauseStandardWeight() {
 void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms) {
     Lit_p handle = lst;
     if (handle) {
-        string litInfo;
+        string litInfo="";
         handle->getParentLitInfo(litInfo);
         litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
         handle->EqnTSTPPrint(out, fullterms);
         while (handle->next) {
             handle = handle->next;
             fputs(sep.c_str(), out);
+            litInfo="";
             handle->getParentLitInfo(litInfo);
             litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
             handle->EqnTSTPPrint(out, fullterms);
@@ -363,7 +364,7 @@ void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
     Lit_p handle = this->literals;
     if (handle) {
         if (colInfo) {
-            string litInfo;
+            string litInfo="";
             handle->getParentLitInfo(litInfo);
             string str1 = "{" + to_string(handle->pos) + "}";
             string str2 = ",[" + litInfo + "]";
@@ -374,7 +375,7 @@ void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
             handle = handle->next;
             outStr += sep;
             if (colInfo) {
-                string litInfo;
+                string litInfo="";
                 handle->getParentLitInfo(litInfo);
                 string str1 = "{" + to_string(handle->pos) + "}";
                 string str2 = ",[" + litInfo + "]";
@@ -600,8 +601,8 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
 void Clause::SetEqnListVarState() {
     Lit_p lit = this->Lits();
     //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
-    Lit_p arrVarLit[500]; //假设变元项最多不超出500
-    memset(arrVarLit, 0, 1000);
+    Lit_p arrVarLit[100]; //假设变元项最多不超出500
+    memset(arrVarLit, 0, 100);
 
     while (lit) {
         if (lit->IsGround()) {
@@ -658,6 +659,20 @@ void Clause::SetEqnListVarState() {
     }
 
 }
+
+uint16_t Clause::calcMaxFuncLayer() const {
+        uint16_t maxTermDepth=0;
+        Lit_p lit=this->literals;
+        while(lit){
+            uint16_t litMaxTermDepth=lit->TermDepth();
+            if(maxTermDepth<litMaxTermDepth)
+                maxTermDepth=litMaxTermDepth;
+            lit=lit->next;
+        }
+        return maxTermDepth;
+    }
+    
+
 
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();

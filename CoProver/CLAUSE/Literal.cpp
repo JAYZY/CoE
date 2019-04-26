@@ -25,7 +25,7 @@ Literal::Literal() {
     next = nullptr;
     claPtr = nullptr;
     parentLitPtr = nullptr;
-    weight = 0;
+    //weight = 0;
   //  zjlitWight = 0;
 
 }
@@ -208,23 +208,26 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
     //lterm = TBTermParse(in, bank);
     lterm = bank->TBTermParseReal(in, true);
     //BOOL_TERM_NORMALIZE(lterm);
-    if (lterm == Env::getGTbank()->falseTerm) {
+    if ( Env::getGTbank()->falseTerm ==lterm) {
         lterm = Env::getGTbank()->trueTerm;
-        positive = !positive;
+        positive = !positive; //修改项的 正负
     }
-    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);
-    //bank->sig->SigSetPredicate(lterm->fCode, true);
+    
+    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);//'!='  '='
+  
     Sigcell* sig = Env::getSig();
-    if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) {
+    if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) { //不是变元 而且 是谓词符号 ->非等词项
         rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
     } else {
-        if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) {
+        if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) { //项为变元或 函数符
 
-            if (in->TestInpTok(TokenType::NegEqualSign)) {
+            if (in->TestInpTok(TokenType::NegEqualSign)) { //'!='
                 positive = !positive;
             }
             in->AcceptInpTok(equalToke);
+            
             rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
+            
             if (!rterm->IsVar()) {
                 if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
@@ -290,11 +293,11 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
             fprintf(out, "%s", IsNegative() ? "!=" : "=");
             this->getClaTermBank()->TBPrintTerm(out, rterm, fullterms, deref);
         } else {
+            //debug            fprintf(stdout,"w:%ld,v:%hu,F:%hu ",lterm->weight,lterm->uVarCount,lterm->uMaxFuncLayer);
             if (IsNegative()) {
                 fputc('~', out);
-            }
-            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);
-            // bank->TBPrintTerm(out, lterm, fullterms);
+            }            
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);          
         }
     }
 }
@@ -468,19 +471,19 @@ Literal* Literal::EqnCopyDisjoint() {
  * Create a copy of eq with terms from bank. Does not copy the next pointer. 
  * Properties of the original terms are not copied.
  ****************************************************************************/
-Literal* Literal::EqnCopy(TermBank_p termbank) {
-
-    Term_p ltermCpy = termbank->TBInsertNoProps(this->lterm, DerefType::DEREF_ALWAYS);
-    Term_p rtermCpy = termbank->TBInsertNoProps(this->rterm, DerefType::DEREF_ALWAYS);
-
-    /* Properties will be taken care of later! */
-    Literal* handle = new Literal(ltermCpy, rtermCpy, false);
-    handle->properties = this->properties;
-    if (!IsOriented()) {
-        handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
-    }
-    return handle;
-}
+//Literal* Literal::EqnCopy(TermBank_p termbank) {
+//
+//    Term_p ltermCpy = termbank->TBInsertNoProps(this->lterm, DerefType::DEREF_ALWAYS);
+//    Term_p rtermCpy = termbank->TBInsertNoProps(this->rterm, DerefType::DEREF_ALWAYS);
+//
+//    /* Properties will be taken care of later! */
+//    Literal* handle = new Literal(ltermCpy, rtermCpy, false);
+//    handle->properties = this->properties;
+//    if (!IsOriented()) {
+//        handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
+//    }
+//    return handle;
+//}
 
 /*----------------------------------------------------------------------- 
 //   Create a flat copy of eq. 

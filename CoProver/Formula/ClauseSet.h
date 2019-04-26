@@ -18,15 +18,13 @@
 
 class ClauseSet {
 private:
-    long members; /* 该子句中有多少子句,注意,删除的子句会放入claLst 末尾,所以 mmembers!= claLst.sizes */
-    long litNum; /* And how many literals? */
-    SysDate date; /* Age of the clause set, used for optimizing rewriting. 
-                * The special date SysCreationDate() is used to indicate 
-                * ignoring of dates when checking for irreducability. */
+    uint32_t members; /* 该子句中有多少子句,注意,删除的子句会放入claLst 末尾,所以 mmembers!= claLst.sizes */
+    uint32_t litNum; /* And how many literals? */
+   // SysDate date; /* Age of the clause set, used for optimizing rewriting. The special date SysCreationDate() is used to indicate  ignoring of dates when checking for irreducability. */
     list<Clause*> claLst; /* The clauses */
     string identifier;
     //子句评估相关
-    vector<int>eval_indices; // = PDArrayAlloc(4, 4);
+   // vector<int>eval_indices; // = PDArrayAlloc(4, 4);
     int eval_no;
 public:
     /*---------------------------------------------------------------------*/

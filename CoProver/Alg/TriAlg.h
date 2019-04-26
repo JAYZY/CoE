@@ -81,15 +81,19 @@ public:
     //
 
     inline void clearVect() {
-        vector<ALit_p>().swap(vALitTri);
-        vALitTri.reserve(32);
-        vector<RLit_p>().swap(vReduceLit);
-        vReduceLit.reserve(64);
-        vector<Literal*>().swap(vNewR);
-        vNewR.reserve(32);
+        vALitTri.clear();
+        vALitTri.reserve(16);
+
+        vReduceLit.clear();
+        vReduceLit.reserve(16);
+
+        vNewR.clear();
+        vNewR.reserve(16);
+
         setRedundClaId.clear();
         setUsedCla.clear();
-        vector<Clause*>().swap(this->newClas);
+        
+        this->newClas.clear();        
         this->newClas.reserve(2);
 
     }
@@ -116,7 +120,7 @@ public:
     ResRule RuleCheckLastHope(Literal*actLit);
 
     //生成一个新的子句时,遍历主界线对剩余文字进行合一下拉
-   int TriMguReduct(); 
+    int TriMguReduct();
 
     //清楚三角形的所有变元绑定
     void ClearResVTBinding();

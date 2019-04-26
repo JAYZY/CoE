@@ -77,6 +77,13 @@ public:
     static uint32_t HoldLits_NUM_LIMIT;
     
    static uint32_t R_MAX_FUNCLAYER;//最大函数嵌套层限制-不超过256
+   
+   
+   
+   // <editor-fold defaultstate="collapsed" desc="运行时的状态">
+   static uint16_t S_OverMaxLitLimit_Num;
+    // </editor-fold>
+
 
 };
 

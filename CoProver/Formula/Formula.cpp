@@ -26,9 +26,9 @@ Formula::Formula() {
     this->in = Env::getIn();
     this->origalClaSet = new ClauseSet();
     this->workClaSet = new ClauseSet();
-    this->uEquLitNum = 0;
-    this->uNonHornClaNum = 0;
     this->allTermIndex = nullptr;
+    iniFolInfo();
+
 
 }
 
@@ -40,7 +40,6 @@ Formula::~Formula() {
     DelPtr(this->allTermIndex);
     DelPtr(this->origalClaSet);
     DelPtr(this->workClaSet);
-
 }
 
 void Formula::generateFormula(Scanner* in) {
@@ -84,9 +83,8 @@ RESULT Formula::preProcess() {
     /*Statistics--    */
     uint16_t uFSNum = 0; //向前归入冗余子句个数
     uint16_t uTautologyNum = 0; //恒真子句个数
-    this->uEquLitNum = 0; //等词文字个数
-    this->uNonHornClaNum = 0; //非Horn 子句个数(最多一个非负文字)
-    // ClauseSet* pClaSet = new ClauseSet();
+
+    iniFolInfo();
 
     double startTime = CPUTime();
     /*1. 对原始子句集排序 */
@@ -102,6 +100,7 @@ RESULT Formula::preProcess() {
         if (Simplification::isTautology(*claIt)) {
             ++uTautologyNum;
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
+            (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
         }
 
@@ -109,10 +108,13 @@ RESULT Formula::preProcess() {
         TermIndexing* indexing = ((*claIt)->LitsNumber() == 1) ? this->unitClaIndex : this->allTermIndex;
         if (Simplification::ForwardSubsumption((*claIt), indexing)) {
             ++uFSNum;
+            fprintf(stdout, "C%ud is deled \n", (*claIt)->ident);
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
+            (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
-        }
-
+        }        
+        this->uMaxLitNum=MAX(this->uMaxLitNum,(*claIt)->LitsNumber() ) ;
+      //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
         insertNewCla(*claIt);
 
@@ -128,7 +130,6 @@ RESULT Formula::preProcess() {
 
                     if (unify.literalMgu(checkLit, candLit, subst)) //找到unsat
                     {
-
                         string litInfo = "";
                         checkLit->getLitInfo(litInfo);
                         checkLit->getStrOfEqnTSTP(litInfo);
@@ -144,16 +145,19 @@ RESULT Formula::preProcess() {
                         return RESULT::UNSAT;
                     }
                     subst->Clear();
-
                 }
             }
         }
     }
+    
+    StrategyParam::R_MAX_LITNUM=1;
+    StrategyParam::HoldLits_NUM_LIMIT=3;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
-    fprintf(stdout, "%12s", "# =====Preprocess Information===========#\n");
-    fprintf(stdout, "# ForwardSubsump          %12u #\n", uFSNum);
+    fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");    
     this->printOrigalClasInfo(stdout);
+    fprintf(stdout, "# 归入冗余删除子句数   %18u #\n", uFSNum);    
+    fprintf(stdout, "# 恒真冗余删除子句数   %18u #\n", uTautologyNum);    
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
@@ -450,12 +454,12 @@ bool Formula::leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd
     return false;
 }
 
-bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla,Clause* pasCla) {
+bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla, Clause* pasCla) {
     //-----------  遍历被动子句文字集中保留的文字 ------
     set<Clause*> checkedClas; //存储已经检查过的子句
     for (size_t i = 0; i < arraySize; ++i) {
         Lit_p selConLit = arrayHoldLits[i];
-        //debug        cout << "选择文字:C" << selConLit->claPtr->ident << endl;        selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
+        //debug  cout << "unit 选择文字:C" << selConLit->claPtr->ident << endl;   selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
 
         //------- 查找索引树上的 备选文字节点 ------
         TermIndexing* indexing = (arraySize == 1) ? this->unitClaIndex : this->allTermIndex;
@@ -476,10 +480,10 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
             for (int ind = 0; ind < candVarLits->size(); ++ind) {
                 candVarLit = candVarLits->at(ind);
                 candVarCla = candVarLit->claPtr; //候选子句                                               
-                if (candVarCla == selConLit->claPtr || candVarCla==pasCla ||(setUsedCla.find(candVarCla) != setUsedCla.end() )) { //找到查询子句中的文字.包括自己
+                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla.find(candVarCla) != setUsedCla.end())) { //找到查询子句中的文字.包括自己
                     continue;
                 }
-                
+
                 assert(candVarCla);
                 uint16_t candLitNum = candVarCla->LitsNumber();
                 //单元子句,查询子句为冗余子句     //记录冗余
@@ -636,11 +640,13 @@ list<Clause*>::iterator Formula::getNextStartClause() {
 }
 
 void Formula::printOrigalClasInfo(FILE* out) {
-    fprintf(out, "# Total_Number_Formual    %12ld #\n", this->origalClaSet->Members());
-    fprintf(out, "# Goal_Clause_Number      %12ld #\n", this->goalClaset.size());
-    fprintf(out, "# Horn_Clase_Number       %12u #\n", uNonHornClaNum);
-    fprintf(out, "# Horn_Clase              %12s #\n", uNonHornClaNum > 0 ? "FALSE" : "TRUE");
-    fprintf(out, "# Has_Equality            %12s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
+    fprintf(out, "# 子句总个数          %18ld #\n", this->origalClaSet->Members());
+    fprintf(out, "# 最大文字数          %18u #\n", this->uMaxLitNum);
+    fprintf(out, "# 最大项嵌套          %18u #\n", this->uMaxFuncLayer);
+    fprintf(out, "# 目标子句个数        %18zu #\n", this->goalClaset.size());
+    fprintf(out, "# Horn子句个数        %18u #\n", uNonHornClaNum);
+    fprintf(out, "# 是否为Horn子句集    %18s #\n", uNonHornClaNum > 0 ? "FALSE" : "TRUE");
+    fprintf(out, "# 是否包含等词        %18s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
 }
 
 

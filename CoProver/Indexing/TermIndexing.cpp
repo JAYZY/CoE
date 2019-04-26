@@ -187,7 +187,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
 
 TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsumptype) {
 
-   
+
     backpoint.clear();
     TermIndNode* rootNode = getRoot(lit);
     TermIndNode* tIndnode = new TermIndNode(lit->lterm);
@@ -445,7 +445,7 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
     }
     assert(!(*parentNodeIt)->leafs.empty());
-  
+
     return (*parentNodeIt);
 
 }
@@ -493,10 +493,12 @@ void DiscrimationIndexing::varAddBinding(FunCode idx, TermCell* t) {
 };
 
 void DiscrimationIndexing::varClearBingding() {
-    for(uint32_t ind :stVarChId){
-        varBinding[ind]=nullptr;
+    if (!varBinding.empty()) {
+        for (uint32_t ind : stVarChId) {
+            varBinding[ind] = nullptr;
+        }
     }
-    vector<uint32_t>().swap(stVarChId); 
+    vector<uint32_t>().swap(stVarChId);
     varBinding.clear(); //注意并没有释放空间.
 }
 // </editor-fold>
@@ -653,8 +655,8 @@ void DiscrimationIndexing::ClearVarLst() {
     }
 
     vector<BackPoint*>().swap(backpoint);
-    varClearBingding() ;
-    
+    varClearBingding();
+
     //this->subst->Clear();
-   // varBinding.clear(); //注意并没有释放空间.
+    // varBinding.clear(); //注意并没有释放空间.
 }

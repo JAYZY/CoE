@@ -97,9 +97,9 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                 ++Env::backword_CMP_counter;
                 //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 // if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
-                if (ClauseSubsumeArrayLit(candVarCla, genCla)) {
+                if (ClauseSubsumeArrayLit(genCla, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    fprintf(stdout, "\n# [FS]C%u invalid by c%d\n", selConLit->claPtr->ident, candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
                     FileOp::getInstance()->outRun(tmpstr);
                     FileOp::getInstance()->outLog("[FS]c" + to_string(genCla->GetClaId()) + " by c" + to_string(candVarCla->GetClaId()) + "\n");
@@ -340,12 +340,10 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing,
     Clause* candCla = nullptr;
     TermIndNode* candTermNode = indexing->Subsumption(selLit, SubsumpType::Backword);
     if (candTermNode == nullptr) {
-
         indexing->ClearVarLst();
 
 #ifdef OUTINFO
         cout << "比较次数:" << tmpTest << endl;
-
 #endif
         return false;
     }
@@ -355,15 +353,12 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing,
     Subst* subst = new Subst();
     set<int>cmpedCla;
     while (true) {
-
         for (int ind = 0; ind < candLits->size(); ++ind) {
             int substPos = subst->Size();
             candLit = candLits->at(ind);
             candCla = candLit->claPtr; //找到第一个文字所匹配的子句 
-
             if (cmpedCla.find(candCla->GetClaId()) != cmpedCla.end())
                 continue;
-
             cmpedCla.insert(candCla->GetClaId());
             if (outDelClas.find(candCla) == outDelClas.end() && candCla->LitsNumber() >= genCla->LitsNumber()) {
                 ++Env::backword_CMP_counter;
@@ -382,8 +377,7 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing,
             subst->SubstBacktrackToPos(substPos);
         }
         candTermNode = indexing->NextBackSubsump();
-
-        if (candTermNode == nullptr) {//no backsump,rollback;
+        if (candTermNode == nullptr) {
             break;
         }
         candLits = &(candTermNode->leafs);
@@ -467,45 +461,78 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
 bool Simplification::ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsumerVarcla) {
     assert(subsumConCla);
     assert(subsumerVarcla);
-   
-
     if (subsumConCla->LitsNumber() < subsumerVarcla->LitsNumber())
         return false;
     Unify unify;
     Subst subst;
-    uint32_t iniSubstPos = subst.Size();
-    for (Literal* varEqn = subsumerVarcla->literals; varEqn; varEqn = varEqn->next) {
-        bool res = false;
-        //debug              cout << "varEqn";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;   
+    vector<Lit_p> stRollBack; //定义rollback堆栈
+    vector<uint32_t> stSubstPos;
+    Literal* varEqn = subsumerVarcla->literals;
 
-        for (Literal* conEqn = subsumConCla->literals; conEqn; conEqn = conEqn->next) {
-            //debug                   cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+
+    Literal* conEqn = subsumConCla->literals;
+    bool isMatch = false;
+    while (true) {
+
+        isMatch = false;
+        while (conEqn) {
+            isMatch = true;
+            //debug   cout << "\nvarEqn ";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;        
+
+            //debug  cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
-                continue;
+                isMatch = false;
+
             uint32_t substPos = subst.Size();
-            if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst)) {
-                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
-                    res = true;
-                    break; //该文字检查通过,检查下一个
+            if (isMatch) {
+                isMatch = false;
+                if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
+                    isMatch = true;
                 }
             }
-            subst.SubstBacktrackToPos(substPos);
-            /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
-            if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) &&
-                    unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
-                res = true;
-                break;
+            if (!isMatch) {
+                //匹配失败
+                subst.SubstBacktrackToPos(substPos); //还原替换
+                /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
+                if (varEqn->EqnIsEquLit() && unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst)
+                        && unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
+                    isMatch = true;
+                }
             }
-            subst.SubstBacktrackToPos(substPos);
+            //varEqn匹配成功!
+            if (isMatch) {
+                stRollBack.push_back(varEqn);
+                stRollBack.push_back(conEqn->next);
+                stSubstPos.push_back(substPos);
+                //匹配成功,匹配下一个varEqn | 若没有下一个VarEqn说明全部匹配成功
+                varEqn = varEqn->next;
+                if (varEqn == nullptr) {
+                    break;
+                }
+                conEqn = subsumConCla->literals;
+            }//匹配失败
+            else {
+                subst.SubstBacktrackToPos(substPos); //还原替换
+                conEqn = conEqn->next; //varEqn匹配下一个 conEqn 文字
+            }
         }
-        if (!res) {
-            //失败还原所有的替换改变--只要有一个文字 没有找到匹配的文字 则匹配失败
-            subst.SubstBacktrackToPos(iniSubstPos);
-            return false;
+        //全部匹配成功
+        if (isMatch) {
+            break;
         }
+        //当前VarEqn没有查找到匹配conEqn回退
+        if (stRollBack.empty()) {
+            break; //没有回退项
+        }
+        conEqn = stRollBack.back();
+        stRollBack.pop_back();
+        varEqn = stRollBack.back();
+        stRollBack.pop_back();
+        subst.SubstBacktrackToPos(stSubstPos.back());
+        stSubstPos.pop_back();
     }
-    subst.Clear();
-    return true;
+    subst.Clear(); //还原所有变元替换项
+    return isMatch;
 }
 
 bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLitsSize, Clause* varCal) {
@@ -514,34 +541,37 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
         return false;
     Unify unify;
     Subst subst;
-     vector<Lit_p> stRollBack; //定义rollback堆栈
+    vector<Lit_p> stRollBack; //定义rollback堆栈
     vector<uint32_t> stSubstPos;
     Literal* varEqn = varCal->literals;
 
     uint32_t ind = 0;
-  
-    bool isMatch = false;
-    while (true) {  
-        Literal* conEqn = arrayConLit[ind];
-        isMatch=false;
-        while (ind < conLitsSize) {
-            isMatch = true;
-            //debug    cout << "varEqn";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;        
 
-            //debug  cout << "conEqn";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+    bool isMatch = false;
+    while (true) {
+
+        isMatch = false;
+        while (ind < conLitsSize) {
+            Literal* conEqn = arrayConLit[ind];
+            isMatch = true;
+            //debug      cout << "varEqn ";            varEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+
+            //debug      cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 isMatch = false;
 
             uint32_t substPos = subst.Size();
-            if (isMatch && unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
-                isMatch = true;
+            if (isMatch) {
+                isMatch = false;
+                if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
+                    isMatch = true;
+                }
             }
-            if (!isMatch) {
+            if (!isMatch && varEqn->EqnIsEquLit()) {
                 //匹配失败
                 subst.SubstBacktrackToPos(substPos); //还原替换
                 /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
-                if (varEqn->EqnIsEquLit() && unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst)
-                        && unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
+                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
                     isMatch = true;
                 }
             }
@@ -567,16 +597,18 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
             break;
         }
         //当前VarEqn没有查找到匹配conEqn回退
-        if (stRollBack.empty()) {            
-            break;//没有回退项
+        if (stRollBack.empty()) {
+            break; //没有回退项
         }
-        
-        varEqn=stRollBack.back();stRollBack.pop_back();
-        subst.SubstBacktrackToPos(stSubstPos.back());stSubstPos.pop_back();
-        ind=stSubstPos.back();stSubstPos.pop_back();
 
+        varEqn = stRollBack.back();
+        stRollBack.pop_back();
+        subst.SubstBacktrackToPos(stSubstPos.back());
+        stSubstPos.pop_back();
+        ind = stSubstPos.back();
+        stSubstPos.pop_back();
     }
-    subst.Clear();//还原所有变元替换项
+    subst.Clear(); //还原所有变元替换项
     return isMatch;
 
 }

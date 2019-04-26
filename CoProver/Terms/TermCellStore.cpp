@@ -49,7 +49,7 @@ TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
     TermCell* ret = TermTree::TermTreeInsert(&(store[ TermCellHash(term) ]), term);
     if (!ret) {
         entries++;
-        argCount += term->arity;
+        argCount += term->arity;       
     }
     return ret;
 }
