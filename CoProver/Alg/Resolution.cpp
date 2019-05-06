@@ -65,37 +65,37 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         }
         res = triAlg.GenreateTriLastHope(*itSelCla);
 
-        // ======  子句起步没有构建任何三角形
+        // ======  子句起步没有构建任何三角形 ======
         if (res == RESULT::NOMGU) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-
-                if (++modifyLitNumCount > 3)
+               if (++modifyLitNumCount > 3)
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
                 ++StrategyParam::R_MAX_LITNUM;
                 StrategyParam::HoldLits_NUM_LIMIT += 2;
                 FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::R_MAX_LITNUM) + "\n");
+                notStartClaSet.clear();
             }
 
             fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
             (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
             if ((++itSelCla) == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
+            triAlg.subst->Clear();
+            triAlg.disposeRNUnitCla();
             continue;
         }
-        if (0==StrategyParam::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
-            StrategyParam::S_OverMaxLitLimit_Num = 0;
+        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
+            Env::S_OverMaxLitLimit_Num = 0;
             //修改文字个数限制          
             ++StrategyParam::HoldLits_NUM_LIMIT;
             FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
         }
         //记录三角形构建次数
         ++iterNum;
-
-
         //输出到.r/.i文件
         triAlg.outTri();
         triAlg.outR(nullptr);
@@ -126,6 +126,10 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 }
 
             }
+            if (newCla->LitsNumber() > 2) {
+                DelPtr(newCla);
+                continue;
+            }
             int pri = 0;
             for_each(triAlg.vNewR.begin(), triAlg.vNewR.end(), [&pri](Literal * lit) {
                 pri += lit->claPtr->priority;
@@ -137,6 +141,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             newCla->ClausePrint(stdout, true);
             //输出新子句到文件
             triAlg.outNewClaInfo(newCla, InfereType::SCS);
+
         }
 
         //改变参与归结的子句优先级,减1;
@@ -144,6 +149,8 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             --cla->priority;
         });
         itSelCla = fol->getNextStartClause();
+        triAlg.subst->Clear();
+        triAlg.disposeRNUnitCla();
     }
 
 }

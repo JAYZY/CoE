@@ -9,25 +9,31 @@
             <url>Alg/TriAlg.cpp</url>
             <bookmark id="1">
                 <name/>
-                <line>1091</line>
+                <line>0</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/main.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/CLAUSE/Clause.cpp</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/HEURISTICS/Options.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/INOUT/FileOp.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.cpp</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Terms/TermCellStore.h</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/CLAUSE/Literal.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/main.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Global/IncDefine.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Global/Environment.h</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Global/Environment.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/Resolution.h</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/CLAUSE/Literal.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/INOUT/FileOp.cpp</file>
+            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Global/IncDefine.h</file>
             <file>file:/home/icdc/Documents/myProg/CoE/CoProver/CLAUSE/Clause.h</file>
-            <file>file:/home/icdc/Documents/myProg/CoE/CoProver/Terms/TermBank.h</file>
         </group>
     </open-files>
 </project-private>

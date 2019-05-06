@@ -66,7 +66,7 @@ public:
     set<uint32_t> setRedundClaId; //记录导致冗余的子句，在路径回退的时候不在与之归结
     set<Cla_p> setUsedCla; //已经归结过的子句，不再比较；
 
-    //uint32_t uReduceNum;
+    vector<Clause*> delUnitCla; //存储需要最后清理的单元子句副本
     Formula* fol;
 
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
@@ -80,22 +80,33 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    inline void clearVect() {
-        vALitTri.clear();
-        vALitTri.reserve(16);
+    inline void iniVect() {
+        this->vALitTri.clear();
+        this->vALitTri.reserve(16);
 
-        vReduceLit.clear();
-        vReduceLit.reserve(16);
+        this->vReduceLit.clear();
+        this->vReduceLit.reserve(16);
 
-        vNewR.clear();
-        vNewR.reserve(16);
+        this->vNewR.clear();
+        this->vNewR.reserve(16);
 
-        setRedundClaId.clear();
-        setUsedCla.clear();
+        this->setRedundClaId.clear();
+        this->setUsedCla.clear();
         
         this->newClas.clear();        
         this->newClas.reserve(2);
 
+        assert(this->delUnitCla.empty());
+        this->delUnitCla.reserve(4);
+
+    }
+
+    //销毁三角形过程中所有生成的单元子句副本(有变元的)
+    inline void disposeRNUnitCla() {
+        for (Clause* cla : delUnitCla) {
+            DelPtr(cla);
+        }
+        delUnitCla.clear();
     }
 
     inline uint32_t getRNum() {
@@ -105,8 +116,7 @@ public:
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
     RESULT GenreateTriLastHope(Clause* givenCla);
-    RESULT GenerateTriByRecodePath(Clause* givenCla);
-    RESULT GenerateOrigalTriByRecodePath(Clause* givenCla);
+     RESULT GenerateOrigalTriByRecodePath(Clause* givenCla);
 
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 

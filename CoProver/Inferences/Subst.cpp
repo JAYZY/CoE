@@ -47,9 +47,9 @@ bool Subst::SubstBacktrackSingle() {
     if (vecSubst.empty()) {
         return false;
     }
-    handle = vecSubst.back();
+    handle = vecSubst.back();  
+    handle->binding = NULL;  
     vecSubst.pop_back();
-    handle->binding = NULL;
     return true;
 }
 

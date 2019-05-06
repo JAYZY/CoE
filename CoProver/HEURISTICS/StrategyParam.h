@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include "Global/IncDefine.h"
+
 enum class POSLIT_STEADY : uint8_t {
     NumASC = 1, //子句文字数升序 由少到多
     NumDesc, //子句文字数降序 有多到少
@@ -47,14 +48,26 @@ public:
     /*                          Static  Param                              */
     /*---------------------------------------------------------------------*/
     //
-    static uint8_t CLA_NOMGU_WIGHT;//子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
+    // <editor-fold defaultstate="collapsed" desc="权重相关">
+    static uint8_t CLA_NOMGU_WIGHT; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
     static uint8_t CLA_REDUNDANCY_WIGHT; //子句归结中发现冗余,改变的优先级 
-    static uint8_t CLA_OVERLIMIT_WIGHT;//子句超过限制,改变的优先级
-    
+    static uint8_t CLA_OVERLIMIT_WIGHT; //子句超过限制,改变的优先级
     static uint8_t LIT_REDUNDANCY_WIGHT; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
-    static uint8_t LIT_OVERLIMIT_WIGHT;//文字超过限制,改变的优先级
-    
-    static string tptpFileName;
+    static uint8_t LIT_OVERLIMIT_WIGHT; //文字超过限制,改变的优先级
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="启发式策略">
+    static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
+    static POSLIT_STEADY SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
+    static ALimit ALIT_LIMIT; //主界线文字限制
+    //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
+    static int32_t IterCount_LIMIT; //create triangle count limit
+    //literals number of new clause limit. =0 noLimit  
+    static uint32_t R_MAX_LITNUM; //分离式R中最大文字数
+    //left literals number during the process limit. =0 noLimit
+    static uint32_t HoldLits_NUM_LIMIT;
+    static uint32_t R_MAX_FUNCLAYER; //最大函数嵌套层限制-不超过256
+    // </editor-fold>
+
     //新的启发式策略
     // static INT32 SEL_STARTLit_STRATEGY; //起步文字选择策略
     // static INT32 SEL_STARTLIT_NUMLIT; //起步文字文字数策略
@@ -63,26 +76,13 @@ public:
     // static INT32 SEL_ACTLIT_STRATEGY; //主动归结文字选择策略
     // sstatic INT32 SEL_ACTLIT_STEADY; //主动归结文字文字数策略
     //static INT32 SEL_POSLIT_STRATEGY; //被动归结文字选择策略
+
     static bool ADD_EQULITY; //whether add equlity axiom
-    static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
-    static POSLIT_STEADY SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
-    static ALimit ALIT_LIMIT; //主界线文字限制
-    //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
-    static int32_t IterCount_LIMIT; //create triangle count limit
+    static bool ADD_CR;
+    static bool SameBLit; //主界线文字相同
 
-    //literals number of new clause limit. =0 noLimit  
-    static uint32_t R_MAX_LITNUM; //分离式R中最大文字数
 
-    //left literals number during the process limit. =0 noLimit
-    static uint32_t HoldLits_NUM_LIMIT;
-    
-   static uint32_t R_MAX_FUNCLAYER;//最大函数嵌套层限制-不超过256
-   
-   
-   
-   // <editor-fold defaultstate="collapsed" desc="运行时的状态">
-   static uint16_t S_OverMaxLitLimit_Num;
-    // </editor-fold>
+ 
 
 
 };

@@ -61,6 +61,9 @@ enum class CompareResult : uint8_t {
     toNotgteq, /* For caching partial LPO results */
     toNotleeq
 };
+
+
+
 /*---------------------------------------------------------------------*/
 /*                       【全局返回类型】相关枚举                      */
 /*---------------------------------------------------------------------*/
@@ -74,7 +77,7 @@ enum class RESULT {
     
     NOMGU/*没有合一*/, SUCCES, RollBack, FAIL
 };
-
+ 
 /*---------------------------------------------------------------------*/
 /*                          宏定义-两个函数指针                           */
 /*---------------------------------------------------------------------*/
@@ -249,41 +252,6 @@ static inline double GetTotalCPUTime(void) {
     return res;
 }
 
-/*--------------------------------------------------------------------------
-/* Print resource usage to given stream.
-/-------------------------------------------------------------------------*/
-static inline void PrintRusage(FILE* out) {
-    struct rusage usage, cusage;
-
-    if (getrusage(RUSAGE_SELF, &usage)) {
-        TmpErrno = errno;
-        Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
-    }
-    if (getrusage(RUSAGE_CHILDREN, &cusage)) {
-        TmpErrno = errno;
-        Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
-    }
-    usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
-    usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
-    usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
-    usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
-
-    fprintf(out,
-            "\n# -------------------------------------------------\n");
-    fprintf(out,
-            "# User time                : %.3f s\n",
-            (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
-    fprintf(out,
-            "# System time              : %.3f s\n",
-            (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
-    fprintf(out,
-            "# Total time               : %.3f s\n",
-            (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
-            ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
-    fprintf(out,
-            "# Maximum resident set size: %ld pages\n",
-            usage.ru_maxrss);
-}
 
 
 

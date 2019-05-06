@@ -40,6 +40,7 @@ private:
      * 2.信息输出目录为: /output/判断文件的名称(不带后缀名) 
      * 3.*.info 为整个子句集以及演绎过程中生成的新子句信息.
      * 4.*.r为演绎过程中的过程信息.
+     * 5.*.g为全局信息-- A.测试使用,B.所有测试例特征.C.测试结果
     /-------------------------------------------------------------------------*/
     static string homePath; //固定的Home 路径
 
@@ -50,6 +51,8 @@ private:
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
+
+    FILE* fGlobalInfo; //.g 文件,全局信息输出
     string outName; //输出名称
     string fileFullName; //文件完整路径  
     ofstream* OutFile;
@@ -63,7 +66,7 @@ public:
     /*---------------------------------------------------------------------*/
     //Singleton
 
-    static FileOp * getInstance(){ //2.提供全局访问点    
+    static FileOp * getInstance() { //2.提供全局访问点    
         static FileOp m_singletonConfig; //3.c++11保证了多线程安全，程序退出时，释放资源
         return &m_singletonConfig;
     }
@@ -102,16 +105,22 @@ public:
      */
     inline void outInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fInfo);
-         fflush(fInfo); 
+        fflush(fInfo);
     }
-    inline void outLog(const string&msg){
+
+    inline void outLog(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fLog);
-         fflush(fLog); 
+        fflush(fLog);
     }
-    inline void outRun(const string&msg){
+
+    inline void outRun(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fRun);
-         fflush(fRun); 
-       
+        fflush(fRun);
+    }
+
+    inline void outGlobalInfo(const string&msg) {
+        fwrite(msg.c_str(), 1, msg.length(), fGlobalInfo);
+        fflush(fGlobalInfo);
     }
 
     /* 写入缓冲区中的内容 */

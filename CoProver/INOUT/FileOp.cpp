@@ -28,8 +28,8 @@ map<string, FileOp*> FileOp::lsOut;
 
 /*---------------------------------------------------------------------*/
 FileOp::FileOp() {
-    tptpFileNameNoExt = this->getFileNameNoExt(StrategyParam::tptpFileName);
-    setWorkDirAndCreateFile(homePath + "/Desktop");
+    tptpFileNameNoExt = this->getFileNameNoExt(Env::tptpFileName);
+    setWorkDirAndCreateFile(homePath + "/Desktop/");
 
 }
 
@@ -50,8 +50,8 @@ void FileOp::CloseAll() {
         fclose(fInfo);
     if (fRun)
         fclose(fRun);
-    if(fLog)
-         fclose(fLog);
+    if (fLog)
+        fclose(fLog);
 }
 
 /**
@@ -60,7 +60,7 @@ void FileOp::CloseAll() {
  * @return 
  */
 bool FileOp::setWorkDirAndCreateFile(string strDir) {
-    workDir = strDir + "/output/";
+    workDir = strDir + "output/";
     if (tptpFileNameNoExt == "") {
         Out::SysError("Not get tptpfile %s", ErrorCodes::FILE_ERROR, "No File Error!");
         return false;
@@ -100,6 +100,16 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".log");
         return false;
     }
+
+
+    if (fGlobalInfo)
+        fclose(fGlobalInfo);
+    sFileName = workDir + "proofRes.g";
+    if ((fGlobalInfo = fopen(sFileName.c_str(), "ab")) == nullptr) { //第一次以追加的方式新建一个文件,并写入该判定文件的名称
+        Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".g");
+        return false;
+    }
+    outGlobalInfo("\n"+getFileName(Env::tptpFileName)+" ");
     return true;
 }
 
@@ -173,7 +183,7 @@ int FileOp::rmDir(string dirPath) {
 //获取带后缀的文件名
 
 string FileOp::getFileName(string &fileFullName) {
-    size_t pos = fileFullName.find_last_of('\\');
+    size_t pos = fileFullName.find_last_of('/');
     if (pos == -1)
         return fileFullName;
     else

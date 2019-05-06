@@ -47,15 +47,18 @@ int main(int argc, char** argv) {
 int main(int argc, char** argv) {
 
     //命令行解析
-    StrategyParam::tptpFileName = argv[1];
+    Env::tptpFileName = argv[1];
+
     //全局扫描器Scanner读取文件 argv[1]
     Env::IniScanner(nullptr, argv[1], true, nullptr);
 
     //生成公式集\子句-----------------
     Formula* fol = new Formula();
     fol->generateFormula(Env::getIn());
-
     PaseTime("GenFormula_");
+
+
+
     //添加等词公理
     if (StrategyParam::ADD_EQULITY) {
         fol->GenerateEqulitAxiom();
@@ -66,14 +69,15 @@ int main(int argc, char** argv) {
 
     //预处理操作---------------------       
     RESULT res = fol->preProcess();
-       //输出预处理后子句 
+    //输出预处理后子句 
     //fol->printProcessedClaSet(stdout);
-    if (res == RESULT::SUCCES) {        
+    if (res == RESULT::SUCCES) {
         //演绎推理
         Resolution resolution;
         res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
     }
 
+    FileOp::getInstance()->outGlobalInfo(" #Res:" + (100 == (int) res) ? "UNSAT" : "UNKNOWN");
 
     //fol->printClas(stdout);
     //Env::getGTbank()->GTPrintAllTerm(stdout);
@@ -84,7 +88,9 @@ int main(int argc, char** argv) {
     //开始浸透算法
     //proofCtr->Saturate();
     //PaseTime("Saturate_", initial_time);
-    PrintRusage(stdout);
+    Env::PrintRusage(stdout);
+
+    Env::PrintRunInfo(stdout);
     return (int) res;
 }
 #endif

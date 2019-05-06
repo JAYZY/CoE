@@ -70,7 +70,7 @@ Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     this->rterm = rt;
 }
 
-Literal::Literal(Term_p lt, Term_p rt, bool positive) {
+Literal::Literal(Term_p lt, Term_p rt, bool positive):Literal() {
     EqnAlloc(lt, rt, positive);
 }
 

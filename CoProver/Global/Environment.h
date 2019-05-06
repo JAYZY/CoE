@@ -19,11 +19,18 @@ private:
     static GTermBank_p GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
     static Sig_p sig; // 全局唯一一个sig 存储项相关的符号 只存储不删除
 public:
+    static string tptpFileName; //文件名
+
     static uint32_t global_formula_counter;
     static uint32_t global_clause_counter;
     static uint32_t backword_CMP_counter; //backword 比较次数
     static uint32_t backword_Finded_counter; //backword 找到冗余次数
- static uint32_t forward_Finded_counter; //backword 找到冗余次数
+    static uint32_t forward_Finded_counter; //backword 找到冗余次数
+
+    static uint16_t S_OverMaxLitLimit_Num;
+    static uint16_t S_BSame2R_Num;
+    static uint16_t S_ASame2A_Num; //主界线文字相同次数
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -42,6 +49,7 @@ public:
     /// \param name 读取文件名称
     /// \param ignore_comments 是否忽略注释,往往是/*开头
     /// \param default_dir 默认路径(一般为nullptr)
+
     static void IniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
         in = new Scanner(type, name, ignore_comments, default_dir);
         in->SetFormat(parseFormat);
@@ -69,6 +77,53 @@ public:
         return sig;
     }
 
+    /*--------------------------------------------------------------------------
+    /* Print resource usage to given stream.
+    /-------------------------------------------------------------------------*/
+    static inline void PrintRusage(FILE* out) {
+        struct rusage usage, cusage;
+
+        if (getrusage(RUSAGE_SELF, &usage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        if (getrusage(RUSAGE_CHILDREN, &cusage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
+        usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
+        usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
+        usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
+
+        fprintf(out,
+                "\n# -------------------------------------------------\n");
+        fprintf(out,
+                "# Maximum ClauseID         : %d \n", Env::global_clause_counter);
+        fprintf(out,
+                "# User time                : %.3f s\n",
+                (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
+        fprintf(out,
+                "# System time              : %.3f s\n",
+                (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
+        fprintf(out,
+                "# Total time               : %.3f s\n",
+                (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
+        fprintf(out,
+                "# Maximum resident set size: %ld pages\n",
+                usage.ru_maxrss);
+    }
+
+    static inline void PrintRunInfo(FILE* out) {
+        fprintf(out,
+                "# R与主界线相同次数        : %u \n", S_BSame2R_Num);
+        fprintf(out,
+                "# 主界线文字相同次数       : %u \n", S_ASame2A_Num);
+        fprintf(out,
+                "# R超过最大文字数限制      : %u \n", S_OverMaxLitLimit_Num);
+
+    }
 private:
 
 };

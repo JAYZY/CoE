@@ -152,14 +152,21 @@ public:
     inline bool IsOriented() {
         return EqnQueryProp(EqnProp::EPIsOriented);
     }
+    
+    //该文字是否为剩余文字
+    inline bool IsHold() {
+        return EqnQueryProp(EqnProp::EPIsHold);
+    }
 
     inline bool EqnIsEquLit() {
         return EqnQueryProp(EqnProp::EPIsEquLiteral);
     }
 
-    inline bool IsGround() {
+    inline bool IsGround(bool isReCla = false) {
         //return this->lterm->TBTermIsGround() && (this->rterm->TBTermIsGround());
-        return this->lterm->IsGround() && (this->rterm->IsGround());
+        if (isReCla)
+            return this->lterm->IsGround() && (this->rterm->IsGround());
+        return this->lterm->uVarCount + this->rterm->uVarCount == 0;
     }
 
     inline bool IsPropFalse() {
@@ -779,7 +786,7 @@ public:
     }
 
     inline uint16_t TermDepth() {
-        
+
         uint16_t termDepth = MAX(lterm->TermDepth(), rterm->TermDepth());
         return (this->EqnIsEquLit()) ? termDepth + 1 : termDepth;
 
