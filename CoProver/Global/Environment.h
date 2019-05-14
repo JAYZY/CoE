@@ -28,7 +28,7 @@ public:
     static uint32_t forward_Finded_counter; //backword 找到冗余次数
 
     static uint16_t S_OverMaxLitLimit_Num;
-    static uint16_t S_BSame2R_Num;
+    static uint16_t S_ASame2R_Num;
     static uint16_t S_ASame2A_Num; //主界线文字相同次数
 
 public:
@@ -117,7 +117,7 @@ public:
 
     static inline void PrintRunInfo(FILE* out) {
         fprintf(out,
-                "# R与主界线相同次数        : %u \n", S_BSame2R_Num);
+                "# R与主界线相同次数        : %u \n", S_ASame2R_Num);
         fprintf(out,
                 "# 主界线文字相同次数       : %u \n", S_ASame2A_Num);
         fprintf(out,

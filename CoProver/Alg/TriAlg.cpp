@@ -410,8 +410,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
     givenCla->getStrOfClause(strOut);
     strOut += "=========";
     FileOp::getInstance()->outRun(strOut);
-
-    cout << strOut << endl;
+    //Print-level      cout << strOut << endl;
 
     iniVect();
     subst->Clear();
@@ -512,7 +511,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
 
         }
         //上一轮的被动子句,新一轮的主动子句, 已经被主界线下拉过, 又被单元子句下拉 则判断剩余文字R是否超出限制,是否需要停止三角形演绎
-        if (0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
+        if (actCla!=givenCla && 0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
             // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
             // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
             actLit = nullptr;
@@ -541,11 +540,11 @@ RESULT TriAlg::GenreateTriLastHope(Clause* givenCla) {
 
                     //                    /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
                     uPasHoldLitNum = pasLit->claPtr->LitsNumber() - 1;
-                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
-                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-                        ++Env::S_OverMaxLitLimit_Num;
-                        continue;
-                    }
+//                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
+//                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+//                        ++Env::S_OverMaxLitLimit_Num;
+//                        continue;
+//                    }
                     /*同一子句中文字不进行比较;归结过的子句不在归结;文字条件限制*/
                     if (pasLit->claPtr == actLit->claPtr || setUsedCla.find(pasLit->claPtr) != setUsedCla.end())
                         continue;
@@ -1245,20 +1244,22 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
         int iALitInd = vALitTri.size() - 1;
         while (iALitInd > 0) {
             Lit_p aLitPtr = vALitTri[iALitInd]->alit;
-            int iALitIndB = iALitInd - 1;
+
             //------ 3.1 主界线(A)文字,相互之间不能相同/互补(说明当前的替换导致互补或相同)--[ 换被动文字 ]
-            while (iALitIndB >-1) {
-                Lit_p aLitB = vALitTri[iALitIndB]->alit;
-                if (aLitPtr->equalsStuct(aLitB)) {
-                    ++Env::S_ASame2A_Num;
-                    //输出全局信息
-                    FileOp::getInstance()->outGlobalInfo(" #A2A:" + to_string(Env::S_ASame2A_Num));
-                    // FileOp::getInstance()->outLog("S_ASame2A_Num" + to_string(Env::S_ASame2A_Num));
-                    return ResRule::ChgPasLit;
+            if (StrategyParam::IS_ALitNoEqual) {
+                int iALitIndB = iALitInd - 1;
+                while (iALitIndB >-1) {
+                    Lit_p aLitB = vALitTri[iALitIndB]->alit;
+                    if (aLitPtr->equalsStuct(aLitB)) {
+                        ++Env::S_ASame2A_Num;
+                        //输出全局信息
+                        FileOp::getInstance()->outGlobalInfo(" #A2A:" + to_string(Env::S_ASame2A_Num));
+                        // FileOp::getInstance()->outLog("S_ASame2A_Num" + to_string(Env::S_ASame2A_Num));
+                        return ResRule::ChgPasLit;
+                    }
+                    --iALitIndB;
                 }
-                --iALitIndB;
             }
-            //------ 3.2 与前面R中文字不能相同                [换被动文字] 
             {
                 iRIndA = 0;
                 while (iRIndA < vRSize) {
@@ -1283,11 +1284,11 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
                         break;
                     }
                     //3.2 与前面R中文字不能相同                [换被动文字]
-                    if (aLitPtr->isSameProps(vNewR[iRIndA])) {
+                    if ((StrategyParam::IS_ALitNoEqual)&&(aLitPtr->isSameProps(vNewR[iRIndA]))) {
                         if (aLitPtr->equalsStuct(vNewR[iRIndA])) {
-                            ++Env::S_BSame2R_Num;
+                            ++Env::S_ASame2R_Num;
                             //输出全局信息
-                            FileOp::getInstance()->outGlobalInfo(" #A2R:" + to_string(Env::S_BSame2R_Num));
+                            FileOp::getInstance()->outGlobalInfo(" #A2R:" + to_string(Env::S_ASame2R_Num));
                             return ResRule::ChgPasLit;
                         }
                     }
@@ -1317,7 +1318,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
 
     //B. 检查posCal剩余子句+ vNewR 是否是冗余的(FS:向前归入冗余/恒真)                
     if (fol->holdLitsIsRundacy(holdLit, holdLitSize, setUsedCla, pasCla)) {
-        fprintf(stdout, "检查:C%ud + C%ud 剩余文字发生冗余\n", actCla->ident, pasCla->ident);
+        //   fprintf(stdout, "检查:C%ud + C%ud 剩余文字发生冗余\n", actCla->ident, pasCla->ident);
         return ResRule::RSubsump; //子句冗余
     }
     //天啊~ 还不没完啊 ,快崩溃了~
@@ -1934,10 +1935,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t &uActHoldLitNum) {
                     ResRule res = RuleCheckUnitReduct(claPtr, arrayHoldLits);
                     if (ResRule::RULEOK != res) {//剩余文字冗余的(FS:向前归入冗余/恒真)    
 
-                        //debug                   
-                        cout << "检查posCal剩余子句: ";
-                        claPtr->ClauseTSTPPrint(stdout, true, false);
-                        cout << endl;
+                        //debug         cout << "检查posCal剩余子句: ";                        claPtr->ClauseTSTPPrint(stdout, true, false);                        cout << endl;
 
                         if (isRN) {
                             DelPtr(candLit); //删除子句

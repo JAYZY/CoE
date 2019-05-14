@@ -26,7 +26,7 @@ uint32_t Env::backword_Finded_counter = 0u;
 uint32_t Env::forward_Finded_counter = 0u;
 
 uint16_t Env::S_OverMaxLitLimit_Num = 0u;
-uint16_t Env::S_BSame2R_Num = 0u; //主界线文字与前面R文字相同次数
+uint16_t Env::S_ASame2R_Num = 0u; //主界线文字与前面R文字相同次数
 uint16_t Env::S_ASame2A_Num = 0u; //主界线文字相同次数
 
 

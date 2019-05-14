@@ -112,9 +112,9 @@ RESULT Formula::preProcess() {
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
             (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
-        }        
-        this->uMaxLitNum=MAX(this->uMaxLitNum,(*claIt)->LitsNumber() ) ;
-      //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
+        }
+        this->uMaxLitNum = MAX(this->uMaxLitNum, (*claIt)->LitsNumber());
+        //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
         insertNewCla(*claIt);
 
@@ -149,15 +149,15 @@ RESULT Formula::preProcess() {
             }
         }
     }
-    
-    StrategyParam::R_MAX_LITNUM=1;
-    StrategyParam::HoldLits_NUM_LIMIT=1;
+
+    StrategyParam::R_MAX_LITNUM = 1;
+    StrategyParam::HoldLits_NUM_LIMIT = 1;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
-    fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");    
+    fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
     this->printOrigalClasInfo(stdout);
-    fprintf(stdout, "# 归入冗余删除子句数   %18u #\n", uFSNum);    
-    fprintf(stdout, "# 恒真冗余删除子句数   %18u #\n", uTautologyNum);    
+    fprintf(stdout, "# 归入冗余删除子句数   %18u #\n", uFSNum);
+    fprintf(stdout, "# 恒真冗余删除子句数   %18u #\n", uTautologyNum);
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
@@ -334,7 +334,7 @@ bool Formula::leftLitsIsRundacy(Literal** pasClaHoldLits, uint16_t uPasHoldLitIn
                 if (isMatch) {
                     //说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
                     //记录冗余
-                    fprintf(stdout, "[FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    //Print-level   fprintf(stdout, "[FS]R invalid by c%d\n", candVarCla->GetClaId());
                     ++Env::backword_Finded_counter;
                     indexing->ClearVarLst(); //清除替换                    
                     return true;
@@ -413,9 +413,9 @@ bool Formula::leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd
                 uint16_t candLitNum = candVarCla->LitsNumber();
                 //单元子句,查询子句为冗余子句     //记录冗余
                 if (1 == candLitNum) {
-                    fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                   //Print-level fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
-                    FileOp::getInstance()->outRun(tmpstr);
+                    FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
 
                     indexing->ClearVarLst(); //清除替换
@@ -430,9 +430,9 @@ bool Formula::leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd
                 //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 if (Simplification::ClauseSubsumeArrayLit(vCmpLits, uLitNum, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    //Print-level fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
-                    FileOp::getInstance()->outRun(tmpstr);
+                    FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
 
                     indexing->ClearVarLst(); //清除替换
@@ -488,9 +488,9 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
                 uint16_t candLitNum = candVarCla->LitsNumber();
                 //单元子句,查询子句为冗余子句     //记录冗余
                 if (1 == candLitNum) {
-                    fprintf(stdout, "\n# [FS]R invalid by C%d\n", candVarCla->GetClaId());
+                  //Print-level  fprintf(stdout, "\n# [FS]R invalid by C%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by C" + to_string(candVarCla->GetClaId()) + "\n";
-                    FileOp::getInstance()->outRun(tmpstr);
+                    FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
                     indexing->ClearVarLst(); //清除替换
                     return true;
@@ -504,9 +504,9 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
                 //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 if (Simplification::ClauseSubsumeArrayLit(arrayHoldLits, arraySize, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                  //Print-level  fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
-                    FileOp::getInstance()->outRun(tmpstr);
+                    FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
                     indexing->ClearVarLst(); //清除替换
                     return true;

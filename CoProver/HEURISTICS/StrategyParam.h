@@ -79,7 +79,8 @@ public:
 
     static bool ADD_EQULITY; //whether add equlity axiom
     static bool ADD_CR;
-    static bool SameBLit; //主界线文字相同
+    static bool IS_ALitNoEqual; //主界线文字相同
+    static bool IS_ALitEqualR; //主界线文字与R文字相同
 
 
  

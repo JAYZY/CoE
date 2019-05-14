@@ -126,7 +126,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 }
 
             }
-            if (newCla->LitsNumber() > 2) {
+            if (newCla->LitsNumber() > 3) {
                 DelPtr(newCla);
                 continue;
             }
