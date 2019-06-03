@@ -137,7 +137,7 @@ TermIndNode* DiscrimationIndexing::InsertTerm(TermIndNode** treeNode, TermCell *
         ++constTermNum[term];
     vector<TermCell*> vecTerm;
 
-    vecTerm.reserve(MAX_SUBTERM_SIZE); //假设大部分项的符号个数不超过16个;
+    vecTerm.reserve(MAX_SUBTERM_SIZE); //假设项元个数不超过16个;
 
     TermCell *node;
 

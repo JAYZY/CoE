@@ -39,11 +39,10 @@ Resolution::~Resolution() {
 
 RESULT Resolution::BaseAlg(Formula* fol) {
     uint16_t modifyLitNumCount = 0; //修改文字长度次数
-    //定义起步子句
-    Clause* selCla = nullptr;
+
     map<Clause*, int16_t> claWight;
     //程序结束条件1、得到归结结论；2、用户设置的时间限制，3、内存限制。
-    list<Clause*>::iterator itSelCla = fol->getWorkClas()->begin();
+    list<Clause*>::iterator itSelCla = fol->getNextStartClause(); // fol->getWorkClas()->begin();
 
     uint32_t iterNum = 0;
     //不能作为起步子句集合--A.单元子句,B等词公理不能作为起步子句
@@ -51,26 +50,25 @@ RESULT Resolution::BaseAlg(Formula* fol) {
     RESULT res = RESULT::UNKNOWN;
     TriAlg triAlg(fol);
     while (StrategyParam::IterCount_LIMIT > iterNum) {
-        //        if (fol->getWorkClas()->size() < 2) {
-        //            return RESULT::SAT;
-        //        }
+        //        if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
         //构建三角形
-        if ((*itSelCla)->isDel()) {
+        if ((*itSelCla)->isDel()) {//|| (isBinaryCla&&(*itSelCla)->LitsNumber()<3)) {
             ++itSelCla;
             if (itSelCla == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
             ++iterNum;
             continue;
-
         }
-        res = triAlg.GenreateTriLastHope(*itSelCla);
+        //定义起步子句
+        Clause* selCla = *itSelCla;
+        res = triAlg.GenreateTriLastHope(selCla);
 
         // ======  子句起步没有构建任何三角形 ======
         if (res == RESULT::NOMGU) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-               if (++modifyLitNumCount > 3)
+                if (++modifyLitNumCount > 3)
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
@@ -124,7 +122,6 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                         FileOp::getInstance()->outRun(strLog);
                     }
                 }
-
             }
             if (newCla->LitsNumber() > 3) {
                 DelPtr(newCla);
@@ -135,7 +132,8 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 pri += lit->claPtr->priority;
             }
             );
-            /*改变R的权重	 R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+            /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+            //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
             newCla->priority = pri / (int) (triAlg.vNewR.size());
             fol->insertNewCla(newCla);
             newCla->ClausePrint(stdout, true);
@@ -144,54 +142,41 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
         }
 
-        //改变参与归结的子句优先级,减1;
-        for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
-            --cla->priority;
-        });
+        //改变参与归结的子句优先级,减1;  ---  理由:参与归结的子句 本质上是由 文字决定的,因此不需要改变参与子句的优先级,只需要改变起步子句的优先级即可
+        //        for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
+        //            --cla->priority;
+        //        });
+        //只修改起步子句的优先级
+        --(*itSelCla)->priority;
         itSelCla = fol->getNextStartClause();
         triAlg.subst->Clear();
         triAlg.disposeRNUnitCla();
     }
-
+    return RESULT::UNKNOWN;
 }
 
-RESULT Resolution::BaseAlgByRecodePath(Formula* fol) {
-    //从目标子句集中的子句起步，目前策略基于目标的归结
-    /*目标子句集, 既包含单元子句,和多文字子句.选取的方式,    
-     * 1.单元子句因为都放在 前面的,因此选择起步子句时候不选择单元目标子句起步.
-     * 2.若原始子句集中只有单元目标子句,则从单元子句集合中选择
-     */
+/// 只对二元子句进行单元子句处理合一
+/// \param fol
+/// \return 
+
+RESULT Resolution::BaseAlgByOnlyBinaryCla(Formula* fol) {
+
     //排序目标子句--文字由多到少.
-    std::sort(fol->goalClaset.begin(), fol->goalClaset.end(), [](Clause* c1, Clause * c2)->bool {
-        return c1->LitsNumber() > c2->LitsNumber();
-    });
-    //单元子句排序
-    fol->unitClasSort();
-
-    RESULT res = RESULT::UNKNOWN;
+    list<Clause*>* lsWorkClas = fol->getWorkClas();
+    //    std::sort(lsWorkClas->begin(), lsWorkClas->end(), [](Clause* c1, Clause * c2)->bool {
+    //        return c1->LitsNumber() > c2->LitsNumber();});
+    Subst_p subst = new Subst();
     TriAlg triAlg(fol);
-
-    list<Clause*>::iterator itSelCla = fol->getWorkClas()->begin();
-    uint32_t iterNum = 0;
-    while (StrategyParam::IterCount_LIMIT > iterNum && itSelCla != fol->getWorkClas()->end()) {
-        ++iterNum;
-        res = triAlg.GenerateOrigalTriByRecodePath((*itSelCla));
-        if (res == RESULT::UNSAT) {
-            return res;
+    for (Clause* cla : *lsWorkClas) {
+        if (cla->LitsNumber() > 2)
+            break;
+        if (triAlg.GenByBinaryCla(cla) == RESULT::UNSAT) {
+            fprintf(stdout, "Start From Clause %u,proof found!\n", cla->ident);
+            return RESULT::UNSAT;
         }
-        ++itSelCla;
+        //将二元子句 全部放到工作集的末尾,也就是说,后续操作 不用二元子句起步 ,需要改变权重
+        cla->priority = INT_MIN;
 
     }
-    //    for (int i = 0; i < fol->goalClaset.size(); i++) {
-    //        Clause* gCla = fol->goalClaset[i];
-    //        //  gCla->ClausePrint(stdout,true);
-    //       // res = triAlg.GenerateTriByRecodePath(gCla);
-    //        res=triAlg.GenerateOrigalTriByRecodePath(gCla);
-    //        if (res == RESULT::UNSAT) {
-    //            return res;
-    //        }
-    //    }
-
-    cout << (int) res << endl;
-    return res;
+    return RESULT::UNKNOWN;
 }

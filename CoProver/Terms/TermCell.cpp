@@ -130,6 +130,8 @@ TermCell* TermCell::TermParse(Scanner* in, TermBank* tb) {
         //DStrReleaseRef(source_name);
         //DStrFree(id);
     }
+    assert(true);
+    return nullptr;
 }
 
 /***************************************************************************** 

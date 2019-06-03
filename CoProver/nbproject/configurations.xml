@@ -20,6 +20,7 @@
     </logicalFolder>
     <logicalFolder name="f1" displayName="Doc" projectFiles="true">
       <itemPath>Doc/myAlgorithm.puml</itemPath>
+      <itemPath>Doc/record.txt</itemPath>
       <itemPath>Doc/test.puml</itemPath>
       <itemPath>Doc/问题记录</itemPath>
     </logicalFolder>
@@ -89,6 +90,8 @@
     <logicalFolder name="PROOF" displayName="PROOF" projectFiles="true">
       <itemPath>PROOF/ProofControl.cpp</itemPath>
       <itemPath>PROOF/ProofControl.h</itemPath>
+      <itemPath>PROOF/ProverResultAnalyse.cpp</itemPath>
+      <itemPath>PROOF/ProverResultAnalyse.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Prover" displayName="Prover" projectFiles="true">
       <itemPath>Prover/Prover.cpp</itemPath>
@@ -221,6 +224,8 @@
       </item>
       <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/record.txt" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
@@ -322,6 +327,10 @@
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -419,6 +428,8 @@
       </item>
       <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/record.txt" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
@@ -520,6 +531,10 @@
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>

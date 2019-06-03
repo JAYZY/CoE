@@ -63,6 +63,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Orderings/KBO.o \
 	${OBJECTDIR}/Orderings/Ordering.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
+	${OBJECTDIR}/PROOF/ProverResultAnalyse.o \
 	${OBJECTDIR}/Prover/Prover.o \
 	${OBJECTDIR}/Terms/GroundTermBank.o \
 	${OBJECTDIR}/Terms/Sigcell.o \
@@ -238,6 +239,11 @@ ${OBJECTDIR}/PROOF/ProofControl.o: PROOF/ProofControl.cpp
 	${MKDIR} -p ${OBJECTDIR}/PROOF
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PROOF/ProofControl.o PROOF/ProofControl.cpp
+
+${OBJECTDIR}/PROOF/ProverResultAnalyse.o: PROOF/ProverResultAnalyse.cpp
+	${MKDIR} -p ${OBJECTDIR}/PROOF
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PROOF/ProverResultAnalyse.o PROOF/ProverResultAnalyse.cpp
 
 ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${MKDIR} -p ${OBJECTDIR}/Prover

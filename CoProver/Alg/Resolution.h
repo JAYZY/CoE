@@ -20,7 +20,7 @@ public:
      * 基础三角形算法
      ****************************************************************************/
     RESULT BaseAlg(Formula *fol);
-    RESULT BaseAlgByRecodePath(Formula *fol);
+    RESULT BaseAlgByOnlyBinaryCla(Formula *fol);
 private:
 
 };

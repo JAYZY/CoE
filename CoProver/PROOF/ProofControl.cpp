@@ -101,6 +101,7 @@ uint32_t Processed::InsertInd(Clause* cla) {
     //PosEqns; //处理过的正文字单元子句(无序的等词文字)
     //    list<Clause*>  //单元子句,只有一个 负文字
     //    list<Clause*> NonUnits; //其他非单元子句
+    return 0;
 }
 
 //预处理    
@@ -211,4 +212,5 @@ Clause * ProofControl::Saturate() {
     printf("%s,%u,%u,%5.2f\n", fileName.c_str(), Env::backword_CMP_counter, Env::backword_Finded_counter, CPUTime() - initial_time);
 
     // this->procedSet->PrintIndex();
+    return nullptr;
 }

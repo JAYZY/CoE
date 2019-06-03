@@ -59,22 +59,28 @@ int main(int argc, char** argv) {
 
 
 
-    //添加等词公理
-    if (StrategyParam::ADD_EQULITY) {
-        fol->GenerateEqulitAxiom();
-        fol->printEqulityAxioms(stdout);
-    }
+   
+    
     //输出原始子句 
     fol->printOrigalClaSet();
 
     //预处理操作---------------------       
     RESULT res = fol->preProcess();
+     //添加等词公理
+    if (StrategyParam::ADD_EQULITY&& fol->uEquLitNum>0) {
+        fol->GenerateEqulitAxiom();
+        fol->printEqulityAxioms();
+    }
+     FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
     //输出预处理后子句 
-    //fol->printProcessedClaSet(stdout);
+   // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
         //演绎推理
         Resolution resolution;
-        res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+      //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
+       // if (res == RESULT::UNKNOWN) {
+            res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+        //}
     }
 
     FileOp::getInstance()->outGlobalInfo(" #Res:" + (100 == (int) res) ? "UNSAT" : "UNKNOWN");

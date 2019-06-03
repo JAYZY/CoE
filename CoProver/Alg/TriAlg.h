@@ -92,8 +92,8 @@ public:
 
         this->setRedundClaId.clear();
         this->setUsedCla.clear();
-        
-        this->newClas.clear();        
+
+        this->newClas.clear();
         this->newClas.reserve(2);
 
         assert(this->delUnitCla.empty());
@@ -102,6 +102,7 @@ public:
     }
 
     //销毁三角形过程中所有生成的单元子句副本(有变元的)
+
     inline void disposeRNUnitCla() {
         for (Clause* cla : delUnitCla) {
             DelPtr(cla);
@@ -116,7 +117,8 @@ public:
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
     RESULT GenreateTriLastHope(Clause* givenCla);
-     RESULT GenerateOrigalTriByRecodePath(Clause* givenCla);
+    //二元子句与单元子句生成新子句
+    RESULT GenByBinaryCla(Clause* givenCla);
 
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 

@@ -909,6 +909,5 @@ string Scanner::PosRep(StreamType type, const string& source, long line, long co
         sprintf(buff, "%s:%ld:(Column %ld):", tmp_str, line, column);
     }
     string rtnStr = buff;
-
     return rtnStr;
 }

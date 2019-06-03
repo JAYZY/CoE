@@ -183,7 +183,8 @@ void Clause::getStrOfClause(string&outStr, bool complete ) {
         Out::Error("File Formate is Error!",ErrorCodes::FILE_ERROR);
     }
     string type_name = "plain";
-
+    if(ClauseQueryProp(ClauseProp::CPTypeAxiom))
+         type_name = "axiom";
     switch (ClauseQueryTPTPType()) {
         case (int) ClauseProp::CPTypeAxiom:
             if (ClauseQueryProp(ClauseProp::CPInputFormula)) {

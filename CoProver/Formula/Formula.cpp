@@ -41,6 +41,207 @@ Formula::~Formula() {
     DelPtr(this->origalClaSet);
     DelPtr(this->workClaSet);
 }
+// <editor-fold defaultstate="collapsed" desc="等词公理添加">
+
+//前3条固定加入：
+//(1) Reflexivity: X1=X1
+//(2) Symmetry: X1~=X2 | X2 =X1
+//(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
+
+void Formula::GenerateEqulitAxiom() {
+    //前3条固定加入：
+    //(1) Reflexivity: X1=X1
+    //(2) Symmetry: X1~=X2 | X2 =X1
+    //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
+
+    //======================================================================/
+    //(1) Reflexivity: X1=X1
+    Clause* claReflex = new Clause();
+    claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
+    TermCell* t = claReflex->claTB->shareVars->Insert("A", claReflex->ident);
+    Lit_p reflexLit = new Literal(t, t, true); //Reflexivity: X1=X1
+    reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
+    reflexLit->EqnSetProp(EqnProp::EPIsPositive);
+
+    claReflex->bindingLits(reflexLit);
+    claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
+     claReflex->ClauseSetProp(ClauseProp::CPType1);
+    //claReflex->info->name = "reflexivity";
+    vEqulityAxiom.push_back(claReflex);
+    //(2) Symmetry: X1~=X2 | X2 =X1
+    Clause* claSymmetry = new Clause();
+    TermCell* lt = claSymmetry->claTB->shareVars->Insert("A", claSymmetry->ident);
+    TermCell* rt = claSymmetry->claTB->shareVars->Insert("B", claSymmetry->ident);
+    Lit_p symLitA = new Literal(lt, rt, false);
+    Lit_p symLitB = new Literal(rt, lt, true);
+    symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
+    symLitB->EqnSetProp(EqnProp::EPIsEquLiteral);
+    symLitB->EqnSetProp(EqnProp::EPIsPositive);
+    symLitA->next = symLitB;
+    claSymmetry->bindingLits(symLitA);
+    claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom );
+     claSymmetry->ClauseSetProp(ClauseProp::CPType1);
+    //claSymmetry->info->name = "symmetry";
+    vEqulityAxiom.push_back(claSymmetry);
+    //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
+    Clause* claTrans = new Clause();
+    TermCell* tA = claTrans->claTB->shareVars->Insert("A", claTrans->ident);
+    TermCell* tB = claTrans->claTB->shareVars->Insert("B", claTrans->ident);
+    TermCell* tC = claTrans->claTB->shareVars->Insert("C", claTrans->ident);
+    Lit_p transA = new Literal(tA, tB, false);
+    transA->EqnSetProp(EqnProp::EPIsEquLiteral);
+    Lit_p transB = new Literal(tB, tC, false);
+    transB->EqnSetProp(EqnProp::EPIsEquLiteral);
+    Lit_p transC = new Literal(tA, tC, true);
+    transC->EqnSetProp(EqnProp::EPIsEquLiteral);
+    transC->EqnSetProp(EqnProp::EPIsPositive);
+    transA->next = transB;
+    transB->next = transC;
+    claTrans->bindingLits(transA);
+    claTrans->ClauseSetProp(ClauseProp::CPTypeAxiom);
+    claTrans->ClauseSetProp(ClauseProp::CPType1);
+    
+    //claTrans->info->name = "transitivity";
+    vEqulityAxiom.push_back(claTrans);
+    //(4) add function-substitution and predicate-substitution
+    GenerateEqulitAxiomByFunction();
+}
+
+//添加等词函数
+
+void Formula::GenerateEqulitAxiomByFunction() {
+    Sigcell* sig_p = Env::getSig();
+
+    for (int fCode = 1; fCode <= sig_p->fCount(); ++fCode) {
+        int arity = sig_p->SigFindArity(fCode); //读取函数项个数
+        string claName = "";
+        sig_p->SigFindName(fCode, claName);
+        claName += "_substitution_";
+        //读取函数符号
+        if (sig_p->SigIsFunction(fCode)) {
+
+            //create arity-number clauses;
+            for (int i = 1; i <= arity; i++) {
+                Clause* c1 = new Clause();
+                //c1->info->name = (claName + to_string(i)).c_st();
+                c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
+                c1->ClauseSetProp(ClauseProp::CPType1);
+                TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
+                lt->uVarCount = 1;
+                lt->TermCellSetProp(TermProp::TPIsShared);
+                TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
+                lt->uVarCount = 1;
+                rt->TermCellSetProp(TermProp::TPIsShared);
+                Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
+                litA->EqnSetProp(EqnProp::EPIsEquLiteral);
+
+                //创建n-1个项
+                TermCell** arrTerm = new TermCell*[arity];
+                for (int j = 1; j <= arity; j++) {
+                    arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
+                    arrTerm[j]->uVarCount = 1;
+                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
+                }
+
+
+                //create left term  e.g f3(A,C,D)
+                TermCell* leftSubT = new TermCell(fCode, arity);
+                for (int j = 1; j <= arity; j++) {
+                    if (j == i) {
+                        leftSubT->args[j - 1] = lt;
+                    } else {
+                        leftSubT->args[j - 1] = arrTerm[j];
+                    }
+                }
+                leftSubT->uVarCount = arity;
+                leftSubT = c1->claTB->TBTermTopInsert(leftSubT);
+                //create right term  e.g = f3(B,C,D)
+                TermCell* rightSubT = new TermCell(fCode, arity);
+                for (int j = 1; j <= arity; j++) {
+                    if (j == i) {
+                        rightSubT->args[j - 1] = rt;
+                    } else {
+                        rightSubT->args[j - 1] = arrTerm[j];
+                    }
+                }
+                rightSubT->uVarCount = arity;
+                rightSubT = c1->claTB->TBTermTopInsert(rightSubT);
+                litA->next = new Literal(leftSubT, rightSubT, true); //f30(A,C,D) = f30(B,C,D)
+                litA->next->EqnSetProp(EqnProp::EPIsPositive);
+                litA->next->EqnSetProp(EqnProp::EPIsEquLiteral);
+                c1->bindingLits(litA);
+
+                DelArrayPtr(arrTerm);
+                this->vEqulityAxiom.push_back(c1);
+            }
+        }//读取谓词符号
+        else if (sig_p->SigIsPredicate(fCode)&& !sig_p->SigIsSpecial(fCode)) {
+            //create arity-number clauses;
+            for (int i = 1; i <= arity; i++) {
+                Clause* c1 = new Clause();
+                
+                c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
+                c1->ClauseSetProp(ClauseProp::CPType1);
+                //c1->info->name = (claName + to_string(i));
+
+                TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
+                lt->uVarCount = 1;
+                TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
+                rt->uVarCount = 1;
+                lt->TermCellSetProp(TermProp::TPIsShared);
+                rt->TermCellSetProp(TermProp::TPIsShared);
+                Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
+
+                litA->EqnSetProp(EqnProp::EPIsEquLiteral);
+                Lit_p litPtr = litA;
+                //创建n-1个项
+                TermCell** arrTerm = new TermCell*[arity];
+                for (int j = 1; j <= arity; j++) {
+                    arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
+                    arrTerm[j]->uVarCount = 1;
+                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
+                }
+                /*====== Create first negative literal ======*/
+                //create left term  e.g ~ p2(A,C)
+                TermCell* leftSubT = new TermCell(fCode, arity);
+                for (int j = 1; j <= arity; j++) {
+                    if (j == i) {
+                        leftSubT->args[j - 1] = lt;
+                    } else {
+                        leftSubT->args[j - 1] = arrTerm[j];
+                    }
+                }
+                leftSubT->uVarCount = arity;
+                leftSubT = c1->claTB->TBTermTopInsert(leftSubT);
+
+                litPtr->next = new Literal(leftSubT, Env::getGTbank()->trueTerm, false);
+                litPtr = litPtr->next;
+                /*====== Create right positive literal ======*/
+                //create right term  e.g p2(B,C)
+                TermCell* rightSubT = new TermCell(fCode, arity);
+                for (int j = 1; j <= arity; j++) {
+                    if (j == i) {
+                        rightSubT->args[j - 1] = rt;
+                    } else {
+                        rightSubT->args[j - 1] = arrTerm[j];
+                    }
+                }
+                rightSubT->uVarCount = arity;
+                rightSubT = c1->claTB->TBTermTopInsert(rightSubT);
+
+                litPtr->next = new Literal(rightSubT, Env::getGTbank()->trueTerm, true);
+                litPtr->next->EqnSetProp(EqnProp::EPIsPositive);
+                c1->bindingLits(litA);
+                DelArrayPtr(arrTerm);
+                this->vEqulityAxiom.push_back(c1);
+            }
+        }
+    }
+}
+
+
+
+// </editor-fold>
 
 void Formula::generateFormula(Scanner* in) {
     assert(origalClaSet);
@@ -413,7 +614,7 @@ bool Formula::leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd
                 uint16_t candLitNum = candVarCla->LitsNumber();
                 //单元子句,查询子句为冗余子句     //记录冗余
                 if (1 == candLitNum) {
-                   //Print-level fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    //Print-level fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
                     FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
@@ -488,7 +689,7 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
                 uint16_t candLitNum = candVarCla->LitsNumber();
                 //单元子句,查询子句为冗余子句     //记录冗余
                 if (1 == candLitNum) {
-                  //Print-level  fprintf(stdout, "\n# [FS]R invalid by C%d\n", candVarCla->GetClaId());
+                    //Print-level  fprintf(stdout, "\n# [FS]R invalid by C%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by C" + to_string(candVarCla->GetClaId()) + "\n";
                     FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
@@ -504,7 +705,7 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
                 //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 if (Simplification::ClauseSubsumeArrayLit(arrayHoldLits, arraySize, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                  //Print-level  fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
+                    //Print-level  fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
                     FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
@@ -526,6 +727,30 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
     //assert(false); //不会执行到这个语句
     return false;
 }
+//单文字是否归入冗余
+
+bool Formula::unitLitIsRundacy(Literal* unitLit) {
+
+    // 从索引树上获取,候选节点(项)
+    TermIndNode* termIndNode = this->unitClaIndex->Subsumption(unitLit, SubsumpType::Forword);
+    if (termIndNode == nullptr) {
+        this->unitClaIndex->ClearVarLst();
+        return false;
+    }
+    vector<Literal*>*candVarLits = &((termIndNode)->leafs); //可以匹配的文字集
+    if (1 == candVarLits->size() && candVarLits->at(0)->claPtr == unitLit->claPtr) {
+        //相同子句查找下一个
+        termIndNode = this->unitClaIndex->NextForwordSubsump(); //查找下一个
+        if (termIndNode == nullptr) {
+            this->unitClaIndex->ClearVarLst();
+            return false;
+        }
+    }
+    this->unitClaIndex->ClearVarLst();
+    return true;
+}
+
+
 
 //将子句添加到公式集中
 
@@ -558,9 +783,7 @@ void Formula::insertNewCla(Cla_p cla) {
         this->addGoalClas(cla);
         //目标子句优先,将目标子句的优先级改为一个较高的值(也可以试试 maxint)
         cla->priority = 100;
-
     }
-
     //添加到公式集 谓词全局列表中[注意单文字子句不加入谓词列表] 
     if (cla->LitsNumber() > 1) {
         this->AddPredLst(cla);
@@ -577,6 +800,7 @@ void Formula::removeWorkCla(Cla_p cal) {
     this->workClaSet->RemoveClause(cal); //暂时没有删除谓词链表
 }
 //添加谓词符号到全局列表中
+//注意: 等词也加入pred列表.谓词符号为 0
 
 void Formula::AddPredLst(Clause* cla) {
     Literal* lit = cla->Lits();
@@ -593,6 +817,7 @@ void Formula::AddPredLst(Clause* cla) {
                         g_PostEqn[lit->lterm].insert(g_PostEqn[lit->rterm].begin(), g_PostEqn[lit->rterm].end());
                     }
                 }
+                g_PostPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
             } else {
                 g_PostPred[lit->lterm->fCode].push_back(lit);
             }
@@ -609,6 +834,7 @@ void Formula::AddPredLst(Clause* cla) {
                         g_NegEqn[lit->lterm].insert(g_NegEqn[lit->rterm].begin(), g_NegEqn[lit->rterm].end());
                     }
                 }
+                g_NegPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
             } else {
                 g_NegPred[lit->lterm->fCode].push_back(lit);
             }
@@ -619,11 +845,13 @@ void Formula::AddPredLst(Clause* cla) {
 
 /*得到互补谓词候选文字集合*/
 vector<Literal*>* Formula::getPairPredLst(Literal* lit) {
-    assert(!lit->EqnIsEquLit()); //不能是等词文字
+    //debug
+    if(lit->EqnIsEquLit())
+        cout<<"eqlit"<<endl;
     if (lit->IsPositive())
-        return &g_NegPred[lit->lterm->fCode];
+        return (lit->EqnIsEquLit()) ? &g_NegPred[0] : &g_NegPred[lit->lterm->fCode];
     else
-        return &g_PostPred[lit->lterm->fCode];
+        return (lit->EqnIsEquLit()) ? &g_PostPred[0] : &g_PostPred[lit->lterm->fCode];
 }
 
 vector<Literal*>* Formula::getPredLst(Literal* lit) {

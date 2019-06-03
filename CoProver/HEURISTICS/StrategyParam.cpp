@@ -32,7 +32,7 @@ uint8_t StrategyParam::LIT_REDUNDANCY_WIGHT = 2; //文字归结中发现冗余,�
 uint8_t StrategyParam::LIT_OVERLIMIT_WIGHT = 2; //文字超过限制,改变的优先级
 //初始化参数==================================	
 
-bool StrategyParam::ADD_EQULITY = false;
+bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
 bool StrategyParam::IS_ALitEqualR = false;
 bool StrategyParam::IS_ALitNoEqual = false;
