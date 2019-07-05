@@ -41,9 +41,11 @@ ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Weight;
 POSLIT_STEADY StrategyParam::SEL_POSLIT_STEADY = POSLIT_STEADY::NumDesc;
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;
 int32_t StrategyParam::IterCount_LIMIT = INT_MAX;
+
+
 uint32_t StrategyParam::R_MAX_LITNUM = 5;
 uint32_t StrategyParam::HoldLits_NUM_LIMIT = 5; //归结过程中剩余文字最大文字数限制
 uint32_t StrategyParam::R_MAX_FUNCLAYER = 3;
-
+uint32_t StrategyParam::MaxLitNum=1;
 
  

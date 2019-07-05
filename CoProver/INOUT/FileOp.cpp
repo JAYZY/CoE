@@ -52,6 +52,8 @@ void FileOp::CloseAll() {
         fclose(fRun);
     if (fLog)
         fclose(fLog);
+    if (fUNSAT)
+        fclose(fUNSAT);
 }
 
 /**
@@ -74,17 +76,13 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         }
     }
 
-    if (fInfo) {
-        fclose(fInfo);
-    }
+    CloseAll();
+
     string tmpStr = outDir + tptpFileNameNoExt;
     string sFileName = tmpStr + ".i";
     if ((fInfo = fopen(+sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
         return false;
-    }
-    if (fRun) {
-        fclose(fRun);
     }
     sFileName = tmpStr + ".r";
     if ((fRun = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
@@ -92,9 +90,6 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         return false;
     }
 
-    if (fLog) {
-        fclose(fLog);
-    }
     sFileName = tmpStr + ".log";
     if ((fLog = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".log");
@@ -109,11 +104,19 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".g");
         return false;
     }
-    outGlobalInfo("\n"+getFileName(Env::tptpFileName)+" ");
+    outGlobalInfo("\n" + getFileName(Env::tptpFileName) + " ");
     return true;
 }
 
+void FileOp::OutUnsatPath(string fileFullName) {
+    string sFileName = outDir + tptpFileNameNoExt + ".unsat";
+    if (!fUNSAT && (fUNSAT = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
+        Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".log");
+         
+    }
+    
 
+}
 
 // <editor-fold defaultstate="collapsed" desc="系统文件操作(文件夹,文件)">
 

@@ -113,7 +113,7 @@ void ProofControl::Preprocess(Formula* fol) {
     fol->uNonHornClaNum = 0; //非Horn 子句个数(最多一个非负文字)
     ClauseSet* pClaSet = new ClauseSet();
     double initial_time = CPUTime();
-    ClauseSet* oriClaset = fol->getAxioms(); //原始子句集 
+    ClauseSet* oriClaset = fol->getOrigalSet(); //原始子句集 
 
     TermIndexing *allTermIndex = new DiscrimationIndexing();
     // fol->posUnitClaIndex = new DiscrimationIndexing();
@@ -181,7 +181,7 @@ CPUTIME_DEFINE(FindBack);
 
 Clause * ProofControl::Saturate() {
     uint32_t count = 0;
-    Options::step_limit = this->axiom->Members();
+    Options::step_limit = this->axiom->Size();
     //对子句集合排序
 
     double initial_time = CPUTime();

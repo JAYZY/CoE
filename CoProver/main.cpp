@@ -57,8 +57,6 @@ int main(int argc, char** argv) {
     fol->generateFormula(Env::getIn());
     PaseTime("GenFormula_");
 
-
-
    
     
     //输出原始子句 

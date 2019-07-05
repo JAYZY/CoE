@@ -119,11 +119,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                         delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
                         string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
                         FileOp::getInstance()->outLog(strLog);
-                        FileOp::getInstance()->outRun(strLog);
+                        
                     }
                 }
             }
-            if (newCla->LitsNumber() > 3) {
+            if (newCla->LitsNumber() >  StrategyParam::MaxLitNum) {
                 DelPtr(newCla);
                 continue;
             }

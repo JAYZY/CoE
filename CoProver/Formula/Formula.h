@@ -75,7 +75,7 @@ public:
         this->uMaxFuncLayer = 0; //最大函数嵌套层数
     }
 
-    inline ClauseSet* getAxioms() {
+    inline ClauseSet* getOrigalSet() {
         return origalClaSet;
     }
 

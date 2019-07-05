@@ -43,7 +43,7 @@ public:
     }
     /// 返回子句集大小(子句个数)
 
-    inline long Members() {
+    inline long Size() {
         return claLst.size();
     }
 

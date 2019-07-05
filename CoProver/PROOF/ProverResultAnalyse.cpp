@@ -10,13 +10,14 @@
 #include <regex>
 using namespace std;
 
-ProverResultAanl::ProverResultAanl() {
+ProverResultAnalyse::ProverResultAnalyse(Formula *_fol) : fol(_fol) {
+
 }
 
-ProverResultAanl::ProverResultAanl(const ProverResultAanl& orig) {
+ProverResultAnalyse::ProverResultAnalyse(const ProverResultAnalyse& orig) {
 }
 
-ProverResultAanl::~ProverResultAanl() {
+ProverResultAnalyse::~ProverResultAnalyse() {
 }
 
 /**分析路径 
@@ -24,219 +25,160 @@ ProverResultAanl::~ProverResultAanl() {
  ** out  sbReadContext  -- 该路径下的详细路径
  ** out  sbValidPath --该路径下的有效路径
  */
-bool analyDeducdPath(string readFileN, string& sbReadContext, string& sbValidPath) {
+bool ProverResultAnalyse::AnalyDeducdPath(string readFileN, string& sbReadContext, string& sbValidPath) {
     bool isEmpty = false;
     bool isClearBuf = true;
-    sbReadContext = ""; //该路径下的详细路径
-    sbValidPath = ""; //该路径下的有效路径
     map<int, string> sbBackPath; //该路径下的备选路径
 
-    string tmpSbReadContext = "", sbTmp = ""; //该路径下的有效演绎过程
-    string triContext = ""; //三角形内容
-    vector<Stu_Lit> lsPred; //互补文字列表  
-    vector<int> lstValidPathIndex; //有效路径序号 
-    vector<Stu_OptVaildPath> lstOptPaths; //一次完整的演绎过程
-    string Rdata = "";
+
+    sbReadContext = ""; //该路径下的详细路径
+    sbValidPath = ""; //该路径下的有效路径
+
     int triTimes = 1;
 
-    ifstream in(readFileN);
-    if (in == nullptr) {
+    string tmpSbReadContext = "", sbTmp = ""; /*该路径下的有效演绎过程*/
+
+
+
+    ifstream in(readFileN); //读取文件.r
+    if (!in) {
         fprintf(stderr, "结果文件读取错误！");
         return false;
     }
+
     string strDataLine = "";
     while (getline(in, strDataLine)) {
+
+        string triContext = ""; //三角形内容
         TrimStr(strDataLine);
         if (strDataLine == "" || strDataLine[0] == '#') //不读空行       /读取备注信息    
             continue;
         tmpSbReadContext += strDataLine; //完整路径
         //sbValidPath.Append(strFirstLine); //有效路径                 
 
+        vector<StuLitP> *lsPred = new vector<StuLitP>; //互补文字列表      
+        //一次
+        Stu_OptVaildPath* optPath = new Stu_OptVaildPath(++triTimes);
 
-        Stu_OptVaildPath optPath;
+        regex regRow("C+\\d+"), regCol("_+\\d+"), regR("\\[+\\d+");
+        smatch row, col, r;
         switch (strDataLine[0]) {
             case '['://归结路径      
-                // <editor-fold defaultstate="collapsed" desc="读取归结路径">
-                //if (isClearBuf)
-                // sbBackPath = new Dictionary<int, string>();
+                // <editor-fold defaultstate="collapsed" desc="读取归结路径">                
+
                 isClearBuf = false;
                 triContext += strDataLine; //读取路径内容
-                regex reg1("C+\\d+"), reg2("_+\\d+");
-                smatch row, col;
-                regex_search(strDataLine, row, reg1);
-                regex_search(strDataLine, col, reg1);
-                Stu_Lit lit = {.Row = stoi(row.str().substr(1)),
-                    .Col = stoi(col.str().substr(1)),
-                    .context = strDataLine.substr(FindSubStr(strDataLine, "]") + 1)};
 
-                lsPred.push_back(lit);
+                regex_search(strDataLine, row, regRow);
+                regex_search(strDataLine, col, regCol);
+                //添加互补文字              
+                lsPred->push_back(new Stu_Lit(atoi(row.str().substr(1).c_str()), atoi(col.str().substr(1).c_str()),
+                        strDataLine.substr(FindSubStr(strDataLine, ']') + 1).c_str()));
+
                 // </editor-fold>
-
                 break;
             case 'R'://新R
                 // <editor-fold defaultstate="collapsed" desc="读取R信息">
                 triContext += strDataLine; //读取R内容
-                optPath.triTimes = triTimes++; //路径序号 
-                optPath.lsPred = lsPred; //互补文字列表
-                // <editor-fold defaultstate="collapsed" desc="空子句处理">
-                if (0 == strDataLine.compare("R:空子句")) {
 
-                    optPath.RState = 1; //有效
-                    optPath.rowNewR = -1; //归结式R行号                                                        
+                optPath->lsPred = lsPred; //互补文字列表
+                lsPred = new vector<StuLitP>; //互补文字列表
+
+
+
+                if (0 == strDataLine.compare("R:空子句")) {
+                    // <editor-fold defaultstate="collapsed" desc="空子句处理">  
+
+                    optPath->rowNewR = -1; //归结式R行号         
+                    optPath->newR = nullptr; //归结式R     
                     lstValidPathIndex.push_back(triTimes);
-                    sbValidPath += ("第" + to_string(optPath.triTimes) + "个△-----\n");
+                    sbValidPath += ("第" + to_string(optPath->triTimes) + "个△-----\n");
                     sbValidPath += (triContext);
                     isEmpty = true;
-                } else {
-                    regex reg1("\\[+\\d+");
-                    smatch row;
-                    regex_search(strDataLine, row, reg1);
+                    // </editor-fold>
 
-                    optPath.rowNewR = stoi(row.str().substr(1)); //归结式R行号
-                    
-                    int newRPos = Rdata.IndexOf(':') + 1;
-                    string[] words = Rdata.Substring(newRPos, isVaildPos - newRPos).Split(Properties.Settings.Default.SplitChar);
-                    List<Stru_Lit> newR = new List<Stru_Lit>();
-                    List<string> lstNFol = new List<string>();
-                    for (int i = 0; i < words.Length; i++) {
-                        string tmpStr = words[i].Substring(words[i].IndexOf(']') + 1);
-                        lstNFol.Add(tmpStr);
-                        newR.Add(new Stru_Lit(){
-                            row = int.Parse(Regex.Match(words[i], @"\[+\d+").Value.Substring(1)),
-                            col = int.Parse(Regex.Match(words[i], @"_+\d+").Value.Substring(1)),
-                            word = tmpStr
-                        });
+                } else { //新R字句
+
+                    regex_search(strDataLine, r, regR);
+
+                    optPath->rowNewR = stoi(r.str().substr(1)); //归结式R行号
+                    int newRPos = FindSubStr(strDataLine, ':') + 1; //r内容位置
+
+                    vector<string>words = Split_c(strDataLine.substr(newRPos), '+');
+                    for (int i = 0; i < words.size(); ++i) {
+                        string tmpStr = words[i];
+                        regex_search(tmpStr, row, regRow);
+                        regex_search(tmpStr, col, regCol);
+                        optPath->newR->push_back(new Stu_Lit(stoi(row.str().substr(1).c_str()), stoi(col.str().substr(1).c_str()),
+                                strDataLine.substr(FindSubStr(tmpStr, ']') + 1).c_str())); //归结式R 
                     }
-
                 }
+                lstValidPaths.push_back(optPath); //该路径的演绎过程  
 
+                // tmpSbReadContext+=sbTmp;
+                tmpSbReadContext += "第" + to_string(optPath->triTimes) + "个△-----\n";
+                tmpSbReadContext += (triContext);
                 // </editor-fold>
-
-                // </editor-fold>
-
                 break;
         }
-
-
-
-
-
-        while ((Rdata = sr.ReadLine()) != null) {
-            if (Rdata.Trim() == "") continue; //不读空行                   
-            if (Rdata[0] == '#')
-                Rdata = Rdata.Substring(2);
-            //sbTmp.Append(Rdata + "\n");
-            Stu_OptVaildPath optPath = new Stu_OptVaildPath();
-            string validInfo = ""; //有效或无效信息
-            if (Rdata[0] == '=')//读取附加信息[注：附加信息中 == 表示要显示的信息，++表示需要隐藏的信息]
-            {
-                sbValidPath.AppendLine(Rdata);
-            }
-            int sJudgePos = 0;
-            if (Rdata[0] == '{')
-                sJudgePos = Rdata.IndexOf('}') + 1;
-            switch (Rdata[sJudgePos]) {
-
-                case 'R'://新R
-#region 读取R信息
-                    triContext.AppendLine(Rdata); //读取R内容
-                    optPath.triTimes = triTimes++; //路径序号 
-                    optPath.lsPred = lsPred; //互补文字列表
-                    if (Rdata.Equals("R:空子句")) {
-#region 空子句处理
-                        optPath.RState = 1; //有效
-                        optPath.rowNewR = -1; //归结式R行号                                    
-                        optPath.newR = null; //归结式R                                 
-                        lstValidPathIndex.Add(triTimes);
-                        sbValidPath.Append(string.Format("第{0}个△-----\n", optPath.triTimes));
-                        sbValidPath.Append(triContext);
-                        isEmpty = true;
-#endregion
-                    } else {
-                        int isVaildPos = Rdata.LastIndexOf('|');
-                        if (Rdata.Substring(isVaildPos + 2) == "Y]") {
-                            optPath.RState = 1;
-                            validInfo = "[有效]";
-                        } else if (Rdata.Substring(isVaildPos + 2) == "B]") //备选
-                        {
-                            optPath.RState = -1;
-                            validInfo = "[备选]";
-                        } else {
-                            optPath.RState = 0; //无效路径
-                            validInfo = Rdata.Substring(isVaildPos + 1);
-                        }
-#region 提取R信息
-                        optPath.rowNewR = int.Parse(Regex.Match(Rdata, @"\[+\d+").Value.Substring(1)); //归结式R行号
-                        int newRPos = Rdata.IndexOf(':') + 1;
-                        string[] words = Rdata.Substring(newRPos, isVaildPos - newRPos).Split(Properties.Settings.Default.SplitChar);
-                        List<Stru_Lit> newR = new List<Stru_Lit>();
-                        List<string> lstNFol = new List<string>();
-                        for (int i = 0; i < words.Length; i++) {
-                            string tmpStr = words[i].Substring(words[i].IndexOf(']') + 1);
-                            lstNFol.Add(tmpStr);
-                            newR.Add(new Stru_Lit(){
-                                row = int.Parse(Regex.Match(words[i], @"\[+\d+").Value.Substring(1)),
-                                col = int.Parse(Regex.Match(words[i], @"_+\d+").Value.Substring(1)),
-                                word = tmpStr
-                            });
-                        }
-#endregion
-                        optPath.newR = newR; //归结式R 
-
-                        if (optPath.RState == 1) //有效路径
-                        {
-#region 有效路径处理
-                            lstValidPathIndex.Add(triTimes - 1); //添加有效路径序号
-                            sbValidPath.Append(string.Format("第{0}个△-----\n", optPath.triTimes));
-                            sbValidPath.Append(triContext);
-                            currentFOL.Add(lstNFol.ToArray());
-#endregion
-                        } else if (optPath.RState == -1)//备选路径
-                        {
-                            currentFOL.Add(lstNFol.ToArray());
-                            sbBackPath.Add(optPath.rowNewR, string.Format("第{0}个△-----\n{1}", optPath.triTimes, triContext));
-                        }
-                    }
-                    lstOptPaths.Add(optPath); //该路径的演绎过程  
-                    tmpSbReadContext.Append(sbTmp);
-                    tmpSbReadContext.Append(string.Format("第{0}个△{1}-----\n", optPath.triTimes, validInfo));
-                    tmpSbReadContext.Append(triContext);
-                    lsPred = new List<Stu_LitCont>();
-                    sbTmp = new StringBuilder();
-                    triContext = new StringBuilder();
-#endregion
-                    break;
-                case 'S'://对备选R进行处理
-#region  对备选R进行处理-确定有效信息
-                    string tmpS = Rdata.Substring(Rdata.IndexOf('[') + 1);
-                    int selIndex = int.Parse(tmpS.Substring(0, tmpS.Length - 1));
-                    sbValidPath.Append(sbBackPath[selIndex]);
-                    for (int i = lstOptPaths.Count - 1; i >= 0; i--) {
-                        Stu_OptVaildPath sp = lstOptPaths[i];
-                        //List<string> lstNFol = new List<string>();
-                        //sp.newR.ForEach(r => lstNFol.Add(r.word));
-                        //currentFOL.Add(lstNFol.ToArray());
-
-                        if (sp.rowNewR == selIndex) {
-                            sp.RState = 1;
-                            lstOptPaths[i] = sp;
-                            lstValidPathIndex.Add(i); //添加有效路径序号                                     
-
-                            break;
-                        }
-                    }
-                    isClearBuf = true;
-                    sbTmp.AppendLine(Rdata);
-#endregion
-                    break;
-                default://读取文本其余信息
-                    sbTmp.AppendLine(Rdata);
-                    break;
-            }
-        }
-        tmpSbReadContext.Append(sbTmp);
-        sbReadContext.Append(string.Format("该路径总共迭代{0}次，有效迭代{1}次\n---------------------\n{2}",
-                triTimes - 1, lstValidPathIndex.Count, tmpSbReadContext));
     }
     return isEmpty;
+}
+
+/*
+ **  查找产生新子句的迭代编号
+ */
+
+int ProverResultAnalyse::FindPath(int newRow) {
+
+    for (int i = lstValidPaths.size() - 2; i >= 0; i--) {
+        Stu_OptVaildPath* validPath = lstValidPaths[i];
+        if (validPath->rState != 1) continue; //路径无效
+        if (validPath->rowNewR > 0) {
+            if (validPath->rowNewR == newRow)
+                return i;
+        }
+    }
+    return -1;
+}
+//输出最终结果路径
+
+void ProverResultAnalyse::OutputResultP(int newR, vector<int>& P) {
+
+    Stu_OptVaildPath* validPath = lstValidPaths[newR];
+    Stu_Lit* lsP = validPath->lsPred->at(0);
+    int originalLen = fol->getOrigalSet()->Size() - 1;
+    if (lsP->Row > originalLen) {
+
+        //找到产生该编号的新子句的 迭代
+        int rIndex = FindPath(lsP->Row);
+        if (rIndex > -1 && find(P.begin(), P.end(), rIndex) == P.end()) {
+            P.push_back(rIndex);
+            OutputResultP(rIndex, P);
+        }
+    }
+
+    for (int i = 1; i < validPath->lsPred->size(); ++i) {
+        lsP = validPath->lsPred->at(i);
+        if (lsP->Row > originalLen) {
+            //找到产生该编号的新子句的 迭代
+            int rIndex = FindPath(lsP->Row);
+            if (rIndex > -1 && find(P.begin(), P.end(), rIndex) == P.end()) {
+                P.push_back(rIndex);
+                OutputResultP(rIndex, P);
+            }
+        }
+    }
+}
+
+//显示unsat路径
+
+void ProverResultAnalyse::ShowUNSATPath(string fileFullName) {
+    //vector<int>_lstIndex = new vector<int>();
+    string sbReadContext, sbValidPath;
+    //对.r文件进行分析提取
+   // FileOp fileop;
+    
+   // AnalyDeducdPath(fileFullName,sbReadContext,sbValidPath);
+   // OutputResultP(lstValidPaths.size() - 1, _lstIndex);
 }

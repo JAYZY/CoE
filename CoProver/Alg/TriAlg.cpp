@@ -129,7 +129,7 @@ RESULT TriAlg::GenByBinaryCla(Clause* binaryCla) {
 RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
     string strOut = "# 起步子句C" + to_string(givenCla->ident) + ":";
-    givenCla->getStrOfClause(strOut);  
+    givenCla->getStrOfClause(strOut);
     FileOp::getInstance()->outRun(strOut);
     //Print-level      
     cout << strOut << endl;
@@ -170,7 +170,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         actLit = actLit->next;
     }
     actLit = actCla->literals;
-    
+
     while (1) {
         //对主动子句 A.单文字匹配 B.确定起步文字actLit
         if (actLit) {
@@ -235,11 +235,11 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         }
 
         //上一轮的被动子句,新一轮的主动子句, 已经被主界线下拉过, 又被单元子句下拉 则判断剩余文字R是否超出限制,是否需要停止三角形演绎
-        if (actCla != givenCla && 0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
-            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
-            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
-            actLit = nullptr;
-        }
+//        if (actCla != givenCla && 0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
+//            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
+//            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
+//            actLit = nullptr;
+//        }
 
 
         //=======遍历主动子句中剩余文字 -----------------------------------------------------
@@ -264,11 +264,11 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
                     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
                     uPasHoldLitNum = pasLit->claPtr->LitsNumber() - 1;
-                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
-                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-                        ++Env::S_OverMaxLitLimit_Num;
-                        continue;
-                    }
+//                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
+//                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+//                        ++Env::S_OverMaxLitLimit_Num;
+//                        continue;
+//                    }
                     /*同一子句中文字不进行比较;归结过的子句不在归结;文字条件限制*/
                     if (pasLit->claPtr == actLit->claPtr || setUsedCla.find(pasLit->claPtr) != setUsedCla.end())
                         continue;
@@ -367,6 +367,8 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
         /*======== △无法延拓时候进行处理 ====================*/
         if (resTri == RESULT::NOMGU) {
+            /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/
+            
 
             //==================== △构建成功 ====================
             if (isDeduct) {
@@ -929,7 +931,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
 
     }
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int) (holdLitSize - vNewR.size()) > StrategyParam::HoldLits_NUM_LIMIT) {
+    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int) (holdLitSize - vNewR.size()) > StrategyParam::R_MAX_LITNUM) {
         //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
         ++Env::S_OverMaxLitLimit_Num;
         return ResRule::MoreLit;
@@ -1683,6 +1685,14 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                         candUnitCal->bindingLits(candLit);
                         //输出新子句到info文件
                         outNewClaInfo(candUnitCal, InfereType::RN);
+                        //输出到.r文件
+                        string str="\n";
+                        cmpUnitClas[ind]->literals->getLitInfo(str);                        
+                        cmpUnitClas[ind]->literals->getStrOfEqnTSTP(str);
+                        str += "\nR[" + to_string(candUnitCal->ident) + "]:";
+                        candLit->getParentLitInfo(str);
+                        candLit->getStrOfEqnTSTP(str);
+                        FileOp::getInstance()->outRun(str);
                         //添加该单元子句副本到删除列表中,完成三角形后删除.
                         delUnitCla.push_back(candUnitCal);
                     }

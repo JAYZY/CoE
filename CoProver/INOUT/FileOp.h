@@ -51,6 +51,7 @@ private:
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
+    FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
 
     FILE* fGlobalInfo; //.g 文件,全局信息输出
     string outName; //输出名称
@@ -97,12 +98,11 @@ public:
         sprintf(link, "/proc/%d/exe", getpid()); /////////////
         readlink(link, path, size); //////////////
         //printf("%s/n", path);
-
     }
 
-    /**
-     * 写入 info 文件
-     */
+    /*
+        ** 写入 info 文件
+        */
     inline void outInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fInfo);
         fflush(fInfo);
@@ -117,7 +117,7 @@ public:
         fwrite(msg.c_str(), 1, msg.length(), fRun);
         fflush(fRun);
     }
-
+    inline FILE* GetfRun(){return fRun;}
     inline void outGlobalInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fGlobalInfo);
         fflush(fGlobalInfo);
@@ -127,6 +127,8 @@ public:
     inline void Flush() {
         OutFile->flush();
     }
+    
+    
 public:
     /* 关闭所有文件 */
     void CloseAll();
@@ -153,8 +155,10 @@ public:
     string getFileNameNoExt(string fileFullName);
     // </editor-fold>
 
+   
 public:
-
+ //输出UNSAT路径
+    void  OutUnsatPath(string fileFullName);
     /*---------------------------------------------------------------------*/
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/

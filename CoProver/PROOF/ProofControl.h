@@ -111,7 +111,7 @@ public:
     }
 
     uint32_t GetClaNum() {
-        return unprocClaSet->Members();
+        return unprocClaSet->Size();
     }
 
     void RemoveCla(Clause* cla) {

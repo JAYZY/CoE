@@ -352,7 +352,8 @@ RESULT Formula::preProcess() {
     }
 
     StrategyParam::R_MAX_LITNUM = 1;
-    StrategyParam::HoldLits_NUM_LIMIT = 1;
+    StrategyParam::HoldLits_NUM_LIMIT = 3;
+    StrategyParam::MaxLitNum=uMaxLitNum-2;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
@@ -868,7 +869,7 @@ list<Clause*>::iterator Formula::getNextStartClause() {
 }
 
 void Formula::printOrigalClasInfo(FILE* out) {
-    fprintf(out, "# 子句总个数          %18ld #\n", this->origalClaSet->Members());
+    fprintf(out, "# 子句总个数          %18ld #\n", this->origalClaSet->Size());
     fprintf(out, "# 最大文字数          %18u #\n", this->uMaxLitNum);
     fprintf(out, "# 最大项嵌套          %18u #\n", this->uMaxFuncLayer);
     fprintf(out, "# 目标子句个数        %18zu #\n", this->goalClaset.size());

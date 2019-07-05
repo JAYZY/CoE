@@ -66,6 +66,8 @@ public:
     //left literals number during the process limit. =0 noLimit
     static uint32_t HoldLits_NUM_LIMIT;
     static uint32_t R_MAX_FUNCLAYER; //最大函数嵌套层限制-不超过256
+    static uint32_t MaxLitNum;
+    
     // </editor-fold>
 
     //新的启发式策略

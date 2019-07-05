@@ -43,6 +43,19 @@ inline int FindSubStr(string& str, string& subStr) {
     }
     return -1;
 }
+
+inline int FindSubStr(string& str, char subStr) {
+    int pos = -1;
+    size_t strLen = str.size(), subStrLen = 1;
+    if (strLen < subStrLen)
+        return -1;
+    while (pos++<strLen) {        
+        if (str[pos] == subStr) {           
+            return pos;
+        }
+    }
+    return -1;
+}
 //分割字符串
 
 inline vector<string> Split_c(const string& s, const char delim) {
