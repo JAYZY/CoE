@@ -235,11 +235,11 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         }
 
         //上一轮的被动子句,新一轮的主动子句, 已经被主界线下拉过, 又被单元子句下拉 则判断剩余文字R是否超出限制,是否需要停止三角形演绎
-//        if (actCla != givenCla && 0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
-//            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
-//            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
-//            actLit = nullptr;
-//        }
+        //        if (actCla != givenCla && 0 < StrategyParam::R_MAX_LITNUM && vNewR.size() + uActHoldLitNum > StrategyParam::R_MAX_LITNUM) {
+        //            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
+        //            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
+        //            actLit = nullptr;
+        //        }
 
 
         //=======遍历主动子句中剩余文字 -----------------------------------------------------
@@ -264,11 +264,11 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
                     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
                     uPasHoldLitNum = pasLit->claPtr->LitsNumber() - 1;
-//                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
-//                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-//                        ++Env::S_OverMaxLitLimit_Num;
-//                        continue;
-//                    }
+                    //                    if (0 < StrategyParam::HoldLits_NUM_LIMIT && vNewR.size() + uActHoldLitNum + uPasHoldLitNum > StrategyParam::HoldLits_NUM_LIMIT) {
+                    //                        pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+                    //                        ++Env::S_OverMaxLitLimit_Num;
+                    //                        continue;
+                    //                    }
                     /*同一子句中文字不进行比较;归结过的子句不在归结;文字条件限制*/
                     if (pasLit->claPtr == actLit->claPtr || setUsedCla.find(pasLit->claPtr) != setUsedCla.end())
                         continue;
@@ -368,7 +368,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         /*======== △无法延拓时候进行处理 ====================*/
         if (resTri == RESULT::NOMGU) {
             /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/
-            
+
 
             //==================== △构建成功 ====================
             if (isDeduct) {
@@ -1617,17 +1617,20 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
     Literal * arrayHoldLits[uActHoldLitNum + vNewR.size() - 1];
 
     Lit_p testLitP = claPtr->literals;
+    
+    
+    
     //------ 遍历检查子句的所有文字, 检查所有单元子句下拉情况 ------
     for (; testLitP; testLitP = testLitP->next) {
         if (!testLitP->EqnQueryProp(EqnProp::EPIsHold)) {
             continue;
         }
-        // bool flag = false;
-        /* 约束条件:同一个单元子句 不能[更名后]对同一个子句中的文字进行下拉. 
-         ** 算法处理: 
-         ** 1.找到一个可以匹配的 单元子句,则将该单元子句移动到列表最后(降低使用频率)
-         ** 2.当前的后续检查将不再使用该文字进行匹配操作
-         */
+        
+        //bool flag = false;
+        // 约束条件:同一个单元子句 [更名后]，不能对同一个子句中的文字进行下拉. 
+        /** 算法处理: 1.找到一个可以匹配的 单元子句,则将该单元子句移动到列表最后(降低使用频率)
+                                         2.当前的后续检查将不再使用该文字进行匹配操作    */
+        
         vector<Clause* >&cmpUnitClas = testLitP->IsPositive() ? fol->vNegUnitClas : fol->vPosUnitClas; //可以考虑优化 用索引树
         //------ 遍历单元子句 ------
         for (int ind = 0; ind < cmpUnitClas.size(); ++ind) {
@@ -1635,6 +1638,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
             if (candUnitCal->isDel()) { //被删除的单元子句 不处理               
                 continue;
             }
+            
             Lit_p candLit = candUnitCal->Lits();
             if (!testLitP->EqnIsEquLit() && testLitP->lterm->fCode != candLit->lterm->fCode)
                 continue;
@@ -1686,8 +1690,8 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                         //输出新子句到info文件
                         outNewClaInfo(candUnitCal, InfereType::RN);
                         //输出到.r文件
-                        string str="\n";
-                        cmpUnitClas[ind]->literals->getLitInfo(str);                        
+                        string str = "\n";
+                        cmpUnitClas[ind]->literals->getLitInfo(str);
                         cmpUnitClas[ind]->literals->getStrOfEqnTSTP(str);
                         str += "\nR[" + to_string(candUnitCal->ident) + "]:";
                         candLit->getParentLitInfo(str);

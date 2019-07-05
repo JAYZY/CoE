@@ -286,7 +286,7 @@ public:
 
     inline const char* getVarName(string &termName, string splitCh = "") {
         termName = to_string(this->claId) + splitCh;
-        termName += to_string(-((fCode - 1) / 2));
+        termName += to_string(-fCode);
         return termName.c_str();
     }
     //#define TermIsTopRewritten(term) (TermIsRewritten(term)&&TermRWDemodField(term))

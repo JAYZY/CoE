@@ -89,7 +89,7 @@ int Subst::SubstBacktrack() {
  ****************************************************************************/
     FunCode Subst::SubstNormTerm(TermCell* term, VarBank_p vars) {
     //DerefType deref = DEREF_ALWAYS;
-    FunCode ret = vars->vCount;
+    FunCode ret = vars->VarBankGetVCount();
     vector<TermCell*> vecStack;
     vecStack.push_back(term);
     TermCell* newvar = nullptr;

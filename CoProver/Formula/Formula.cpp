@@ -58,7 +58,7 @@ void Formula::GenerateEqulitAxiom() {
     //(1) Reflexivity: X1=X1
     Clause* claReflex = new Clause();
     claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
-    TermCell* t = claReflex->claTB->shareVars->Insert("A", claReflex->ident);
+    TermCell* t = claReflex->claTB->VarInert("A", claReflex->ident);
     Lit_p reflexLit = new Literal(t, t, true); //Reflexivity: X1=X1
     reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
     reflexLit->EqnSetProp(EqnProp::EPIsPositive);
@@ -70,8 +70,8 @@ void Formula::GenerateEqulitAxiom() {
     vEqulityAxiom.push_back(claReflex);
     //(2) Symmetry: X1~=X2 | X2 =X1
     Clause* claSymmetry = new Clause();
-    TermCell* lt = claSymmetry->claTB->shareVars->Insert("A", claSymmetry->ident);
-    TermCell* rt = claSymmetry->claTB->shareVars->Insert("B", claSymmetry->ident);
+    TermCell* lt = claSymmetry->claTB->VarInert("A", claSymmetry->ident);
+    TermCell* rt = claSymmetry->claTB->VarInert("B", claSymmetry->ident);
     Lit_p symLitA = new Literal(lt, rt, false);
     Lit_p symLitB = new Literal(rt, lt, true);
     symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
@@ -85,9 +85,9 @@ void Formula::GenerateEqulitAxiom() {
     vEqulityAxiom.push_back(claSymmetry);
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
     Clause* claTrans = new Clause();
-    TermCell* tA = claTrans->claTB->shareVars->Insert("A", claTrans->ident);
-    TermCell* tB = claTrans->claTB->shareVars->Insert("B", claTrans->ident);
-    TermCell* tC = claTrans->claTB->shareVars->Insert("C", claTrans->ident);
+    TermCell* tA = claTrans->claTB->VarInert("A", claTrans->ident);
+    TermCell* tB = claTrans->claTB->VarInert("B", claTrans->ident);
+    TermCell* tC = claTrans->claTB->VarInert("C", claTrans->ident);
     Lit_p transA = new Literal(tA, tB, false);
     transA->EqnSetProp(EqnProp::EPIsEquLiteral);
     Lit_p transB = new Literal(tB, tC, false);
@@ -126,10 +126,10 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //c1->info->name = (claName + to_string(i)).c_st();
                 c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
                 c1->ClauseSetProp(ClauseProp::CPType1);
-                TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
+                TermCell* lt = c1->claTB->VarInert("X", c1->ident);
                 lt->uVarCount = 1;
                 lt->TermCellSetProp(TermProp::TPIsShared);
-                TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
+                TermCell* rt = c1->claTB->VarInert("Y", c1->ident);
                 lt->uVarCount = 1;
                 rt->TermCellSetProp(TermProp::TPIsShared);
                 Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
@@ -138,7 +138,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //创建n-1个项
                 TermCell** arrTerm = new TermCell*[arity];
                 for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
+                    arrTerm[j] = c1->claTB->VarInert("Z" + to_string(j), c1->ident);
                     arrTerm[j]->uVarCount = 1;
                     arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                 }
@@ -184,9 +184,9 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 c1->ClauseSetProp(ClauseProp::CPType1);
                 //c1->info->name = (claName + to_string(i));
 
-                TermCell* lt = c1->claTB->shareVars->Insert("X", c1->ident);
+                TermCell* lt = c1->claTB->VarInert("X", c1->ident);
                 lt->uVarCount = 1;
-                TermCell* rt = c1->claTB->shareVars->Insert("Y", c1->ident);
+                TermCell* rt = c1->claTB->VarInert("Y", c1->ident);
                 rt->uVarCount = 1;
                 lt->TermCellSetProp(TermProp::TPIsShared);
                 rt->TermCellSetProp(TermProp::TPIsShared);
@@ -197,7 +197,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //创建n-1个项
                 TermCell** arrTerm = new TermCell*[arity];
                 for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->claTB->shareVars->Insert("Z" + to_string(j), c1->ident);
+                    arrTerm[j] = c1->claTB->VarInert("Z" + to_string(j), c1->ident);
                     arrTerm[j]->uVarCount = 1;
                     arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                 }

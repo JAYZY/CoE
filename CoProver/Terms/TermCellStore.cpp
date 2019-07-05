@@ -16,12 +16,13 @@
 #include "TermCellStore.h"
 #include "TermCell.h"
 
-TermCellStore::TermCellStore() : entries(0), argCount(0) {
+TermCellStore::TermCellStore(int hashSize) : TERM_STORE_HASH_SIZE(hashSize), TERM_STORE_HASH_MASK(hashSize - 1), entries(0), argCount(0) {
     /*E的代码： for(int i=0; i<TERM_STORE_HASH_SIZE; ++i)
      {
         store[i] = NULL;
      }*/
-    //数组初始化改为：
+    //数组初始化改为：*store;//[TERM_STORE_HASH_SIZE];
+    store = new TermCell*[TERM_STORE_HASH_SIZE];
     memset(store, 0, sizeof (TermCell*) * TERM_STORE_HASH_SIZE);
     storeEleNum = 0;
     this->hashConflict = 0;
@@ -49,7 +50,7 @@ TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
     TermCell* ret = TermTree::TermTreeInsert(&(store[ TermCellHash(term) ]), term);
     if (!ret) {
         entries++;
-        argCount += term->arity;       
+        argCount += term->arity;
     }
     return ret;
 }
@@ -88,7 +89,9 @@ long TermCellStore::TermCellStoreCountNodes() {
 
 void TermCellStore::printAllTerm(FILE* out) {
     cout << this->entries;
-    for (TermCell* elem : this->store) {
+    for (int i = 0; i < this->TERM_STORE_HASH_SIZE; i++) {
+        TermCell* elem = store[i];
+
         if (elem == nullptr)
             continue;
         middleTraverseSubT(out, elem);

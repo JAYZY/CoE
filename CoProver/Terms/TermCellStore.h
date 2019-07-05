@@ -16,22 +16,26 @@
 
 
 
-#define TERM_STORE_HASH_SIZE 32768  //(8192*4) 神仙数字　2^13*4=２^15 int的表示范围　-32768¬32767
-#define TERM_STORE_HASH_MASK (TERM_STORE_HASH_SIZE-1)
+//#define TERM_STORE_HASH_SIZE 32768  //(8192*4) 神仙数字　2^13*4=２^15 int的表示范围　-32768¬32767
+//#define TERM_STORE_HASH_MASK (TERM_STORE_HASH_SIZE-1)
 
 class TermCellStore {
+    
 public:
+      int TERM_STORE_HASH_SIZE;
+      int TERM_STORE_HASH_MASK;
+
     long entries; //存储的项的个数（包括子项，eg. f1(a1,a3) entries=3
-    long argCount; //存储函数项的元个数　eg. f1(a1,f2(a3))  argCount=2+1=3    
-    TermCell* store[TERM_STORE_HASH_SIZE];
+    long argCount; //存储函数项的元个数　eg. f1(a1,f2(a3))  argCount=2+1=3      
     //zj-add hash冲突次数
     long hashConflict;
     long storeEleNum;
+    TermCell* *store;//[TERM_STORE_HASH_SIZE];
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermCellStore();
+    TermCellStore(int hashSize=32768);
     TermCellStore(const TermCellStore& orig);
     virtual ~TermCellStore();
     void TermCellStoreExit();
@@ -42,7 +46,7 @@ public:
 
     /* 构建第一个项的hash编码 #define tcs_arity0hash(term) ((term)->fCode) */
     inline FunCode arity0hash(TermCell* term) {
-        return term->fCode;       
+        return term->fCode;
     }
 
     /* 构建第二个项的hash编码 #define tcs_arity1hash(term) (tcs_arity0hash(term)^(((intptr_t)(term)->args[0])>>3)) */
@@ -64,8 +68,8 @@ public:
     inline long TermCellStoreNodes() {
         return entries;
     }
-    
- 
+
+
 
 
     /*---------------------------------------------------------------------*/
@@ -98,12 +102,12 @@ public:
 
 
     /* 返回,所有项个数 -- Return the number of nodes in the term cell store. */
-    long TermCellStoreCountNodes();    
+    long TermCellStoreCountNodes();
     void printAllTerm(FILE* out);
-    
-    
+
+
 private:
-    void middleTraverseSubT(FILE*  out,TermCell* root);
+    void middleTraverseSubT(FILE* out, TermCell* root);
 };
 
 #endif /* TERMCELLSTORE_H */

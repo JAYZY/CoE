@@ -42,54 +42,33 @@ void VarBank::VarBankVarsDelProp(TermProp prop) {
 }
 
 /*****************************************************************************
- * 插入一个变元项到varBanks中－[根据插入的变元项编码　fCode]
+ * [根据变元项编码fCode] -- 插入一个变元项到varBanks中 
  * 如果存在返回varTerm的指针．否则，插入到varBank中   
  ****************************************************************************/
-TermCell* VarBank::Insert(FunCode fCode,uint16_t claId) {
+TermCell* VarBank::Insert(FunCode fCode, uint16_t claId) {
     assert(fCode < 0);
     TermCell* var = FindByFCode(fCode); //通过FCode 查找变元项
     if (var == nullptr) {
         var = new TermCell();
-        var->claId=claId;
+        var->claId = claId;
         var->fCode = fCode;
         var->entryNo = fCode;
         SetProp(var->properties, TermProp::TPIsShared); //给变元项－shared 属性
-        vctFCodes[-fCode] = var; //vctFCodes.push_back(var);
-        //PDArrayAssignP(bank->f_code_index, -f_code, var);
-        maxVar = MAX(-fCode, maxVar);
+        vctFCodes.push_back(var);
     }
     assert(!QueryProp(var->properties, TermProp::TPIsGround)); //确保项不是常元项
     return var;
 }
 
-TermCell* VarBank::InsertOldVar(TermCell* varT) {
-     
-    PTree_p entry = freeVarSets.FindByKey(varT);
-    TermCell* var = nullptr;
-//    
-//    if (entry) {        
-//        var = (TermCell*) entry->val1.p_val;
-//    } else {
-//        var = VarBankGetFreshVar();
-//        PTree_p handle = new PTreeCell();      
-//        handle->key=varT;
-//        handle->val1.p_val = var;
-//        handle->val2.i_val = var->fCode;
-//        PTree_p test = freeVarSets.Insert(handle);
-//        assert(test == NULL);
-//    }
-    return var;
-}
-
 /*****************************************************************************
- * 插入一个变元项到varBanks中－[根据插入的变元项名称]
+ * [根据变元项名称] -- 插入一个变元项到varBanks中
  * 如果存在返回varTerm的指针．
  * 否则，插入到varBank中
  ****************************************************************************/
-TermCell* VarBank::Insert(const string& name,uint16_t claId) {
+TermCell* VarBank::Insert(const string& name, uint16_t claId) {
     TermCell* var = VarBankExtNameFind(name);
-    if (!var) {
-        var = VarBankGetFreshVar(claId);
+    if (var==nullptr) {        
+        var = Insert(-(vctFCodes.size()+1),claId); //fCode从-1开始
         StrTree_p handle = new StrTreeCell();
         handle->key = name;
         handle->val1.p_val = var;
@@ -106,35 +85,41 @@ TermCell* VarBank::Insert(const string& name,uint16_t claId) {
  * 奇数下标保留作为创建子句备份
  * （create clause copies that are　guaranteed to be variable-disjoint.）
  **************************************************************************/
-TermCell* VarBank::VarBankGetFreshVar(uint16_t claId) {
-    vCount += 2;
-    vctFCodes.push_back(NULL); //奇数下标保留        
-    TermCell* var = Insert(-vCount,claId);
+TermCell* VarBank::VarBankGetFreshVar(uint16_t claId) {    
+    TermCell* var = Insert(-(vctFCodes.size()+1), claId);
     assert(var);
     return var;
 }
 
 
-//   Return a pointer to a unshared termcell equivalent to source. If
-//   source is a variable, get the cell from the varbank, otherwise
-//   copy the cell via TermTopCopy().
 
-TermCell* VarBank::TermEquivCellAlloc(TermCell* term,uint16_t claId) {
-    TermCell* handle;
-    VarBank* vars = this;
-    if (term->IsVar()) {
-        handle = vars->Insert(term->fCode,claId);
-    } else {
-        handle = TermCell::TermTopCopy(term);
+ 
+
+
+/*****************************************************************************
+ * Return a pointer to the variable with the given f_code in the variable bank. 
+ * Create the variable if it does not exist. 
+ ****************************************************************************/
+Term_p VarBank::VarBankFCodeAssertAlloc(FunCode f_code) {
+    Term_p var;
+
+    assert(f_code < 0);
+    var=FindByFCode(f_code);
+    //var = VarBankFCodeFind(f_code);
+    if (!var) {
+        var = new TermCell();
+        var->claId=0;
+        var->entryNo = f_code;
+        var->fCode = f_code;
+        var->TermCellSetProp(TermProp::TPIsShared);
+        //PDArrayAssignP(bank->f_code_index, -f_code, var);
+        vctFCodes.push_back(var);
+        
     }
-    return handle;
+    assert(!var->TermCellQueryProp(TermProp::TPIsGround));
+    return var;
 }
-/*---------------------------------------------------------------------*/
-/*                    Constructed Function                             */
 
-/*---------------------------------------------------------------------*/
-VarBank::VarBank() : vCount(0), maxVar(0) {
-}
 
 /*-----------------------------------------------------------------------
 //
@@ -181,45 +166,15 @@ FunCode VarBank::VarBankCheckBindings(FILE* out, Sig_p sig) {
     return res;
 }
 
-/*****************************************************************************
- * Return a pointer to the variable with the given f_code in the variable bank. 
- * Create the variable if it does not exist. 
- ****************************************************************************/
-Term_p VarBank::VarBankFCodeAssertAlloc(FunCode f_code) {
-    Term_p var;
-
-    assert(f_code < 0);
-    var = VarBankFCodeFind(f_code);
-    if (!var) {
-        var = new TermCell();
-        var->entryNo = f_code;
-        var->fCode = f_code;
-        var->TermCellSetProp(TermProp::TPIsShared);
-        //PDArrayAssignP(bank->f_code_index, -f_code, var);
-        vctFCodes[-f_code] = var;
-        maxVar = MAX(-f_code, maxVar);
-    }
-    assert(!var->TermCellQueryProp(TermProp::TPIsGround));
-    return var;
-}
-
-/*****************************************************************************
- * Return the pointer to the variable associated with given f_code if it exists in the VarBank, 
- * NULL otherwise.   
- ****************************************************************************/
-Term_p VarBank::VarBankFCodeFind(FunCode f_code) {
-    assert(f_code < 0);
-    return vctFCodes[-f_code];
-}
-
-VarBank::VarBank(const VarBank& orig) {
+ 
+/*---------------------------------------------------------------------*/
+/*                    Constructed Function                           */
+/*---------------------------------------------------------------------*/
+VarBank::VarBank()  {
+    vctFCodes.reserve(8);
+    
 }
 
 VarBank::~VarBank() {
-    extIndex.Destroy();
-    for (int i = 0; i < vctFCodes.size(); ++i) {
-        DelPtr(vctFCodes[i]);
-    }
-    vctFCodes.clear();
-    vector<TermCell*>().swap(vctFCodes);
+    VarBankClearExtNames();
 }

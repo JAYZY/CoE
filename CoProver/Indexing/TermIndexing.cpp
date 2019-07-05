@@ -470,8 +470,8 @@ TermIndNode * DiscrimationIndexing::NextForwordSubsump() {
 TermCell* DiscrimationIndexing::FindVarBindByFCode(FunCode idx) {
     assert(idx < 0);
     FunCode id = -idx;
-    assert(0 == id % 2);
-    id = id / 2;
+    
+   
     if (!(id < varBinding.size())) {
         int s = varBinding.size();
         for (int i = s; i <= id; ++i)
@@ -485,8 +485,8 @@ void DiscrimationIndexing::varAddBinding(FunCode idx, TermCell* t) {
 
     assert(idx < 0);
     FunCode id = -idx;
-    assert(0 == id % 2);
-    id = id / 2;
+  
+    
     assert(id < this->varBinding.size());
     stVarChId.push_back(id);
     this->varBinding[id] = t;
@@ -499,7 +499,9 @@ void DiscrimationIndexing::varClearBingding() {
         }
     }
     vector<uint32_t>().swap(stVarChId);
+    
     varBinding.clear(); //注意并没有释放空间.
+    
 }
 // </editor-fold>
 

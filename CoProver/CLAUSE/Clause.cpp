@@ -576,7 +576,7 @@ void Clause::ClauseParse(Scanner* in) {
 
 void Clause::ClauseNormalizeVars(VarBank_p renameVarbank) {
     Subst_p subst = new Subst();
-    renameVarbank->VarBankResetVCount();
+    renameVarbank->VarBankClearExtNames();//VarBankResetVCount();
     Lit_p lit = this->literals;
 
 }

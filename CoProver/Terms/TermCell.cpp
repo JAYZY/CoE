@@ -95,7 +95,7 @@ TermCell* TermCell::TermParse(Scanner* in, TermBank* tb) {
     string idStr;
     Sig_p sig = Env::getSig();
     TermCell* handle = nullptr;
-    VarBank_p vars = tb->shareVars;
+    VarBank_p vars = tb->GetShareVar();
     if (Sigcell::SigSupportLists && in->TestInpTok(TokenType::OpenSquare)) {
         handle = parse_cons_list(in, tb);
     } else {
@@ -254,7 +254,7 @@ TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
     if (source->IsVar()) {
         string varName;
         source->getVarName(varName);
-        t = tb->shareVars->Insert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
+        t = tb->VarInert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
         t->uVarCount = 1;
         t->weight = DEFAULT_VWEIGHT;        
         t->uMaxFuncLayer = 0;
@@ -1027,7 +1027,7 @@ TermCell* TermCell::TermEquivCellAlloc(TermBank* tb) {
 
     if (IsVar()) //变元项　
     {
-        handle = tb->shareVars->Insert(fCode, tb->claId);
+        handle = tb->VarInert(fCode, tb->claId);
     } else {
         // handle=new TermCell(*this);
         handle = TermCell::TermTopCopy(this);

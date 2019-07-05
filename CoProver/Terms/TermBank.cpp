@@ -33,9 +33,9 @@ TermBank::TermBank(uint16_t claIdent) : claId(claIdent) {
     //extIndex.reserve(10000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
     garbageState = TermProp::TPIgnoreProps;
     //初始化 varBank
-    shareVars = new VarBank();
+    shareVars = nullptr; //若是全局基项bank 则不占内存空间 ； new VarBank();
     //初始化 TermCellStore
-    termStore = TermCellStore();
+    termStore = TermCellStore(32);
 }
 
 TermBank::TermBank(const TermBank& orig) {
@@ -368,7 +368,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
             FuncSymbType id_type;
             if ((id_type = TermCell::TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
                 //若为变元符号    将该项插入文字所在子句的 子句级共享变元集中
-                handle = this->shareVars->Insert(idStr, this->claId);
+                handle = this->VarInert(idStr, this->claId);
                 handle->uVarCount = 1; //设置变元数=1
                 handle->TermCellDelProp(TermProp::TPIsGround);
                 handle->weight = DEFAULT_VWEIGHT;
@@ -674,7 +674,7 @@ long TermBank::TBTermNodes() {
 void TermBank::TBPrintBankInOrder(FILE* out) {
 
     SplayTree<NumTreeCell> splayTree;
-    for (long i = 0; i < TERM_STORE_HASH_SIZE; i++) {
+    for (long i = 0; i < termStore.TERM_STORE_HASH_SIZE; i++) {
         TermTree::TermTreeTraverseInit(termStore.store[i], splayTree);
     }
 
