@@ -72,7 +72,7 @@ enum class ClauseProp {
 class ClauseInfo {
 public:
     const char* name; /* In the input file, if any */
-    const char* source; /* File name, if any */
+    //const char* source; /* File name, if any */
     long line;
     long column;
     /*---------------------------------------------------------------------*/
@@ -82,16 +82,18 @@ public:
 
     ClauseInfo() {
         name = nullptr;
-        source = nullptr;
+        //source = nullptr;
         line = -1;
         column = -1;
     }
 
     ClauseInfo(const char* _name, const char* _src, long _line, long _col)
-    : name(_name), source(_src), line(_line), column(_col) {
+    : name(_name), /*source(_src),*/ line(_line), column(_col) {
     }
 
     ~ClauseInfo() {
+        DelPtr(name);
+      //  DelPtr(source);
     }
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
@@ -100,9 +102,9 @@ public:
 
     inline void ClauseSourceInfoPrint(FILE* out, const string&inf_lit, const string& delim) {
         string src = "unknown";
-        if (source) {
-            src = delim + source + delim;
-        }
+//        if (source) {
+//            src = delim + source + delim;
+//        }
         string _name = name;
         if (!name) {
             if (line < 0) {
@@ -128,6 +130,9 @@ public:
 };
 
 class Clause {
+private :
+     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
+    TermBank_p claTB;
 public:
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数    
@@ -139,10 +144,8 @@ public:
     ClauseInfo* info; //子句信息    
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
-    Literal* literals; //文字列表
-    
-    /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
-    TermBank_p claTB;
+    Literal* literals; //文字列表   
+   
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -168,7 +171,18 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
-
+    inline TermBank_p GetClaTB(){
+         if(claTB==nullptr)
+             claTB=new TermBank(ident);
+         return claTB;
+    }
+    inline void SetClaTB(TermBank_p _tb){
+        
+        claTB=_tb;
+    }
+    inline void ClearClaTB(){
+        DelPtr(claTB);
+    }
     inline Literal* Lits() {
         return literals;
     }

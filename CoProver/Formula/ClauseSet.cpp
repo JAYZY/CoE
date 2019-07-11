@@ -72,7 +72,7 @@ void ClauseSet::Print(FILE* out) {
     string oriCla = "";
     for (auto&cla : this->claLst) {
         cla->getStrOfClause(oriCla);
-        cla->ClausePrint(out,true); 
+        //cla->ClausePrint(out,true); 
     }
     FileOp::getInstance()->outInfo(oriCla);
 }

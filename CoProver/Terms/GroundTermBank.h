@@ -14,8 +14,9 @@
 #include "TermCell.h"
 class GroundTermBank {
 private:
-    uint64_t inCount; 
+   
 public:
+    uint64_t inCount; 
     TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
     TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
     TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */

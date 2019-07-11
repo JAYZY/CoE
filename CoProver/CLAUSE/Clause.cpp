@@ -17,10 +17,10 @@
 //
 
 Clause::Clause()
-: ident(++Env::global_clause_counter), properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
+: properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
 , negLitNo(0), posLitNo(0), weight(0), priority(0), parent1(nullptr), parent2(nullptr) {
-
-    claTB = new TermBank(ident);
+    ident = ++Env::global_clause_counter;
+    claTB = nullptr; // new TermBank(ident);
 }
 
 Clause::Clause(const Clause* orig) {
@@ -178,13 +178,13 @@ void Clause::ClausePrint(FILE* out, bool fullterms) {
     //}
 }
 
-void Clause::getStrOfClause(string&outStr, bool complete ) {
+void Clause::getStrOfClause(string&outStr, bool complete) {
     if (Options::OutputFormat != IOFormat::TSTPFormat) {
-        Out::Error("File Formate is Error!",ErrorCodes::FILE_ERROR);
+        Out::Error("File Formate is Error!", ErrorCodes::FILE_ERROR);
     }
     string type_name = "plain";
-    if(ClauseQueryProp(ClauseProp::CPTypeAxiom))
-         type_name = "axiom";
+    if (ClauseQueryProp(ClauseProp::CPTypeAxiom))
+        type_name = "axiom";
     switch (ClauseQueryTPTPType()) {
         case (int) ClauseProp::CPTypeAxiom:
             if (ClauseQueryProp(ClauseProp::CPInputFormula)) {
@@ -225,8 +225,8 @@ void Clause::getStrOfClause(string&outStr, bool complete ) {
         this->getEqnListTSTP(outStr, "|", false);
         //EqnListTSTPPrint(out, literals, "|", fullterms);
     }
-    outStr += (complete==true)? ") ).\n" :") ";
-    
+    outStr += (complete == true) ? ") ).\n" : ") ";
+
 }
 
 /***************************************************************************** 
@@ -345,14 +345,14 @@ void Clause::ClauseStandardWeight() {
 void Clause::EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms) {
     Lit_p handle = lst;
     if (handle) {
-        string litInfo="";
+        string litInfo = "";
         handle->getParentLitInfo(litInfo);
         litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
         handle->EqnTSTPPrint(out, fullterms);
         while (handle->next) {
             handle = handle->next;
             fputs(sep.c_str(), out);
-            litInfo="";
+            litInfo = "";
             handle->getParentLitInfo(litInfo);
             litInfo.empty() ? fprintf(out, "{%hu}", handle->pos) : fprintf(out, "{%hu},[%s] ", handle->pos, litInfo.c_str());
             handle->EqnTSTPPrint(out, fullterms);
@@ -365,7 +365,7 @@ void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
     Lit_p handle = this->literals;
     if (handle) {
         if (colInfo) {
-            string litInfo="";
+            string litInfo = "";
             handle->getParentLitInfo(litInfo);
             string str1 = "{" + to_string(handle->pos) + "}";
             string str2 = ",[" + litInfo + "]";
@@ -376,7 +376,7 @@ void Clause::getEqnListTSTP(string&outStr, string sep, bool colInfo) {
             handle = handle->next;
             outStr += sep;
             if (colInfo) {
-                string litInfo="";
+                string litInfo = "";
                 handle->getParentLitInfo(litInfo);
                 string str1 = "{" + to_string(handle->pos) + "}";
                 string str2 = ",[" + litInfo + "]";
@@ -454,7 +454,8 @@ void Clause::ClauseParse(Scanner* in) {
 
     //Scanner* in = Env::getIn();
     //TermBank* t = Env::getTb();
-    this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
+    if (this->claTB)
+        this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
 
     ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
     //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
@@ -576,7 +577,7 @@ void Clause::ClauseParse(Scanner* in) {
 
 void Clause::ClauseNormalizeVars(VarBank_p renameVarbank) {
     Subst_p subst = new Subst();
-    renameVarbank->VarBankClearExtNames();//VarBankResetVCount();
+    renameVarbank->VarBankClearExtNames(); //VarBankResetVCount();
     Lit_p lit = this->literals;
 
 }
@@ -662,18 +663,16 @@ void Clause::SetEqnListVarState() {
 }
 
 uint16_t Clause::calcMaxFuncLayer() const {
-        uint16_t maxTermDepth=0;
-        Lit_p lit=this->literals;
-        while(lit){
-            uint16_t litMaxTermDepth=lit->TermDepth();
-            if(maxTermDepth<litMaxTermDepth)
-                maxTermDepth=litMaxTermDepth;
-            lit=lit->next;
-        }
-        return maxTermDepth;
+    uint16_t maxTermDepth = 0;
+    Lit_p lit = this->literals;
+    while (lit) {
+        uint16_t litMaxTermDepth = lit->TermDepth();
+        if (maxTermDepth < litMaxTermDepth)
+            maxTermDepth = litMaxTermDepth;
+        lit = lit->next;
     }
-    
-
+    return maxTermDepth;
+}
 
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();

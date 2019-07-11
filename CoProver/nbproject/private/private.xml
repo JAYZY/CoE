@@ -16,26 +16,11 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermBank.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.h</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/main.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCell.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/GroundTermBank.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/VarBank.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Inferences/Subst.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/GroundTermBank.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCellStore.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Doc/问题记录</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCell.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCellStore.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/BASIC/SplayTree.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Indexing/TermIndexing.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermBank.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/VarBank.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
         </group>
     </open-files>
 </project-private>

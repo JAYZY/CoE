@@ -46,6 +46,7 @@ TermBank::~TermBank() {
 
     /* printf("TBFree(): %ld\n", TermCellStoreNodes(&(junk->term_store)));*/
     termStore.TermCellStoreExit();
+    
     DelPtr(shareVars);
     extIndex.clear();
     vector<TermCell*>().swap(extIndex);

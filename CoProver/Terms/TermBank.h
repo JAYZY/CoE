@@ -74,7 +74,8 @@ public:
 
     /*清除所有变量名称*/
     inline void varsClearExtNames() {
-        shareVars->VarBankClearExtNames();
+        if (shareVars)
+            shareVars->VarBankClearExtNames();
     }
 
     /* 返回非变元项个数 */

@@ -70,8 +70,8 @@ typedef FuncCell *Func_p;
 /*                             宏定义                                   */
 /*---------------------------------------------------------------------*/
 
-#define DEFAULT_SIGNATURE_SIZE 20
-#define DEFAULT_SIGNATURE_GROW 2
+//#define DEFAULT_SIGNATURE_SIZE 16
+//#define DEFAULT_SIGNATURE_GROW 2
 
 /* Special constant for internal operations */
 //#define SIG_TRUE_CODE  1

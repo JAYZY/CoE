@@ -59,6 +59,8 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             ++iterNum;
             continue;
         }
+//        if(iterNum==203) 
+//            printf("Debug:");
         //定义起步子句
         Clause* selCla = *itSelCla;
         res = triAlg.GenreateTriLastHope(selCla);

@@ -13,7 +13,6 @@
 
 #include <bits/stdint-uintn.h>
 #include <vector>
-
 #include "Formula.h"
 #include "Global/Environment.h"
 #include "Indexing/TermIndexing.h"
@@ -58,20 +57,20 @@ void Formula::GenerateEqulitAxiom() {
     //(1) Reflexivity: X1=X1
     Clause* claReflex = new Clause();
     claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
-    TermCell* t = claReflex->claTB->VarInert("A", claReflex->ident);
+    TermCell* t = claReflex->GetClaTB()->VarInert("A", claReflex->ident);
     Lit_p reflexLit = new Literal(t, t, true); //Reflexivity: X1=X1
     reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
     reflexLit->EqnSetProp(EqnProp::EPIsPositive);
 
     claReflex->bindingLits(reflexLit);
     claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
-     claReflex->ClauseSetProp(ClauseProp::CPType1);
+    claReflex->ClauseSetProp(ClauseProp::CPType1);
     //claReflex->info->name = "reflexivity";
     vEqulityAxiom.push_back(claReflex);
     //(2) Symmetry: X1~=X2 | X2 =X1
     Clause* claSymmetry = new Clause();
-    TermCell* lt = claSymmetry->claTB->VarInert("A", claSymmetry->ident);
-    TermCell* rt = claSymmetry->claTB->VarInert("B", claSymmetry->ident);
+    TermCell* lt = claSymmetry->GetClaTB()->VarInert("A", claSymmetry->ident);
+    TermCell* rt = claSymmetry->GetClaTB()->VarInert("B", claSymmetry->ident);
     Lit_p symLitA = new Literal(lt, rt, false);
     Lit_p symLitB = new Literal(rt, lt, true);
     symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
@@ -79,15 +78,15 @@ void Formula::GenerateEqulitAxiom() {
     symLitB->EqnSetProp(EqnProp::EPIsPositive);
     symLitA->next = symLitB;
     claSymmetry->bindingLits(symLitA);
-    claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom );
-     claSymmetry->ClauseSetProp(ClauseProp::CPType1);
+    claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom);
+    claSymmetry->ClauseSetProp(ClauseProp::CPType1);
     //claSymmetry->info->name = "symmetry";
     vEqulityAxiom.push_back(claSymmetry);
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
     Clause* claTrans = new Clause();
-    TermCell* tA = claTrans->claTB->VarInert("A", claTrans->ident);
-    TermCell* tB = claTrans->claTB->VarInert("B", claTrans->ident);
-    TermCell* tC = claTrans->claTB->VarInert("C", claTrans->ident);
+    TermCell* tA = claTrans->GetClaTB()->VarInert("A", claTrans->ident);
+    TermCell* tB = claTrans->GetClaTB()->VarInert("B", claTrans->ident);
+    TermCell* tC = claTrans->GetClaTB()->VarInert("C", claTrans->ident);
     Lit_p transA = new Literal(tA, tB, false);
     transA->EqnSetProp(EqnProp::EPIsEquLiteral);
     Lit_p transB = new Literal(tB, tC, false);
@@ -100,7 +99,7 @@ void Formula::GenerateEqulitAxiom() {
     claTrans->bindingLits(transA);
     claTrans->ClauseSetProp(ClauseProp::CPTypeAxiom);
     claTrans->ClauseSetProp(ClauseProp::CPType1);
-    
+
     //claTrans->info->name = "transitivity";
     vEqulityAxiom.push_back(claTrans);
     //(4) add function-substitution and predicate-substitution
@@ -126,10 +125,10 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //c1->info->name = (claName + to_string(i)).c_st();
                 c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
                 c1->ClauseSetProp(ClauseProp::CPType1);
-                TermCell* lt = c1->claTB->VarInert("X", c1->ident);
+                TermCell* lt = c1->GetClaTB()->VarInert("X", c1->ident);
                 lt->uVarCount = 1;
                 lt->TermCellSetProp(TermProp::TPIsShared);
-                TermCell* rt = c1->claTB->VarInert("Y", c1->ident);
+                TermCell* rt = c1->GetClaTB()->VarInert("Y", c1->ident);
                 lt->uVarCount = 1;
                 rt->TermCellSetProp(TermProp::TPIsShared);
                 Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
@@ -138,7 +137,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //创建n-1个项
                 TermCell** arrTerm = new TermCell*[arity];
                 for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->claTB->VarInert("Z" + to_string(j), c1->ident);
+                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
                     arrTerm[j]->uVarCount = 1;
                     arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                 }
@@ -154,7 +153,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                     }
                 }
                 leftSubT->uVarCount = arity;
-                leftSubT = c1->claTB->TBTermTopInsert(leftSubT);
+                leftSubT = c1->GetClaTB()->TBTermTopInsert(leftSubT);
                 //create right term  e.g = f3(B,C,D)
                 TermCell* rightSubT = new TermCell(fCode, arity);
                 for (int j = 1; j <= arity; j++) {
@@ -165,7 +164,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                     }
                 }
                 rightSubT->uVarCount = arity;
-                rightSubT = c1->claTB->TBTermTopInsert(rightSubT);
+                rightSubT = c1->GetClaTB()->TBTermTopInsert(rightSubT);
                 litA->next = new Literal(leftSubT, rightSubT, true); //f30(A,C,D) = f30(B,C,D)
                 litA->next->EqnSetProp(EqnProp::EPIsPositive);
                 litA->next->EqnSetProp(EqnProp::EPIsEquLiteral);
@@ -179,14 +178,14 @@ void Formula::GenerateEqulitAxiomByFunction() {
             //create arity-number clauses;
             for (int i = 1; i <= arity; i++) {
                 Clause* c1 = new Clause();
-                
+
                 c1->ClauseSetProp(ClauseProp::CPTypeAxiom);
                 c1->ClauseSetProp(ClauseProp::CPType1);
                 //c1->info->name = (claName + to_string(i));
 
-                TermCell* lt = c1->claTB->VarInert("X", c1->ident);
+                TermCell* lt = c1->GetClaTB()->VarInert("X", c1->ident);
                 lt->uVarCount = 1;
-                TermCell* rt = c1->claTB->VarInert("Y", c1->ident);
+                TermCell* rt = c1->GetClaTB()->VarInert("Y", c1->ident);
                 rt->uVarCount = 1;
                 lt->TermCellSetProp(TermProp::TPIsShared);
                 rt->TermCellSetProp(TermProp::TPIsShared);
@@ -197,7 +196,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 //创建n-1个项
                 TermCell** arrTerm = new TermCell*[arity];
                 for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->claTB->VarInert("Z" + to_string(j), c1->ident);
+                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
                     arrTerm[j]->uVarCount = 1;
                     arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
                 }
@@ -212,7 +211,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                     }
                 }
                 leftSubT->uVarCount = arity;
-                leftSubT = c1->claTB->TBTermTopInsert(leftSubT);
+                leftSubT = c1->GetClaTB()->TBTermTopInsert(leftSubT);
 
                 litPtr->next = new Literal(leftSubT, Env::getGTbank()->trueTerm, false);
                 litPtr = litPtr->next;
@@ -227,7 +226,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                     }
                 }
                 rightSubT->uVarCount = arity;
-                rightSubT = c1->claTB->TBTermTopInsert(rightSubT);
+                rightSubT = c1->GetClaTB()->TBTermTopInsert(rightSubT);
 
                 litPtr->next = new Literal(rightSubT, Env::getGTbank()->trueTerm, true);
                 litPtr->next->EqnSetProp(EqnProp::EPIsPositive);
@@ -263,7 +262,14 @@ void Formula::generateFormula(Scanner* in) {
                         Clause* clause = new Clause();
                         clause->ClauseParse(in);
                         origalClaSet->InsertCla(clause); //插入原始子句集
-
+//                        //if (Env::global_clause_counter %  == 0) {
+           // printf("number of clause:%u\n", Env::global_clause_counter);
+//                            printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
+//                            Env::getGTbank()->GTPrintAllTerm(stdout);
+//                            Env::PrintRusage(stdout);
+//                            printf("\n");
+//
+//                        //}
                     }
                 }
             }
@@ -353,7 +359,7 @@ RESULT Formula::preProcess() {
 
     StrategyParam::R_MAX_LITNUM = 1;
     StrategyParam::HoldLits_NUM_LIMIT = 3;
-    StrategyParam::MaxLitNum=uMaxLitNum-2;
+    StrategyParam::MaxLitNum = uMaxLitNum - 2;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
@@ -847,8 +853,8 @@ void Formula::AddPredLst(Clause* cla) {
 /*得到互补谓词候选文字集合*/
 vector<Literal*>* Formula::getPairPredLst(Literal* lit) {
     //debug
-    if(lit->EqnIsEquLit())
-        cout<<"eqlit"<<endl;
+    if (lit->EqnIsEquLit())
+        cout << "eqlit" << endl;
     if (lit->IsPositive())
         return (lit->EqnIsEquLit()) ? &g_NegPred[0] : &g_NegPred[lit->lterm->fCode];
     else

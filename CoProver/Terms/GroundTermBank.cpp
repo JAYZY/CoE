@@ -8,7 +8,7 @@
 #include "GroundTermBank.h"
 
 GroundTermBank::GroundTermBank() {
-    extIndex.reserve(1000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
+   // extIndex.reserve(1000); //注意，只是预留10W空间，并没有初始化，(初始化可以考虑用resize)
 
     //初始化 TermCellStore
     termStore = TermCellStore();

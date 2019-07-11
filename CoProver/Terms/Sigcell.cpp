@@ -21,9 +21,9 @@ bool Sigcell::SigSupportLists = false;
 /***************************************************************************** 
  ****************************************************************************/
 Sigcell::Sigcell() {
-
+    int iniVecSize=16;
     alphaRanksValid = false;
-    fInfo.reserve(DEFAULT_SIGNATURE_SIZE); //扩大    
+    fInfo.reserve(iniVecSize); //扩大    
     fInfo.push_back(nullptr); // 第一个元素为NULL. 
 
     /* 为fIndex插入１StrTreeCell节点*/
@@ -49,7 +49,7 @@ Sigcell::Sigcell() {
         assert(SigFindFCode("$cons") == (FunCode)DerefType::CONSCODE);
     }
     internalSymbols = fCount(); //表示最大的可用下标
-    ornCodes.reserve(DEFAULT_SIGNATURE_SIZE);
+     //ornCodes.reserve(iniVecSize);
     eqnCode = 0;
     neqnCode = 0;
     cnilCode = 0;

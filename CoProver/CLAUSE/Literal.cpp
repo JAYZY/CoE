@@ -143,7 +143,7 @@ bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
     Term_p lterm = nullptr;
     Term_p rterm = nullptr;
     bool positive = true;
-    TermBank_p claTermBank = this->claPtr->claTB;
+    TermBank_p claTermBank = this->claPtr->GetClaTB();
     if (in->TestInpId("equal")) {
         in->NextToken();
         in->AcceptInpTok(TokenType::OpenBracket);
@@ -203,10 +203,13 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
     Term_p rterm;
     bool positive = true;
     Scanner* in = Env::getIn();
-    TermBank* bank = this->claPtr->claTB;
-
+    TermBank* bank = this->claPtr->GetClaTB();
+    
     //lterm = TBTermParse(in, bank);
     lterm = bank->TBTermParseReal(in, true);
+    if(bank->inCount==0){     
+       claPtr->ClearClaTB();
+    }
     //BOOL_TERM_NORMALIZE(lterm);
     if ( Env::getGTbank()->falseTerm ==lterm) {
         lterm = Env::getGTbank()->trueTerm;
@@ -277,7 +280,7 @@ VarState Literal::getVarState() {
 }
 
 TermBank_p Literal::getClaTermBank() {
-    return claPtr->claTB;
+    return claPtr->GetClaTB();
 }
 
 /*****************************************************************************
@@ -442,8 +445,8 @@ Literal* Literal::EqnListFlatCopy() {
 
 Literal* Literal::eqnRenameCopy(Clause* newCla, DerefType deref) {
 
-    Term_p lt = lterm->renameCopy(newCla->claTB, deref);
-    Term_p rt = rterm->renameCopy(newCla->claTB, deref);
+    Term_p lt = lterm->renameCopy(newCla->GetClaTB(), deref);
+    Term_p rt = rterm->renameCopy(newCla->GetClaTB(), deref);
     Literal* newLit = new Literal(lt, rt, false);
 
     newLit->claPtr = newCla;
