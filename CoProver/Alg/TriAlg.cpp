@@ -700,7 +700,6 @@ ResRule TriAlg::RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint
 }
 
 //原始的规则检查
-
 ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg) {
     /*规则检查 ，
      ** 总的原则:  A主界线上文字不能相同或合一互补; B.主界线与前面剩余文字不能相同;C. 剩余文字R不能恒真;
@@ -743,16 +742,19 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
     Clause* pasCla = candLit->claPtr;
     Clause* actCla = actLit->claPtr;
     uint16_t holdLitSize = 0; //剩余文字总个数
+    
     uint16_t uActClaHoldLitSize = actCla->LitsNumber();
 
     uPasClaHoldLitSize = pasCla->LitsNumber() - 1;
 
     Literal * holdLit[uPasClaHoldLitSize + uActClaHoldLitSize + vNewR.size() - 1]; //创建数组用来存储 数据 [注意优化]
+    
     vector<Literal*> noSelActLit; //测试- 被动子句中不能作为下次主动文字
+    
     vector<Literal*> vDelLit; //删除的文字
     char arryDelRInd[vNewR.size()]; //删除的R中文字编号
     memset(arryDelRInd, 0, sizeof (arryDelRInd)); //全部初始化为0;
-    uint8_t delRNum = 0; //删除的R的个数
+   
     bool isHold = true;
     //----- 优先检查被动子句 ------// 
     for (Literal* pLit = pasCla->literals; pLit; pLit = pLit->next) {
@@ -860,7 +862,6 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
     for (Literal* aLit = actCla->literals; aLit; aLit = aLit->next) {
         //已经删除的文字不考虑
         if (!aLit->EqnQueryProp(EqnProp::EPIsHold) || aLit == actLit) {
-
             --uActClaHoldLitSize;
             continue;
         }
@@ -934,15 +935,21 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
         }
 
     }
-    /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int) (holdLitSize - vNewR.size()) > StrategyParam::R_MAX_LITNUM) {
-        //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-        ++Env::S_OverMaxLitLimit_Num;
-        return ResRule::MoreLit;
-    }
+  
+//    /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
+//    if (0 < StrategyParam::MaxLitNumOfR && (int) (holdLitSize - vNewR.size()) > StrategyParam::MaxLitNumOfR) {
+//        //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+//        ++Env::S_OverMaxLitLimit_Num;
+//        return ResRule::MoreLit;
+//    }
 
+    
+     uint8_t delRNum = 0; //删除的R的个数
+    
+    //若有变元替换发生则做如下检查：
     //4.对R文字检查 PS.若没有合一替换发生,则不需要检查[优化]
     //3.对主界线(A)文字检查 PS.若没有合一替换发生,则不需要检查[优化]
+    
     if (isVarChg) {
         //----- 检查R中的文字,注意从后向前检查,相同R 删除后生成的R ------// 
         int iRIndA = vNewR.size() - 1;
@@ -1030,7 +1037,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
 
     //来,再加一个 剩余文字判断, come 来啊!相互伤害啊~~
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-    if (0 < StrategyParam::HoldLits_NUM_LIMIT && (int) (holdLitSize - delRNum) > (int) StrategyParam::HoldLits_NUM_LIMIT) {
+    if (0 < StrategyParam::MaxLitNumOfR && (int) (holdLitSize - delRNum) > (int) StrategyParam::MaxLitNumOfR) {
         //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
         ++Env::S_OverMaxLitLimit_Num;
         return ResRule::MoreLit;

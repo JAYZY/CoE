@@ -2,7 +2,7 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
         <activeConfTypeElem>1</activeConfTypeElem>
-        <activeConfIndexElem>0</activeConfIndexElem>
+        <activeConfIndexElem>1</activeConfIndexElem>
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="1">
         <file>
@@ -20,7 +20,10 @@
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/main.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.h</file>
         </group>
     </open-files>
 </project-private>

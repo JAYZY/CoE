@@ -61,13 +61,17 @@ public:
     static ALimit ALIT_LIMIT; //主界线文字限制
     //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
     static int32_t IterCount_LIMIT; //create triangle count limit
-    //literals number of new clause limit. =0 noLimit  
-    static uint32_t R_MAX_LITNUM; //分离式R中最大文字数
+    
+    
+    /* 剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+     * 若子句Cj加入△后不满足该限制条件，则换一个Cj,若Ci找不到一个Cj满足该条件的Cj则回退一次。 
+     */
+    static uint32_t MaxLitNumOfR; //分离式R中最大文字数
     //left literals number during the process limit. =0 noLimit
     static uint32_t HoldLits_NUM_LIMIT;
     static uint32_t R_MAX_FUNCLAYER; //最大函数嵌套层限制-不超过256
-    static uint32_t MaxLitNum;
-    
+    static uint32_t MaxLitNumOfNewCla; //新子句最大的文字数限制（literals number of new clause limit. =0 noLimit）
+
     // </editor-fold>
 
     //新的启发式策略
@@ -85,7 +89,7 @@ public:
     static bool IS_ALitEqualR; //主界线文字与R文字相同
 
 
- 
+
 
 
 };

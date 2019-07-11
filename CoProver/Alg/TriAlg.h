@@ -122,7 +122,14 @@ public:
 
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 
-    //原始的规则检查.不涉及过多的 合一替换
+    /**
+     * 原始的规则检查.不涉及过多的 合一替换
+     * @param actLit  主动归结文字
+     * @param candLit 被动归结文字
+     * @param uPasClaHoldLitSize    返回被动归结子句中剩余文字数
+     * @param isVarChg  归结过程中是否有变元变化
+     * @return 
+     */
     ResRule RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg);
 
     //单元子句约减后的规则检查

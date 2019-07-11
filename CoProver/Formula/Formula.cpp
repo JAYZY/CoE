@@ -357,9 +357,9 @@ RESULT Formula::preProcess() {
         }
     }
 
-    StrategyParam::R_MAX_LITNUM = 1;
-    StrategyParam::HoldLits_NUM_LIMIT = 3;
-    StrategyParam::MaxLitNum = uMaxLitNum - 2;
+    StrategyParam::MaxLitNumOfR = 1;                     //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+    StrategyParam::HoldLits_NUM_LIMIT = 3;             
+    StrategyParam::MaxLitNumOfNewCla =1;  //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");

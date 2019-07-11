@@ -74,9 +74,9 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
-                ++StrategyParam::R_MAX_LITNUM;
+                ++StrategyParam::MaxLitNumOfR;
                 StrategyParam::HoldLits_NUM_LIMIT += 2;
-                FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::R_MAX_LITNUM) + "\n");
+                FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::MaxLitNumOfR) + "\n");
                 notStartClaSet.clear();
             }
 
@@ -125,7 +125,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     }
                 }
             }
-            if (newCla->LitsNumber() >  StrategyParam::MaxLitNum) {
+            if (newCla->LitsNumber() >  StrategyParam::MaxLitNumOfNewCla) {
                 DelPtr(newCla);
                 continue;
             }
