@@ -35,11 +35,9 @@ TermBank::TermBank(uint16_t claIdent) : claId(claIdent) {
     //初始化 varBank
     shareVars = nullptr; //若是全局基项bank 则不占内存空间 ； new VarBank();
     //初始化 TermCellStore
-    termStore = TermCellStore(32);
+    termStore = TermCellStore(8);
 }
 
-TermBank::TermBank(const TermBank& orig) {
-}
 
 TermBank::~TermBank() {
     //assert(!sig);

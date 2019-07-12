@@ -111,7 +111,6 @@ public:
         string sinfo = "#------ Input Clauses ------\n";
         FileOp::getInstance()->outInfo(sinfo);
         origalClaSet->Print(out);
-
     }
 
     inline void printProcessedClaSet(FILE* out) {
@@ -136,7 +135,7 @@ public:
         sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
         sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
     }
-
+    
 
 
 

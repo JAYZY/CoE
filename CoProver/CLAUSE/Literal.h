@@ -152,8 +152,9 @@ public:
     inline bool IsOriented() {
         return EqnQueryProp(EqnProp::EPIsOriented);
     }
-    
+
     //该文字是否为剩余文字
+
     inline bool IsHold() {
         return EqnQueryProp(EqnProp::EPIsHold);
     }
@@ -827,8 +828,9 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[private]                           */
     /*---------------------------------------------------------------------*/
-private:
 
+private:
+    // <editor-fold defaultstate="collapsed" desc="Member Function-[private]">
     /*Parse an equation with optional external sign and depending on wether FOF or CNF is being parsed.*/
     bool eqn_parse_real(Scanner* in, TermCell * *lref, TermCell * *rref, bool fof);
 
@@ -848,99 +850,23 @@ private:
     //正文字--负文字 比较
     CompareResult ComparePosToNeg(Literal* negEqn);
     //负文字--正文字 比较   CompareResult CompareNegToPos(Literal* posEqn);
+    // </editor-fold>
+
 public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //    
-
+    /**
+     * 读取In生成文字
+     * @param in
+     */
     void EqnParse(Scanner* in) {
-
         Term_p lt = nullptr, rt = nullptr;
+        //生成左右项
         bool positive = eqn_parse_real(in, &lt, &rt, false);
         EqnAlloc(lt, rt, positive);
-
-        //计算徐杨稳定度
-        //        xyW = xyWeight(lt);
-        //        if (this->EqnIsEquLit()) {
-        //            xyW = (xyW + xyWeight(rt)) / 2.0f;
-        //        }
-        //计算钟小梅稳定度
-        //        map<int, int>varGroup;
-        //        xyW = zxmWeight(lt);
-        //        if (this->EqnIsEquLit()) {
-        //            xyW = 0.5 + 0.5 * (xyW + zxmWeight(rt)) / 2.0f;
-        //        }
-        //改进算法2
-        //        {
-        //
-        //            map<int, int>varGroup;
-        //            varGroup[0] = 0;
-        //            int level = this->EqnIsEquLit() ? 1 : 0;
-        //            int subVarW = 0;
-        //            float funcW = 0.0f;
-        //            if (lt->IsConst() || lt->TBTermIsGround()) {
-        //                funcW = 2.0f;
-        //            } else {
-        //                funcW = newDepth(lt, varGroup, subVarW, level);
-        //            }
-        //
-        //            if (this->EqnIsEquLit()) {
-        //                if (rt->IsConst() || rt->TBTermIsGround()) {
-        //                    funcW += 2;
-        //                    if (4 == funcW)
-        //                        funcW = 2;
-        //                } else {
-        //                    funcW += newDepth(rt, varGroup, subVarW, level);
-        //                    funcW += (subVarW*1.0f) / (subVarW + 1.0f);
-        //                    funcW = 1.0f+funcW / (funcW + 1.0f);                     
-        //                }
-        //            }
-        //            float sameVarW = (varGroup[0] == 0) ? 1 : (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-        //            zjlitWight = WEI * sameVarW + (1 - WEI)*(funcW);
-        //        }
-        //改进变元函数嵌套算法        
-
-        //zjlitWight =  SameX();
-        //zjlitWight = DepV();
-
-        // zjlitWight = DepFunc();
-        //zjlitWight = DepToOneFunc();
-        //zjlitWight = NewW();
-        //zjlitWight = NewW2();
-        //改进的稳定度算法1
-        /*{
-            map<int, int>varGroup;
-            varGroup[0] = 0;
-            //float weight = ((lt->IsConst() || lt->TBTermIsGround())) ? 2.0f : newW(lt, varGroup);
-
-            if (this->EqnIsEquLit()) {
-                map<int, int>subVarGroup;
-                subVarGroup[0] = 0;
-               // weight += newW(rt, subVarGroup);
-                weight = 1.0f + (weight / (1 + weight));
-
-                if (subVarGroup[0] > 0) {
-                    for (auto&ele : subVarGroup) {
-                        if (varGroup.find(ele.first) == varGroup.end()) {
-                            varGroup[ele.first] = ele.second;
-                        } else {
-                            varGroup[ele.first] += ele.second;
-                        }
-                    }
-                }
-            }
-            if (varGroup[0] == 0)
-                zjlitWight = 2.0f;
-            else {
-                float sameVarW = (varGroup[0] - varGroup.size() + 1) / (1.0f * varGroup[0]);
-                zjlitWight = WEI * sameVarW + (1 - WEI) * weight;
-            }
-
-        }*/
-
-        //(zjlitWight + newW(rt)) / 2.0f;// 
-
+        
         //改进的算法 不考虑相同变元
         //        {
         //            this->zjlitWight = this->newWNOSameVar(lt);
@@ -950,12 +876,17 @@ public:
         //            }
         //        }
     }
-
+    
+    /**
+     * 根据2个项生成文字
+     * @param lt
+     * @param rt
+     * @param positive
+     */
     void EqnAlloc(Term_p lt, Term_p rt, bool positive) {
 
         this->pos = 0;
         this->properties = EqnProp::EPNoProps;
-
         if (positive) { //设置正文字属性
             EqnSetProp(EqnProp::EPIsPositive);
         }
@@ -965,14 +896,12 @@ public:
         } else {//非等词文字
 
             assert(rt->TermCellQueryProp(TermProp::TPPredPos));
-
             /*printf("# lterm->f_code: %ld <%s>\n", lterm->f_code,
               SigFindName(bank->sig,lterm->f_code));
               SigPrint(stdout,bank->sig);
               fflush(stdout); */
 
             assert(!lt->IsVar());
-
             /* TermPrint(stdout, lterm, bank->sig, DEREF_NEVER);
             printf("===");
             TermPrint(stdout, rterm, bank->sig, DEREF_NEVER);
@@ -1015,7 +944,7 @@ public:
     Literal * EqnListCopyDisjoint();
     Literal * EqnListFlatCopy();
 
-    Literal * eqnRenameCopy(Clause * newCla, DerefType deref = DerefType::DEREF_ALWAYS);
+    Literal * RenameCopy(Clause * newCla, DerefType deref = DerefType::DEREF_ALWAYS);
 
     Literal * EqnCopyDisjoint();
     //  Literal * EqnCopy(TermBank_p termbank);

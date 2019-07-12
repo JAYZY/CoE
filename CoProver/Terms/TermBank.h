@@ -58,14 +58,14 @@ public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermBank(uint16_t claId); //Sig_p sig);
-    TermBank(const TermBank& orig);
+    TermBank(uint16_t claId); //Sig_p sig);   
     virtual ~TermBank();
 
     /*---------------------------------------------------------------------*/
     /*                       Inline Function                               */
     /*---------------------------------------------------------------------*/
     //
+    // <editor-fold defaultstate="collapsed" desc="Inline Function">   
 
     inline long TBStorageMEM() {
         return sizeof (TermBank) + sizeof (TermCell) * termStore.entries +
@@ -115,6 +115,7 @@ public:
     inline VarBank* GetShareVar() {
         return shareVars;
     }
+    // </editor-fold>
 
     static inline bool TBTermEqual(TermCell* t1, TermCell* t2) {
         return (t1 == t2);
@@ -145,8 +146,13 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-
-
+    /*copy new TermBank*/
+    
+//    TermBank* Copy(){
+//        
+//    }
+    
+    
     /* 插入一个项到termbank中.但该项的子项已经存在,重用或删除 top cell! */
     TermCell* TBTermTopInsert(TermCell* t);
 

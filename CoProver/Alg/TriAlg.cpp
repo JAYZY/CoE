@@ -39,7 +39,6 @@ TriAlg::~TriAlg() {
 /// 预处理模块== 将所有二元子句 全部与单元子句进行合一生成单元子句
 /// \param givenCla
 /// \return 
-
 RESULT TriAlg::GenByBinaryCla(Clause* binaryCla) {
     /*
      * 1.传入目标子句 -- 二元子句,所有文字与单元子句进行合一       
@@ -108,7 +107,7 @@ RESULT TriAlg::GenByBinaryCla(Clause* binaryCla) {
         this->outTri();
         this->outR(nullptr);
         Clause* newCla = new Clause();
-        Literal* newLitP = vNewR[0]->eqnRenameCopy(newCla);
+        Literal* newLitP = vNewR[0]->RenameCopy(newCla);
         newCla->bindingLits(newLitP);
         fol->insertNewCla(newCla); //直接加入单元子句
         //输出到.i 文件
@@ -219,7 +218,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                 this->outR(actLit);
                 Clause* newCla = new Clause();
                 assert(actLit->IsHold());
-                Literal* newLitP = actLit->eqnRenameCopy(newCla);
+                Literal* newLitP = actLit->RenameCopy(newCla);
                 newCla->bindingLits(newLitP);
                 fol->insertNewCla(newCla); //直接加入单元子句
                 //输出到.i 文件
@@ -234,7 +233,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         //            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
         //            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
         //            actLit = nullptr;
-        //        }
+        //}
 
 
         //=======遍历主动子句中剩余文字 -----------------------------------------------------
@@ -310,7 +309,6 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
                 //==================三角形构建成功,后续处理 ====================
                 {
-
                     //-------------------------------------
                     isDeduct = true; //合一&规则检查成功
                     //1.添加主界线文字
@@ -340,7 +338,6 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                         outNewClaInfo(newCla, InfereType::SCS);
                         //一旦有剩余文字是单元子句,若该单元子句 找不到拓展的文字,则回退
                         isDeduct = false; //合一&规则检查成功
-
                     }
                     resTri = RESULT::SUCCES;
                 }
@@ -362,8 +359,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
         /*======== △无法延拓时候进行处理 ====================*/
         if (resTri == RESULT::NOMGU) {
-            /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/
-
+            /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/ 
 
             //==================== △构建成功 ====================
             if (isDeduct) {
@@ -1660,7 +1656,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
             //单元子句重用:对非基文字拷贝生成新的单元子句，放入临时单元子句列表,不加入子句集. 完成三角形后 该临时单元子句被删除.
             if (isRN) {
                 candUnitCal = new Clause();
-                candLit = candLit->eqnRenameCopy(candUnitCal, DerefType::DEREF_NEVER);
+                candLit = candLit->RenameCopy(candUnitCal, DerefType::DEREF_NEVER);
             }
             assert(testLitP->isComplementProps(candLit));
 

@@ -129,7 +129,7 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     auto litTmpPtr = vNewR.begin();
     while (litTmpPtr != vNewR.end()) {
 
-        Literal* newLitP = (*litTmpPtr)->eqnRenameCopy(this);
+        Literal* newLitP = (*litTmpPtr)->RenameCopy(this);
         newLitP->claPtr = this; /*指定当前文字所在子句*/
         newLitP->pos = ++iLitPos;
         newLitP->EqnSetProp(EqnProp::EPIsHold);
@@ -588,7 +588,7 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
     while (lit) {
-        *insert = lit->eqnRenameCopy(newCla);
+        *insert = lit->RenameCopy(newCla);
         insert = &((*insert)->next);
         lit = lit->next;
     }

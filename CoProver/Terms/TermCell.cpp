@@ -248,7 +248,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb
 TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
-    if (source->TBTermIsGround())//若已经在GTermBank中存放的全局共享基项,则直接返回
+    if (source->TBTermIsGround())//若为全局共享基项,则直接返回GTermBank中的全局共享基项
         return source;
     Term_p t;
     if (source->IsVar()) {

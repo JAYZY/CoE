@@ -261,15 +261,24 @@ void Formula::generateFormula(Scanner* in) {
                         assert(in->TestInpId("input_clause|cnf"));
                         Clause* clause = new Clause();
                         clause->ClauseParse(in);
-                        origalClaSet->InsertCla(clause); //插入原始子句集
-//                        //if (Env::global_clause_counter %  == 0) {
-           // printf("number of clause:%u\n", Env::global_clause_counter);
-//                            printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
-//                            Env::getGTbank()->GTPrintAllTerm(stdout);
-//                            Env::PrintRusage(stdout);
-//                            printf("\n");
+                        origalClaSet->InsertCla(clause);
+//                      printf("number of clause:%u\n", Env::global_clause_counter);
 //
-//                        //}
+//                      cout << "exIndexSize:" << clause->GetClaTB()->extIndex.size() << endl;
+//                      cout << "inCount:" << clause->GetClaTB()->inCount << endl;
+//
+//                      //插入原始子句集
+//                      if (Env::global_clause_counter % 1000 == 0) {
+//                          printf("number of clause:%u\n", Env::global_clause_counter);
+//                          printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
+//                          printf("number of extIndex:%ld\n", Env::getGTbank()->extIndex.size());
+//                          printf("number of Sig:%ld\n", Env::getSig()->fInfo.size());
+//                             
+//                       // Env::getGTbank()->GTPrintAllTerm(stdout);
+//                          Env::PrintRusage(stdout);
+//                          printf("\n");
+//
+//                       }
                     }
                 }
             }
@@ -357,9 +366,9 @@ RESULT Formula::preProcess() {
         }
     }
 
-    StrategyParam::MaxLitNumOfR = 1;                     //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
-    StrategyParam::HoldLits_NUM_LIMIT = 3;             
-    StrategyParam::MaxLitNumOfNewCla =1;  //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+    StrategyParam::HoldLits_NUM_LIMIT = 3;
+    StrategyParam::MaxLitNumOfNewCla = 1; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
@@ -875,13 +884,12 @@ list<Clause*>::iterator Formula::getNextStartClause() {
 }
 
 void Formula::printOrigalClasInfo(FILE* out) {
-    fprintf(out, "# 子句总个数          %18ld #\n", this->origalClaSet->Size());
-    fprintf(out, "# 最大文字数          %18u #\n", this->uMaxLitNum);
-    fprintf(out, "# 最大项嵌套          %18u #\n", this->uMaxFuncLayer);
-    fprintf(out, "# 目标子句个数        %18zu #\n", this->goalClaset.size());
-    fprintf(out, "# Horn子句个数        %18u #\n", uNonHornClaNum);
-    fprintf(out, "# 是否为Horn子句集    %18s #\n", uNonHornClaNum > 0 ? "FALSE" : "TRUE");
-    fprintf(out, "# 是否包含等词        %18s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
+    fprintf(out, "# Total Number Of Clauses   %18ld #\n", this->origalClaSet->Size());
+    fprintf(out, "# Maxium Len Of Clauses     %18u #\n", this->uMaxLitNum);
+    fprintf(out, "# Maxium Layer Of Function  %18u #\n", this->uMaxFuncLayer);
+    fprintf(out, "# Number Of Goal Clauses    %18zu #\n", this->goalClaset.size());
+    fprintf(out, "# Number Of Goal Horn       %18u #\n", uNonHornClaNum);    
+    fprintf(out, "# IS Equlity                %18s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
 }
 
 

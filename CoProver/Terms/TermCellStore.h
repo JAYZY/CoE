@@ -20,22 +20,21 @@
 //#define TERM_STORE_HASH_MASK (TERM_STORE_HASH_SIZE-1)
 
 class TermCellStore {
-    
 public:
-      int TERM_STORE_HASH_SIZE;
-      int TERM_STORE_HASH_MASK;
+    int TERM_STORE_HASH_SIZE;
+    int TERM_STORE_HASH_MASK;
 
     long entries; //存储的项的个数（包括子项，eg. f1(a1,a3) entries=3
     long argCount; //存储函数项的元个数　eg. f1(a1,f2(a3))  argCount=2+1=3      
     //zj-add hash冲突次数
     long hashConflict;
     long storeEleNum;
-    TermCell* *store;//[TERM_STORE_HASH_SIZE];
+    TermCell* *store; //[TERM_STORE_HASH_SIZE];
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermCellStore(int hashSize=32768);
+    TermCellStore(int hashSize = 1024);
     TermCellStore(const TermCellStore& orig);
     virtual ~TermCellStore();
     void TermCellStoreExit();
