@@ -29,6 +29,7 @@ public:
     //zj-add hash冲突次数
     long hashConflict;
     long storeEleNum;
+    
     TermCell* *store; //[TERM_STORE_HASH_SIZE];
 public:
     /*---------------------------------------------------------------------*/
