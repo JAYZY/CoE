@@ -10,8 +10,8 @@
 #define PROOFCONTROL_H
 #include "Global/IncDefine.h"
 #include "CLAUSE/Clause.h"
-#include "Indexing/TermIndexing.h"
-#include "Formula/FormulaSet.h"
+
+#include "Formula/Formula.h"
 
 class Processed {
 private:
@@ -75,8 +75,9 @@ public:
     //
 
     void Proc(Clause* selCla);
+    void PreProc(Clause* selCla);
 
-    uint32_t Insert(Clause* cla);
+    uint32_t InsertInd(Clause* cla);
 
 };
 
@@ -98,7 +99,7 @@ public:
     };
 
     virtual ~UnProcessed() {
-        unprocClaSet->FreeClauses();
+        unprocClaSet->FreeAllClas();
     };
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
@@ -109,25 +110,23 @@ public:
         return unprocClaSet->ClauseSetExtractFirst();
     }
 
-    uint32_t getClaNum() {
-        return unprocClaSet->Members();
+    uint32_t GetClaNum() {
+        return unprocClaSet->Size();
     }
 
     void RemoveCla(Clause* cla) {
         unprocClaSet->RemoveClause(cla);
     }
-    void Sort(){
-        this->unprocClaSet->Sort();
-    }
+
 };
 
 class ProofControl {
 public:
-
     Processed *procedSet;
     UnProcessed *unprocSet;
     ClauseSet* axiom; //原始子句集
-    FormulaSet* formulaSet; //公式集
+     
+
 
 public:
     //ProofControl( FormulaSet* formulaSet);
@@ -140,6 +139,11 @@ public:
     /*---------------------------------------------------------------------*/
     void parseInput();
     Clause* Saturate();
+    /*---------------------------------------------------------------------*/
+    /*                          Static Function                            */
+    /*---------------------------------------------------------------------*/
+    //预处理
+    static void Preprocess(Formula* fol);
 };
 
 #endif /* PROOFCONTROL_H */

@@ -35,36 +35,44 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Alg/Resolution.o \
+	${OBJECTDIR}/Alg/TriAlg.o \
 	${OBJECTDIR}/CLAUSE/Clause.o \
-	${OBJECTDIR}/CLAUSE/Formula.o \
 	${OBJECTDIR}/CLAUSE/Literal.o \
 	${OBJECTDIR}/Formula/ClauseSet.o \
+	${OBJECTDIR}/Formula/Formula.o \
 	${OBJECTDIR}/Formula/FormulaSet.o \
 	${OBJECTDIR}/Formula/WFormula.o \
 	${OBJECTDIR}/Global/Environment.o \
 	${OBJECTDIR}/Global/IncDefine.o \
 	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
+	${OBJECTDIR}/HEURISTICS/SortRule.o \
+	${OBJECTDIR}/HEURISTICS/StrategyParam.o \
 	${OBJECTDIR}/INOUT/CommandLine.o \
 	${OBJECTDIR}/INOUT/FileOp.o \
 	${OBJECTDIR}/INOUT/Scanner.o \
 	${OBJECTDIR}/INOUT/StreamCell.o \
 	${OBJECTDIR}/INOUT/TokenCell.o \
 	${OBJECTDIR}/Indexing/TermIndexing.o \
+	${OBJECTDIR}/Inferences/InferenceInfo.o \
 	${OBJECTDIR}/Inferences/Simplification.o \
 	${OBJECTDIR}/Inferences/Subst.o \
 	${OBJECTDIR}/Inferences/Unify.o \
 	${OBJECTDIR}/LIB/Out.o \
-	${OBJECTDIR}/Ordering/KBO.o \
+	${OBJECTDIR}/Orderings/KBO.o \
+	${OBJECTDIR}/Orderings/Ordering.o \
 	${OBJECTDIR}/PROOF/ProofControl.o \
+	${OBJECTDIR}/PROOF/ProverResultAnalyse.o \
 	${OBJECTDIR}/Prover/Prover.o \
-	${OBJECTDIR}/TERMS/Sigcell.o \
-	${OBJECTDIR}/TERMS/TermBank.o \
-	${OBJECTDIR}/TERMS/TermCell.o \
-	${OBJECTDIR}/TERMS/TermCellStore.o \
-	${OBJECTDIR}/TERMS/TermTree.o \
-	${OBJECTDIR}/TERMS/VarBank.o \
-	${OBJECTDIR}/TERMS/VarHash.o \
+	${OBJECTDIR}/Terms/GroundTermBank.o \
+	${OBJECTDIR}/Terms/Sigcell.o \
+	${OBJECTDIR}/Terms/TermBank.o \
+	${OBJECTDIR}/Terms/TermCell.o \
+	${OBJECTDIR}/Terms/TermCellStore.o \
+	${OBJECTDIR}/Terms/TermTree.o \
+	${OBJECTDIR}/Terms/VarBank.o \
+	${OBJECTDIR}/Terms/VarHash.o \
 	${OBJECTDIR}/main.o
 
 
@@ -92,15 +100,20 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/coprover ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/Alg/Resolution.o: Alg/Resolution.cpp
+	${MKDIR} -p ${OBJECTDIR}/Alg
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/Resolution.o Alg/Resolution.cpp
+
+${OBJECTDIR}/Alg/TriAlg.o: Alg/TriAlg.cpp
+	${MKDIR} -p ${OBJECTDIR}/Alg
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/TriAlg.o Alg/TriAlg.cpp
+
 ${OBJECTDIR}/CLAUSE/Clause.o: CLAUSE/Clause.cpp
 	${MKDIR} -p ${OBJECTDIR}/CLAUSE
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Clause.o CLAUSE/Clause.cpp
-
-${OBJECTDIR}/CLAUSE/Formula.o: CLAUSE/Formula.cpp
-	${MKDIR} -p ${OBJECTDIR}/CLAUSE
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CLAUSE/Formula.o CLAUSE/Formula.cpp
 
 ${OBJECTDIR}/CLAUSE/Literal.o: CLAUSE/Literal.cpp
 	${MKDIR} -p ${OBJECTDIR}/CLAUSE
@@ -111,6 +124,11 @@ ${OBJECTDIR}/Formula/ClauseSet.o: Formula/ClauseSet.cpp
 	${MKDIR} -p ${OBJECTDIR}/Formula
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/ClauseSet.o Formula/ClauseSet.cpp
+
+${OBJECTDIR}/Formula/Formula.o: Formula/Formula.cpp
+	${MKDIR} -p ${OBJECTDIR}/Formula
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Formula/Formula.o Formula/Formula.cpp
 
 ${OBJECTDIR}/Formula/FormulaSet.o: Formula/FormulaSet.cpp
 	${MKDIR} -p ${OBJECTDIR}/Formula
@@ -142,6 +160,16 @@ ${OBJECTDIR}/HEURISTICS/Options.o: HEURISTICS/Options.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/Options.o HEURISTICS/Options.cpp
 
+${OBJECTDIR}/HEURISTICS/SortRule.o: HEURISTICS/SortRule.cpp
+	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/SortRule.o HEURISTICS/SortRule.cpp
+
+${OBJECTDIR}/HEURISTICS/StrategyParam.o: HEURISTICS/StrategyParam.cpp
+	${MKDIR} -p ${OBJECTDIR}/HEURISTICS
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HEURISTICS/StrategyParam.o HEURISTICS/StrategyParam.cpp
+
 ${OBJECTDIR}/INOUT/CommandLine.o: INOUT/CommandLine.cpp
 	${MKDIR} -p ${OBJECTDIR}/INOUT
 	${RM} "$@.d"
@@ -172,6 +200,11 @@ ${OBJECTDIR}/Indexing/TermIndexing.o: Indexing/TermIndexing.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Indexing/TermIndexing.o Indexing/TermIndexing.cpp
 
+${OBJECTDIR}/Inferences/InferenceInfo.o: Inferences/InferenceInfo.cpp
+	${MKDIR} -p ${OBJECTDIR}/Inferences
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Inferences/InferenceInfo.o Inferences/InferenceInfo.cpp
+
 ${OBJECTDIR}/Inferences/Simplification.o: Inferences/Simplification.cpp
 	${MKDIR} -p ${OBJECTDIR}/Inferences
 	${RM} "$@.d"
@@ -192,55 +225,70 @@ ${OBJECTDIR}/LIB/Out.o: LIB/Out.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LIB/Out.o LIB/Out.cpp
 
-${OBJECTDIR}/Ordering/KBO.o: Ordering/KBO.cpp
-	${MKDIR} -p ${OBJECTDIR}/Ordering
+${OBJECTDIR}/Orderings/KBO.o: Orderings/KBO.cpp
+	${MKDIR} -p ${OBJECTDIR}/Orderings
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Ordering/KBO.o Ordering/KBO.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Orderings/KBO.o Orderings/KBO.cpp
+
+${OBJECTDIR}/Orderings/Ordering.o: Orderings/Ordering.cpp
+	${MKDIR} -p ${OBJECTDIR}/Orderings
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Orderings/Ordering.o Orderings/Ordering.cpp
 
 ${OBJECTDIR}/PROOF/ProofControl.o: PROOF/ProofControl.cpp
 	${MKDIR} -p ${OBJECTDIR}/PROOF
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PROOF/ProofControl.o PROOF/ProofControl.cpp
 
+${OBJECTDIR}/PROOF/ProverResultAnalyse.o: PROOF/ProverResultAnalyse.cpp
+	${MKDIR} -p ${OBJECTDIR}/PROOF
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PROOF/ProverResultAnalyse.o PROOF/ProverResultAnalyse.cpp
+
 ${OBJECTDIR}/Prover/Prover.o: Prover/Prover.cpp
 	${MKDIR} -p ${OBJECTDIR}/Prover
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Prover/Prover.o Prover/Prover.cpp
 
-${OBJECTDIR}/TERMS/Sigcell.o: TERMS/Sigcell.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/GroundTermBank.o: Terms/GroundTermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/Sigcell.o TERMS/Sigcell.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/GroundTermBank.o Terms/GroundTermBank.cpp
 
-${OBJECTDIR}/TERMS/TermBank.o: TERMS/TermBank.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/Sigcell.o: Terms/Sigcell.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermBank.o TERMS/TermBank.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/Sigcell.o Terms/Sigcell.cpp
 
-${OBJECTDIR}/TERMS/TermCell.o: TERMS/TermCell.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermBank.o: Terms/TermBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCell.o TERMS/TermCell.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermBank.o Terms/TermBank.cpp
 
-${OBJECTDIR}/TERMS/TermCellStore.o: TERMS/TermCellStore.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermCell.o: Terms/TermCell.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermCellStore.o TERMS/TermCellStore.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermCell.o Terms/TermCell.cpp
 
-${OBJECTDIR}/TERMS/TermTree.o: TERMS/TermTree.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermCellStore.o: Terms/TermCellStore.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/TermTree.o TERMS/TermTree.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermCellStore.o Terms/TermCellStore.cpp
 
-${OBJECTDIR}/TERMS/VarBank.o: TERMS/VarBank.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/TermTree.o: Terms/TermTree.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarBank.o TERMS/VarBank.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/TermTree.o Terms/TermTree.cpp
 
-${OBJECTDIR}/TERMS/VarHash.o: TERMS/VarHash.cpp
-	${MKDIR} -p ${OBJECTDIR}/TERMS
+${OBJECTDIR}/Terms/VarBank.o: Terms/VarBank.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TERMS/VarHash.o TERMS/VarHash.cpp
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/VarBank.o Terms/VarBank.cpp
+
+${OBJECTDIR}/Terms/VarHash.o: Terms/VarHash.cpp
+	${MKDIR} -p ${OBJECTDIR}/Terms
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Terms/VarHash.o Terms/VarHash.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

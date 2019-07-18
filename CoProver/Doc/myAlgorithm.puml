@@ -1,0 +1,11 @@
+:主三角形算法
+:1. 起步子句选择; 
+    :A.从非单文字起步
+
+
+@startuml
+title 回退算法流程图
+start
+
+stop 
+@enduml

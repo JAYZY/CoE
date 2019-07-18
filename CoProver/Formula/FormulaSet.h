@@ -24,6 +24,8 @@ private:
     long members;
     string identifier;
 public:
+    ClauseSet* claSet; //子句集
+
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
@@ -81,9 +83,20 @@ public:
         form->pred = nullptr;
         return form;
     }
+    
+    //生成公式集合
+    inline void GenerateFormula(Scanner* in) {
+        claSet = new ClauseSet();
+        SplayTree<StrTreeCell>name_selector, skip_includes;
+        long formulaNum = FormulaAndClauseSetParse(Env::getIn(), claSet, name_selector, skip_includes);
+
+    }
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
+    //
+
+
     long FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset, SplayTree<StrTreeCell>&name_selector, SplayTree<StrTreeCell>&skip_includes);
 
     /// 将一个公式插入公式集合
@@ -94,8 +107,10 @@ public:
     /// \return 合并的公式集中公式的数量
     long FormulaSetInsertSet(FormulaSet* fromset);
 
-    long FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* clauseset, TB_p terms, VarBank* fresh_vars);
-    long FormulaSetSimplify(TB_p terms);
+    long FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* clauseset, TermBank_p terms, VarBank* fresh_vars);
+    long FormulaSetSimplify(TermBank_p terms);
+    
+   
 };
 
 #endif /* FORMULASET_H */

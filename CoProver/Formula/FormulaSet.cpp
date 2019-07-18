@@ -18,12 +18,12 @@ FormulaSet::FormulaSet() {
     WFormula* anchor;
     long members;
     string identifier;
-
     this->members = 0;
     this->anchor = new WFormula();
     this->anchor->succ = this->anchor;
     this->anchor->pred = this->anchor;
     this->identifier = "";
+    this->claSet = nullptr; //子句集为空
 }
 
 FormulaSet::FormulaSet(const FormulaSet& orig) {
@@ -69,11 +69,11 @@ long FormulaSet::FormulaSetInsertSet(FormulaSet* fromset) {
 long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
         SplayTree<StrTreeCell>&name_selector, SplayTree<StrTreeCell>&skip_includes) {
 
-    TB_p terms = Env::getTb();
+
     long res = 0;
     WFormula* form = nullptr;
     WFormula* nextform = nullptr;
-    Clause* clause, nextclause;
+    //Clause* clause, nextclause;
     // StrTree_p stand_in = NULL;
 
     //    if (name_selector.IsEmpty()) {
@@ -84,7 +84,7 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
         case IOFormat::LOPFormat:
             /* LOP does not at the moment support full FOF */
             // res = ClauseSetParseList(in, cset, terms);
-           // Out::Error("No Support lop format!", ErrorCodes::INPUT_SEMANTIC_ERROR);
+            Out::Error("No Support lop format!", ErrorCodes::INPUT_SEMANTIC_ERROR);
             break;
         default:
             while (in->TestInpId("input_formula|input_clause|fof|cnf|include")) {
@@ -106,21 +106,25 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
 
                     assert(ncset->ClauseSetEmpty());
                     assert(nfset->FormulaSetEmpty());
-                    ncset->FreeClauses();
+                    ncset->FreeAllClas();
                     DelPtr(nfset); //ClauseSetFree();
                     //FormulaSetFree(nfset);
                 } else {
                     if (in->TestInpId("input_formula|fof")) {
-                        Out::Error("现在暂时不能识别 FOF公式集!",ErrorCodes::FILE_ERROR);
-                        form = new WFormula();
-                        form->WFormulaParse(in, terms);
+                        Out::Error("现在暂时不能识别 FOF公式集!", ErrorCodes::FILE_ERROR);
+
+                        //form = new WFormula();
+                       // form->WFormulaParse(in, terms);
+
                         // fprintf(stdout, "Parsed: ");
                         // WFormulaPrint(stdout, form, true);
                         // fprintf(stdout, "\n");
                         this->FormulaSetInsert(form);
                     } else {
+
                         assert(in->TestInpId("input_clause|cnf"));
-                        clause = Clause::ClauseParse(in, terms);
+                        Clause* clause = new Clause();
+                        clause->ClauseParse(in);
                         cset->InsertCla(clause);
                     }
                     res++;
@@ -151,46 +155,46 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
     return res;
 }
 
-long FormulaSet::FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* clauseset, TB_p tbs, VarBank* fresh_vars) {
+long FormulaSet::FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* clauseset, TermBank_p tbs, VarBank* fresh_vars) {
 
     WFormula* form, handle;
     long res = 0;
     long old_nodes = tbs->TBNonVarTermNodes();
     long gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
 
-   /* FormulaSetSimplify(tbs);
-    // printf("FormulaSetSimplify done\n");
-    TFormulaSetIntroduceDefs(set, archive, tbs);
-    // printf("Definitions introduced\n");
+    /* FormulaSetSimplify(tbs);
+     // printf("FormulaSetSimplify done\n");
+     TFormulaSetIntroduceDefs(set, archive, tbs);
+     // printf("Definitions introduced\n");
 
-    while (!FormulaSetEmpty(set)) {
-        handle = FormulaSetExtractFirst(set);
-        // WFormulaPrint(stdout, handle, true);
-        // fprintf(stdout, "\n");
-        if (BuildProofObject) {
-            form = WFormulaFlatCopy(handle);
-            FormulaSetInsert(archive, handle);
-            WFormulaPushDerivation(form, DCFofQuote, handle, NULL);
-            handle = form;
-        }
-        res += WFormulaCNF(handle, clauseset, tbs, fresh_vars);
-        if (BuildProofObject) {
-            FormulaSetInsert(archive, handle);
-        }
-        if (handle->tformula &&
-                (tbs->TBNonVarTermNodes() > gc_threshold)) {
-            assert(terms == handle->terms);
-            GCCollect(gc);
-            old_nodes = tbs->TBNonVarTermNodes();
-            gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
-        }
-        if (!BuildProofObject) {
-            DelPtr(handle);//WFormulaFree(handle);
-        }
-    }
-    if (tbs->TBNonVarTermNodes() != old_nodes) {
-        GCCollect(gc);
-    }*/
+     while (!FormulaSetEmpty(set)) {
+         handle = FormulaSetExtractFirst(set);
+         // WFormulaPrint(stdout, handle, true);
+         // fprintf(stdout, "\n");
+         if (BuildProofObject) {
+             form = WFormulaFlatCopy(handle);
+             FormulaSetInsert(archive, handle);
+             WFormulaPushDerivation(form, DCFofQuote, handle, NULL);
+             handle = form;
+         }
+         res += WFormulaCNF(handle, clauseset, tbs, fresh_vars);
+         if (BuildProofObject) {
+             FormulaSetInsert(archive, handle);
+         }
+         if (handle->tformula &&
+                 (tbs->TBNonVarTermNodes() > gc_threshold)) {
+             assert(terms == handle->terms);
+             GCCollect(gc);
+             old_nodes = tbs->TBNonVarTermNodes();
+             gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
+         }
+         if (!BuildProofObject) {
+             DelPtr(handle);//WFormulaFree(handle);
+         }
+     }
+     if (tbs->TBNonVarTermNodes() != old_nodes) {
+         GCCollect(gc);
+     }*/
     return res;
 }
 
@@ -198,36 +202,37 @@ long FormulaSet::FormulaSetCNF(FormulaSet* set, FormulaSet* archive, ClauseSet* 
 /// Apply standard FOF simplification rules to all formulae in the set. Returns number of changed formulas.
 /// \param tbs
 /// \return 
-long FormulaSet::FormulaSetSimplify(TB_p tbs) {
+
+long FormulaSet::FormulaSetSimplify(TermBank_p tbs) {
     WFormula* handle;
     long res = 0;
     long old_nodes = tbs->TBNonVarTermNodes();
     long gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
     handle = this->anchor->succ;
-   /* while (handle != this->anchor) {
-        // printf("Simplifying: \n");
-        // WFormulaPrint(stdout, handle, true);
-        // printf("\n");
-        bool changed = handle->WFormulaSimplify(tbs);
-        // printf("Simplified %d\n", changed);
-        // WFormulaPrint(stdout, handle, true);
-        // printf("\n");
-        if (changed) {
-            res++;
-            if (tbs->TBNonVarTermNodes() > gc_threshold) {
-                assert(tbs == handle->terms);
-                GCCollect(tbs->gc);
-                old_nodes = tbs->TBNonVarTermNodes();
-                gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
-            }
-        }
-        handle = handle->succ;
-    }
-    // printf("All simplified\n");
-    if (tbs->TBNonVarTermNodes() != old_nodes) {
-        GCCollect(tbs->gc);
-    }
-    // printf("Garbage collected\n");*/
+    /* while (handle != this->anchor) {
+         // printf("Simplifying: \n");
+         // WFormulaPrint(stdout, handle, true);
+         // printf("\n");
+         bool changed = handle->WFormulaSimplify(tbs);
+         // printf("Simplified %d\n", changed);
+         // WFormulaPrint(stdout, handle, true);
+         // printf("\n");
+         if (changed) {
+             res++;
+             if (tbs->TBNonVarTermNodes() > gc_threshold) {
+                 assert(tbs == handle->terms);
+                 GCCollect(tbs->gc);
+                 old_nodes = tbs->TBNonVarTermNodes();
+                 gc_threshold = old_nodes*TFORMULA_GC_LIMIT;
+             }
+         }
+         handle = handle->succ;
+     }
+     // printf("All simplified\n");
+     if (tbs->TBNonVarTermNodes() != old_nodes) {
+         GCCollect(tbs->gc);
+     }
+     // printf("Garbage collected\n");*/
     return res;
 
 }

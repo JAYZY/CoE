@@ -8,8 +8,8 @@
 
 #ifndef SUBST_H
 #define SUBST_H
-#include "TERMS/TermCell.h"
-#include "TERMS/VarBank.h"
+#include "Terms/TermCell.h"
+#include "Terms/VarBank.h"
 
 class Subst {
 private:
@@ -86,6 +86,11 @@ public:
     /* Add bindings for all free variables in term subst, binding them to default_term. 
      * result: Changes subst */
     void SubstCompleteInstance(TermCell* term, TermCell* defaultBinding);
+    
+    /*是否存在逆向替换.
+     * 算法思路,若最近添加的变元不为指定子句中的变元则相当于 改变了原有已经替换过的变元,形成逆向替换
+    */
+    bool isReverseSubst(int claId,int pos);
 
 };
 typedef Subst *Subst_p/*替换类 substitutions*/;

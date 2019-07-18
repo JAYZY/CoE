@@ -22,20 +22,35 @@ public:
     virtual ~Simplification();
 
 public:
+    static map<TermCell*, int> termcmp;
 
+    //检查子句是否为恒真
+    static bool isTautology(Clause* cla);
+    
+    
     //检查子句 genCla是否有效,有任意替换r使得 g*r = c ?
-    static bool ForwordSubsumption(Clause* genCla, TermIndexing* indexing);
+    static bool ForwardSubsumption(Clause* genCla, TermIndexing* indexing);
+    //检查单元子句(文字)是否有效,有任意替换r使得 g r =c?
+    static bool ForwardSubsumUnitCla(Literal* unitCla, TermIndexing* indexing);
 
-    static bool BackWordSubsumption(Clause* genCla, TermIndexing* indexing);
+    static bool ForwardSubsumption(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal** actClaLeftLits, uint16_t uActLeftLitInd, TermIndexing* indexing);
 
-private:
+    static bool BackWardSubsumption(Clause* genCla, TermIndexing* indexing, set<Clause*>&outDelClas);
 
+
+    static bool ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsumerVarcla);
+    //给定一个文字集合(数组)arryLit,判断子句cla(所有文字)是否归入arryLit.
+    static bool ClauseSubsumeArrayLit(Literal** arrayLit, uint16_t arraySize, Clause* cla);
     /// 检查文字列表是否是包含冗余
     /// \param subsumer
     /// \param subsumed
     /// \param subst
-    /// \return 
+    /// \return   if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
     static bool LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, Literal* subsumConLst, Subst*subst, int8_t* pickLst);
+
+private:
+
+
 
     /// 检查单个文字相互是否是包含冗余
     /// \param subsumer

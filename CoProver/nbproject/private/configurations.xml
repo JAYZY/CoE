@@ -17,52 +17,30 @@
         </gdb_signals>
         <gdb_options>
           <DebugOptions>
+            <option name="gdb_init_file" value=""/>
             <option name="gdb_source_dirs" value="."/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
       </dbx_gdbdebugger>
-      <dbxdebugger version="1">
-        <pathmaps>
-        </pathmaps>
-        <interceptlist>
-          <interceptoptions all="false" unhandled="true" unexpected="true"/>
-        </interceptlist>
-        <signals>
-        </signals>
-        <options>
-          <DebugOptions>
-          </DebugOptions>
-        </options>
-        <buildfirst buildfirst_overriden="false" buildfirst_old="false"/>
-      </dbxdebugger>
-      <dbxrtc version="1">
-        <options>
-          <RtcOptions>
-            <option name="rtc_error_log_file_name" value="/dev/null"/>
-          </RtcOptions>
-        </options>
-        <loadobjs>
-        </loadobjs>
-      </dbxrtc>
       <nativedebugger version="1">
         <engine>gdb</engine>
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2016/2/FNN-NLP232+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2016/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL642+1.005.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL665+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL638+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/test.txt</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/test.tptp</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL662+1.015.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNQ/FNQ-SYO596+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/2018/2018CONVERT/KRS186+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-KRS179+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/COM008+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/NLP261+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN986+1.004.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/NUM304+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FEQ/GEO112+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/PUZ128+2.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNQ/FNQ-SYO596+1.p</runcommand>
-        <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/PUZ128+2.p</runcommand>
+        <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
@@ -88,46 +66,23 @@
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
       </dbx_gdbdebugger>
-      <dbxdebugger version="1">
-        <pathmaps>
-        </pathmaps>
-        <interceptlist>
-          <interceptoptions all="false" unhandled="true" unexpected="true"/>
-        </interceptlist>
-        <signals>
-        </signals>
-        <options>
-          <DebugOptions>
-          </DebugOptions>
-        </options>
-        <buildfirst buildfirst_overriden="false" buildfirst_old="false"/>
-      </dbxdebugger>
-      <dbxrtc version="1">
-        <options>
-          <RtcOptions>
-            <option name="rtc_error_log_file_name" value="/dev/null"/>
-          </RtcOptions>
-        </options>
-        <loadobjs>
-        </loadobjs>
-      </dbxrtc>
       <nativedebugger version="1">
-        <engine>dbx</engine>
+        <engine>gdb</engine>
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt -l 3 --auto</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2015/originProblem/100k/LCL523+1+cls_tptp.txt</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/1/GRP653+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/Problems/CNF-FNN/FNN-CSR111+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNN-LCL645+1.015.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL662+1.015.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNE-LCL638+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/2/FNQ-SYO596+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNQ/FNQ-SYO596+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/NLP261+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-KRS179+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-SWB009+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWB009+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE//home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL638+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL638+1.020.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE//home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN986+1.004.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-J9-2017/CNF-FNQ/FNQ-SYO596+1.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN986+1.004.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

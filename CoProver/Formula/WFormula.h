@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   Wformula.h
  * Author: Zhong Jian<77367632@qq.com>
@@ -27,21 +21,21 @@ using namespace std;
 enum class WFormulaProp {
     WPIgnoreProps = 0, /* For masking properties out */
     WPInitial = 1, /* Input formula */
-    WPInputFormula = ClauseProp::CPInputFormula, /* _Really_ initial in TSTP sense */
+    WPInputFormula = (int) ClauseProp::CPInputFormula, /* _Really_ initial in TSTP sense */
     WPIniORInput = WFormulaProp::WPInitial | WFormulaProp::WPInputFormula,
-    WPType1 = ClauseProp::CPType1, /* 128 */
-    WPType2 = ClauseProp::CPType2,
-    WPType3 = ClauseProp::CPType3,
-    WPTypeMask = ClauseProp::CPTypeMask,
+    WPType1 = (int) ClauseProp::CPType1, /* 128 */
+    WPType2 = (int) ClauseProp::CPType2,
+    WPType3 = (int) ClauseProp::CPType3,
+    WPTypeMask = (int) ClauseProp::CPTypeMask,
     WPTypeUnknown = 0, /* Also used as wildcard */
-    WPTypeAxiom = ClauseProp::CPTypeAxiom, /* Formula is Axiom */
-    WPTypeHypothesis = ClauseProp::CPTypeHypothesis, /* Formula is Hypothesis */
-    WPTypeConjecture = ClauseProp::CPTypeConjecture, /* Formula is Conjecture */
-    WPTypeLemma = ClauseProp::CPTypeLemma, /* Formula is Lemma */
-    WPTypeNegConjecture = ClauseProp::CPTypeNegConjecture, /* Formula is NegConjecture */
-    WPTypeQuestion = ClauseProp::CPTypeQuestion,
-    WPIsProofClause = ClauseProp::CPIsProofClause,
-    WPIsRelevant = ClauseProp::CPIsRelevant
+    WPTypeAxiom = (int) ClauseProp::CPTypeAxiom, /* Formula is Axiom */
+    WPTypeHypothesis = (int) ClauseProp::CPTypeHypothesis, /* Formula is Hypothesis */
+    WPTypeConjecture = (int) ClauseProp::CPTypeConjecture, /* Formula is Conjecture */
+    WPTypeLemma = (int) ClauseProp::CPTypeLemma, /* Formula is Lemma */
+    WPTypeNegConjecture = (int) ClauseProp::CPTypeNegConjecture, /* Formula is NegConjecture */
+    WPTypeQuestion = (int) ClauseProp::CPTypeQuestion,
+    WPIsProofClause = (int) ClauseProp::CPIsProofClause,
+    WPIsRelevant = (int) ClauseProp::CPIsRelevant
 };
 typedef Term_p TFormula_p;
 
@@ -56,7 +50,7 @@ public:
 public:
     WFormulaProp properties;
     long ident;
-    TB_p terms;
+    TermBank_p terms;
     ClauseInfo* info;
     // PStack_p derivation;
     Term_p tformula;
@@ -66,8 +60,8 @@ public:
     WFormula* succ; /* linked lists */
 public:
     WFormula();
-    WFormula(TB_p terms, TFormula_p formula);
-    WFormula* WFormulaParse(Scanner* in, TB_p terms);
+    WFormula(TermBank_p terms, TFormula_p formula);
+    WFormula* WFormulaParse(Scanner* in, TermBank_p terms);
     WFormula(const WFormula& orig);
     virtual ~WFormula();
 public:
@@ -96,9 +90,9 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-    void WFormulaTPTPParse(Scanner* in, TB_p terms);
-    void WFormulaTSTPParse(Scanner* in, TB_p terms);
-    bool WFormulaSimplify(TB_p tbs);
+    void WFormulaTPTPParse(Scanner* in, TermBank_p terms);
+    void WFormulaTSTPParse(Scanner* in, TermBank_p terms);
+    bool WFormulaSimplify(TermBank_p tbs);
 
     /*****************************************************************************
      *                  [TFormula_p]相关方法
@@ -138,7 +132,7 @@ public:
 
     //Return a formula equivalent to ~form. If form is of the form ~f,return f, otherwise ~form.
 
-    inline TFormula_p TFormulaNegAlloc(TB_p terms, TFormula_p form) {
+    inline TFormula_p TFormulaNegAlloc(TermBank_p terms, TFormula_p form) {
         if (form->fCode == Env::getSig()->notCode) {
             return form->args[0];
         }
@@ -148,8 +142,8 @@ public:
 
 
     bool TFormulaIsPropConst(Sig_p sig, TFormula_p form, bool positive);
-    bool TFormulaVarIsFree(TB_p bank, TFormula_p form, Term_p var);
-    TFormula_p TFormulaPropConstantAlloc(TB_p tbs, bool positive);
+    bool TFormulaVarIsFree(TermBank_p bank, TFormula_p form, Term_p var);
+    TFormula_p TFormulaPropConstantAlloc(TermBank_p tbs, bool positive);
 
     TFormula_p tprop_arg_return_other(Sig_p sig, TFormula_p arg1, TFormula_p arg2, bool positive);
     TFormula_p tprop_arg_return(Sig_p sig, TFormula_p arg1, TFormula_p arg2, bool positive);
@@ -157,9 +151,9 @@ public:
 
 
 
-    TFormula_p TFormulaTPTPParse(Scanner* in, TB_p terms);
-    TFormula_p TFormulaTSTPParse(Scanner* in, TB_p terms);
-    TFormula_p TFormulaSimplify(TB_p terms, TFormula_p form);
+    TFormula_p TFormulaTPTPParse(Scanner* in, TermBank_p terms);
+    TFormula_p TFormulaTSTPParse(Scanner* in, TermBank_p terms);
+    TFormula_p TFormulaSimplify(TermBank_p terms, TFormula_p form);
 
 private:
 
@@ -167,10 +161,10 @@ private:
     /// Parse an elementary formula in TPTP/TSTP format.
     /// \param in  I/O
     /// \return 
-    TFormula_p elem_tform_tptp_parse(Scanner* in, TB_p terms);
-    TFormula_p literal_tform_tstp_parse(Scanner* in, TB_p terms);
+    TFormula_p elem_tform_tptp_parse(Scanner* in, TermBank_p terms);
+    TFormula_p literal_tform_tstp_parse(Scanner* in, TermBank_p terms);
     ///Parse a sequence of formulas connected by a single AC operator and return it.    
-    TFormula_p assoc_tform_tstp_parse(Scanner* in, TB_p terms, TFormula_p head);
+    TFormula_p assoc_tform_tstp_parse(Scanner* in, TermBank_p terms, TFormula_p head);
 
     /// Parse and return a TPTP quantor. Rather trivial ;-)
     /// \param in  Input
@@ -198,8 +192,8 @@ private:
     /// \param terms
     /// \param quantor
     /// \return 
-    TFormula_p quantified_tform_tptp_parse(Scanner* in, TB_p terms, FunCode quantor);
-    TFormula_p quantified_tform_tstp_parse(Scanner* in, TB_p terms, FunCode quantor);
+    TFormula_p quantified_tform_tptp_parse(Scanner* in, TermBank_p terms, FunCode quantor);
+    TFormula_p quantified_tform_tstp_parse(Scanner* in, TermBank_p terms, FunCode quantor);
 
     ///  Allocate a formula given an f_code and two subformulas (the second one may be NULL).
     /// \param bank
@@ -207,7 +201,7 @@ private:
     /// \param arg1
     /// \param arg2
     /// \return 
-    TFormula_p TFormulaFCodeAlloc(TB_p bank, FunCode op, TFormula_p arg1, TFormula_p arg2);
+    TFormula_p TFormulaFCodeAlloc(TermBank_p bank, FunCode op, TFormula_p arg1, TFormula_p arg2);
 
 
     /// Allocate a literal term formula. The equation is _not_ freed!

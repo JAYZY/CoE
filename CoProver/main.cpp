@@ -10,63 +10,88 @@
  *
  * Created on 2017年12月13日, 下午1:50
  */
-
 #include "Global/IncDefine.h"
-#include "INOUT/Scanner.h"
-#include "CLAUSE/Clause.h"
-#include "Global/Environment.h"
-#include "BASIC/SplayTree.h"
-#include "CLAUSE/Formula.h"
+#include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
-#include <iostream>
-#include <set>
-#include <map>
+#include "Alg/Resolution.h"
+#include "INOUT/FileOp.h"
 using namespace std;
+//#define TEST
+
+#ifdef  TEST
 
 int main(int argc, char** argv) {
-    cout << "argc:" << argc << endl;
-    for (int i = 0; i < argc; ++i) {
-        cout << argv[i] << endl;
-    }
-    //命令行解析
-
-    //初始化全局扫描器Scanner
-    Env::iniScanner(nullptr, argv[1], true, nullptr);
-
-    //生成子句
+    int size = 1000000000;
+    int olds = size / 3;
+    int *x;
+    x = new int[size];
     double initial_time = cpuTime();
+    memset(x, 0, size * sizeof (int));
 
-    FormulaSet* formulaSet = new FormulaSet();
-    ClauseSet* claSet = new ClauseSet();
-    SplayTree<StrTreeCell>name_selector, skip_includes;
+    paseTime("allSet_", initial_time);
 
-    long formulaNum = formulaSet->FormulaAndClauseSetParse(Env::getIn(), claSet, name_selector, skip_includes);
-    //formula->printClas();
-    
-    claSet->Sort();
-    
-    paseTime("GenFormula_", initial_time);
+
     initial_time = cpuTime();
+    memset(x, 0, olds * sizeof (int));
 
-
-    ProofControl* proofCtr = new ProofControl(claSet);
-
-
-    //               for(auto& cla:formulaSet->getAxioms())
-    //                {
-    //                    Literal* lit=cla->Lits();
-    //                    cout<<"claID "<a<cla->GetClaId()<<":"<<endl;
-    //                    while(lit){
-    //                        lit->EqnTSTPPrint(stdout,true);                
-    //                        fprintf(stdout," w:%2ld zjw:%5.2f\n",lit->StandardWeight(),lit->zjlitWight);
-    //                        lit=lit->next;
-    //                    }
-    //                    fprintf(stdout,"\n");            
-    //                }
-    //开始浸透算法
-    proofCtr->Saturate();
-    paseTime("Saturate_", initial_time);
-
+    paseTime("allSet_", initial_time);
+    DelArrayPtr(x);
     return 0;
 }
+//
+#else
 
+int main(int argc, char** argv) {
+
+    //命令行解析
+    Env::tptpFileName = argv[1];
+
+    //全局扫描器Scanner读取文件 argv[1]
+    Env::IniScanner(nullptr, argv[1], true, nullptr);
+
+    //生成公式集\子句-----------------
+    Formula* fol = new Formula();
+    fol->generateFormula(Env::getIn());
+    PaseTime("GenFormula_");
+
+    //输出原始子句 
+    fol->printOrigalClaSet();
+
+    //预处理操作---------------------       
+    RESULT res = fol->preProcess();
+    //添加等词公理
+    if (StrategyParam::ADD_EQULITY && fol->uEquLitNum > 0) {
+        fol->GenerateEqulitAxiom();
+        fol->printEqulityAxioms();
+    }
+    FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+    //输出预处理后子句 
+    // fol->printProcessedClaSet(stdout);
+    if (res == RESULT::SUCCES) {
+        //演绎推理
+        Resolution resolution;
+        //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
+        // if (res == RESULT::UNKNOWN) {
+        res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+        //}
+    }
+    string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";
+    FileOp::getInstance()->outGlobalInfo(strRes);
+    if (100 == (int) res) {
+        FileOp::getInstance()->GenerateEmptyPath();
+    }
+    //fol->printClas(stdout);
+    //Env::getGTbank()->GTPrintAllTerm(stdout);
+    //cout << "每个子句的共享项==================" << endl;
+
+    //ProofControl* proofCtr = new ProofControl(fol->getAxioms());
+
+    //开始浸透算法
+    //proofCtr->Saturate();
+    //PaseTime("Saturate_", initial_time);
+    Env::PrintRusage(stdout);
+
+    Env::PrintRunInfo(stdout);
+    return (int) res;
+}
+#endif

@@ -28,7 +28,7 @@ public:
     struct cmp {
 
         bool operator()(const TermIndNode* a, const TermIndNode * b) const {
-            return (b->curTermSymbol->fCode - a->curTermSymbol->fCode) > 0 ? true : false;
+            return (b->curTermSymbol->fCode > a->curTermSymbol->fCode);
         }
     };
 
@@ -44,7 +44,10 @@ public:
 
     }
 
-    TermIndNode(TermCell* term) : curTermSymbol(term), size(0) {
+    TermIndNode(TermCell* term) {
+
+        curTermSymbol = term;
+        size = 0;
 
     }
 
@@ -63,7 +66,8 @@ public:
 class TermIndexing {
 public:
     //vector<TermCell*> chgVars; //记录有绑定的变元项
-    Subst* chgVars;
+    Subst* subst;
+    static map<TermCell*, int> constTermNum;
 protected:
 
     //回退点定义
@@ -71,7 +75,8 @@ protected:
     struct BackPoint {
         uint32_t queryTermPos; //pos of queryterm
         uint32_t* chgVarPos; // 记录相关位置信息 如:变元替换列表位置  变元替换回退位置 
-        set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt; // iterator of treeNode(parent node)
+       // set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt; // iterator of treeNode(parent node)
+        TermIndNode* parentNode;
         set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt; // iterator of treeSubNode
 
         /// \param qTermPos 查询项位置
@@ -79,9 +84,9 @@ protected:
         /// \param ParentTNIt   父节点
         /// \param it           子节点      
 
-        BackPoint(uint32_t qTermPos, uint32_t* chgVPos, set<TermIndNode*, TermIndNode::cmp>::iterator&ParentTNIt,
+        BackPoint(uint32_t qTermPos, uint32_t* chgVPos,TermIndNode* _parentNode,// set<TermIndNode*, TermIndNode::cmp>::iterator&ParentTNIt,
                 set<TermIndNode*, TermIndNode::cmp>::iterator&it)
-        : queryTermPos(qTermPos), chgVarPos(chgVPos), parentNodeIt(ParentTNIt), subNodeIt(it) {
+        : queryTermPos(qTermPos), chgVarPos(chgVPos), parentNode(_parentNode), subNodeIt(it) {
         };
 
         virtual ~BackPoint() {
@@ -105,36 +110,41 @@ private:
     virtual void InsertTerm(TermIndNode* treeNode, TermCell * term);
 public:
 
+    inline int GetTermNum(TermCell* t) {
+        return constTermNum[t];
+    }
+
     inline TermIndNode* getRoot(Literal* lit) {
 
         if (lit->EqnIsEquLit()) {
-            return lit->EqnIsPositive() ? posEqnRoot : negEqnRoot;
-        } else
-            return lit->EqnIsPositive() ? posRoot : negRoot;
-
+            return lit->IsPositive() ? posEqnRoot : negEqnRoot;
+        } else {
+            return lit->IsPositive() ? posRoot : negRoot;
+        }
 
     }
     //返回文字谓词子节点个数
 
     inline int getNodeNum(Literal*lit) {
         TermIndNode* r = getRoot(lit);
-
-
-        if (lit->lterm->TBTermIsGround()) {
-            uint32_t iSize = r->groundTermMap[lit->lterm];
-            // lit->EqnTSTPPrint(stdout,true);  cout << "groundTermSet.size() " << iSize << endl;
-            return iSize;
-
-        }
-
         set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt = r->subTerms.find(new TermIndNode(lit->lterm));
         if (subNodeIt == r->subTerms.end())return 0;
-        //cout << "(*subNodeIt)->size" << r->size << endl;
-        //    cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
+
+        uint32_t iSize = 0;
+        if (lit->lterm->TBTermIsGround()) {
+            iSize = (*subNodeIt)->groundTermMap[lit->lterm];
+            //            if(iSize>10)
+            //                iSize=INT_MAX;
+            // lit->EqnTSTPPrint(stdout, true);
+            //  cout << "iSize " << iSize << endl;
+            return iSize;
+        }
+        //          lit->EqnTSTPPrint(stdout,true);
+        //           cout << "subTerms.size()+leafs.size()" << (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size() << endl;
 
 
 
-        return (*subNodeIt)->subTerms.size()+(*subNodeIt)->leafs.size();
+        return (*subNodeIt)->subTerms.size() + iSize;
 
     }
     /*---------------------------------------------------------------------*/
@@ -159,7 +169,7 @@ public:
     virtual void ClearVarLst();
 
     void DelIndexNode(TermIndNode * root) {
-
+        if (root == nullptr)return;
         vector<TermIndNode*> stNode;
         stNode.reserve(64);
         stNode.push_back(root);
@@ -175,6 +185,13 @@ public:
         vector<TermIndNode*>().swap(stNode);
     }
 
+    inline void destroy() {
+        DelIndexNode(posRoot);
+        DelIndexNode(negRoot);
+        DelIndexNode(posEqnRoot);
+        DelIndexNode(negEqnRoot);
+
+    }
 
 
     /// 扁平化文字项
@@ -182,7 +199,7 @@ public:
 
     void FlattenLiteral(Literal * lit) {
         flattenTerm.clear();
-        flattenTerm.reserve(32);
+        flattenTerm.reserve(64);
         this->FlattenTerm(lit->lterm);
         if (lit->EqnIsEquLit())
             this->FlattenTerm(lit->rterm);
@@ -205,19 +222,20 @@ public:
 class DiscrimationIndexing : public TermIndexing {
 private:
 
-    vector<TermCell*> varLst[8000]; //上限 一个term中最多只能有1000个变元
+    vector<TermCell*> varLst[1000]; //上限 一个term中最多只能有128个变元
     vector<uint32_t> stVarChId; //记录有存在替换的变量ID
     vector<BackPoint*> backpoint; /*回退点*/
     /// 在节点treeNode 后面插入 项t的所有符号
     /// \param treeNode
     /// \param t
     TermIndNode* InsertTerm(TermIndNode** treeNode, TermCell * term);
-
+    vector<TermCell*> varBinding; // 用于存储 变元绑定 下标为变元-fcode 存储的内容为绑定的项.
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
-
     /*---------------------------------------------------------------------*/
+    //
+
     DiscrimationIndexing() {
         posRoot = new TermIndNode();
         negRoot = new TermIndNode();
@@ -225,6 +243,14 @@ public:
         negEqnRoot = new TermIndNode(); //负等词索
         backpoint.reserve(32);
         //chgVars.reserve(32);
+    }
+
+    ~DiscrimationIndexing() {
+        destroy();
+        ClearVarLst();
+
+
+
     }
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
@@ -257,21 +283,24 @@ public:
 
     TermIndNode* Subsumption(Literal* lit, SubsumpType subsumtype);
 
-    TermIndNode* FindBackwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    // <editor-fold defaultstate="collapsed" desc="BackwardSubsump(向后归入冗余检查)">
+
+    TermIndNode* FindBackwordSubsumption(uint32_t qTermPos,TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextBackSubsump();
 
+    // </editor-fold>
 
-
-    TermIndNode* FindForwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    // <editor-fold defaultstate="collapsed" desc="ForwardSubsump(向前归入冗余检查)">    
+    TermIndNode* FindForwordSubsumption(uint32_t qTermPos, TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextForwordSubsump();
 
+    TermCell* FindVarBindByFCode(FunCode idx);
+    void varAddBinding(FunCode idx, TermCell* t);
+    void varClearBingding();
 
-
-
-
-
+    // </editor-fold>
 
     Literal* FindNextDemodulator(TermCell *t, bool isEqual = false);
     Literal* FindDemodulator(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt, set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
@@ -282,10 +311,8 @@ public:
     /// \param treePos 返回skip后的节点位置
     /// \return     
 
-    bool CheckVarBinding(TermCell* qTerm, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    bool CheckVarBinding(TermCell* qTerm, TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subPosIt);
-
-
 
     bool CheckOccurs();
 
@@ -293,7 +320,7 @@ public:
     /// \param qTermPos
     /// \param funcLevel
     /// \param treePosIt  注意:treePosIt对应的是 变元项所在的父节点
-    void BindingVar(const uint32_t qTermPos, int32_t funcLevel, std::set<TermIndNode*, TermIndNode::cmp>::iterator& parentNodeIt, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
+    void BindingVar(const uint32_t qTermPos, int32_t funcLevel,TermIndNode* parentNode, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
 
     void ClearVarLst();
     void VarLstBacktrackToPos(uint32_t varPos);

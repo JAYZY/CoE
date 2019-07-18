@@ -12,6 +12,35 @@
 #ifndef LITERALCMP_H
 #define LITERALCMP_H
 #include "Literal.h"
+#include "Clause.h"
+
+/**
+ * 单元子句排序规则
+ * 1.优先使用次数少的,
+ * 2.再根据文字权重排序
+ * 可以考虑 KBO 序
+ */
+class UnitClaCompareWithWeight {
+public:
+
+    bool operator()(Clause* cA, Clause* cB) {
+        int uesdCount = cA->literals->usedCount - cB->literals->usedCount;
+        if (uesdCount == 0)
+            return cA->Lits()->StandardWeight() > cB->Lits()->StandardWeight();
+        return uesdCount<0; //优先使用使用次数少的
+    }
+};
+
+class EqnCompareKBO6 {
+public:
+
+    int operator()(Literal*t1, Literal* t2) {
+        CompareResult res = t1->Compare(t2);
+        if (res == CompareResult::toGreater)
+            return 1;
+        return -1;
+    }
+};
 
 class SteadyCMP {
 public:
@@ -19,7 +48,7 @@ public:
     int operator()(Literal*t1, Literal* t2) {
         t1->zjLitWeight();
         t2->zjLitWeight();
-        return (t1->zjlitWight - t2->zjlitWight);
+        return 1; // return (t1->zjlitWight - t2->zjlitWight);
     }
 };
 //只是简单统计变元项
@@ -40,15 +69,18 @@ class ImprovementCMP {
 public:
 
     float operator()(Literal* t1, Literal * t2) {
+
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
             return 1;
+
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->zjlitWight - t2->zjlitWight;
+        return 1; //return t1->zjlitWight - t2->zjlitWight;
     }
 };
 //比较每个项
+
 class SubTermCMP {
 public:
 
@@ -56,27 +88,32 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //无位置<变元<常元
-        
+
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->zjlitWight - t2->zjlitWight;
+        return 1; //t1->zjlitWight - t2->zjlitWight;
     }
 };
 
 //只比较个数
-class ConstLenCMP{
-    public:
+
+class ConstLenCMP {
+public:
+
     float operator()(Literal* t1, Literal * t2) {
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t1->ConstNum() - t2->ConstNum(); //变元越多越不稳定
     }
 };
 //只比较变元个数
+
 class OnlyVarLenCMP {
 public:
 
@@ -84,6 +121,7 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
         return t2->VarNum() - t1->VarNum(); //变元越多越不稳定
@@ -98,9 +136,10 @@ public:
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+
             return 1;
         //fprintf(stdout,"t1->zjlitWight:%5.2f t2->zjlitWight:%5.2f\n",t1->zjlitWight,t2->zjlitWight);
-        return t1->EqnDepth() - t2->EqnDepth(); //变元越多越不稳定
+        return t1->TermDepth() - t2->TermDepth(); //变元越多越不稳定
     }
 };
 
@@ -108,76 +147,42 @@ class StandardWCMP {
 public:
 
     int operator()(Literal* t1, Literal * t2) {
-        //        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-        //            return 1;
-        //        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-        //            return -1;
-
-        //        int x1 = t1->computJZD();
-        //        int x2 = t2->computJZD();
-        //        t1->EqnTSTPPrint(stdout, true);
-        //        cout << "  x1JZD:" << x1 << endl;
-        //        t2->EqnTSTPPrint(stdout, true);
-        //        cout << "  x2JZD:" << x2 << endl;
-        //        if (x1 == 0) return -1;
-        //        if (x2 == 0) return 1;
-        //        long x = (t1->StandardWeight() - t2->StandardWeight());
-        //        if (x == 0) {
-
-
-
-        //        int x1 = t1->computJZD();
-        //        int x2 = t2->computJZD();
-        ////        t1->EqnTSTPPrint(stdout, true);
-        ////        cout << "  x1JZD:" << x1 << endl;
-        ////        t2->EqnTSTPPrint(stdout, true);
-        ////        cout << "  x2JZD:" << x2 << endl;
-        //        if (x1 == 0) return -1;
-        //        if (x2 == 0) return 1;
-        //        if (x1 == x2) {
         if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
             return -1;
         if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
             return 1;
         long x = (t1->StandardWeight() - t2->StandardWeight());
+
         return x;
-        //        }
-        //        return x1 - x2;
-
-        //        }
-        //        return (int) x;
-
-
-
     }
 };
 
-class ZXMSteadyCMP {
-public:
+//class ZXMSteadyCMP {
+//public:
+//
+//    float operator()(Literal* t1, Literal * t2) {
+//        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
+//            return 1;
+//        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+//
+//            return -1;
+//        return t1->xyW - t2->xyW;
+//    }
+//};
+//
+//class XYSteadyCMP {
+//public:
+//
+//    float operator()(Literal* t1, Literal * t2) {
+//
+//        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
+//            return -1;
+//        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
+//            return 1;
+//        return t1->xyW - t2->xyW;
+//    }
+//};
 
-    float operator()(Literal* t1, Literal * t2) {
-        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-            return 1;
-        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-            return -1;
-        return t1->xyW - t2->xyW;
-    }
-};
 
-class XYSteadyCMP {
-public:
-
-    float operator()(Literal* t1, Literal * t2) {
-        //        float x=(t1->xyW-t2->xyW);
-        //        if(x>0.0f) return 1;
-        //        else if(x<0.0f) return -1;
-        //        else return 0;
-        if (t1->EqnIsEquLit()&&!t2->EqnIsEquLit())
-            return -1;
-        if (!t1->EqnIsEquLit() && t2->EqnIsEquLit())
-            return 1;
-        return t1->xyW - t2->xyW;
-    }
-};
 #endif /* LITERALCMP_H */
 

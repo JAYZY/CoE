@@ -852,7 +852,7 @@ Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, Spl
         dummy.i_val = 0;
 
         this->NextToken();
-        this->CheckInpTok( (TokenType)((uint64_t)TokenType::NamePosInt | (uint64_t)TokenType::OpenSquare) );
+        this->CheckInpTok((TokenType) ((uint64_t) TokenType::NamePosInt | (uint64_t) TokenType::OpenSquare));
 
         if (this->TestInpTok(TokenType::NamePosInt)) {
 
@@ -889,32 +889,25 @@ Scanner* Scanner::ScannerParseInclude(SplayTree<StrTreeCell> &name_selector, Spl
     return new_scanner;
 }
 
-
-string Scanner::PosRep(StreamType type, const string& source, long line, long column)
-{
+string Scanner::PosRep(StreamType type, const string& source, long line, long column) {
     char buff[MAX_ERRMSG_LEN];
-   char        tmp_str[MAX_ERRMSG_LEN];
+    char tmp_str[MAX_ERRMSG_LEN];
 
 
-   if(type == StreamTypeFile)
-   {
-      assert(strlen(source.c_str())<=MAXPATHLEN);
-      sprintf(buff, "%s:%ld:(Column %ld):",source.c_str(), line, column);
-   }
-   else
-   {
-      tmp_str[0] = '\0';
-      strcat(tmp_str, type);
-      strcat(tmp_str, ": \"");
-      strncat(tmp_str, source.c_str(), MAXPATHLEN-4);
-      if(strlen(source.c_str())>MAXPATHLEN-4)
-      {
-	 strcat(tmp_str, "...");
-      }
-      strcat(tmp_str, "\"");
-      sprintf(buff, "%s:%ld:(Column %ld):", tmp_str, line, column);
-   }
-   string rtnStr=buff;
-   
-   return rtnStr;
+    if (type == StreamTypeFile) {
+        assert(strlen(source.c_str()) <= MAXPATHLEN);
+        sprintf(buff, "%s:%ld:(Column %ld):", source.c_str(), line, column);
+    } else {
+        tmp_str[0] = '\0';
+        strcat(tmp_str, type);
+        strcat(tmp_str, ": \"");
+        strncat(tmp_str, source.c_str(), MAXPATHLEN - 4);
+        if (strlen(source.c_str()) > MAXPATHLEN - 4) {
+            strcat(tmp_str, "...");
+        }
+        strcat(tmp_str, "\"");
+        sprintf(buff, "%s:%ld:(Column %ld):", tmp_str, line, column);
+    }
+    string rtnStr = buff;
+    return rtnStr;
 }

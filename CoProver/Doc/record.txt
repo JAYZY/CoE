@@ -1,0 +1,7 @@
+/home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p
+# Maximum ClauseID         : 1245 
+# User time                : 54.870 s
+# System time              : 2.360 s
+# Total time               : 57.231 s
+# Maximum resident set size: 275940 pages
+

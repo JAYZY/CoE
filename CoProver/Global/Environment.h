@@ -9,21 +9,28 @@
 #define ENVIRONMENT_H
 #include "IncDefine.h"
 #include "INOUT/Scanner.h"
-#include "TERMS/TermBank.h"
+#include "Terms/GroundTermBank.h"
 
 class Env {
 private:
 
     static Scanner* in;
     static IOFormat parseFormat;
-    static TermBank* termBank; // 全局唯一一个项bank 存储共享 term
-    static Sigcell* sig; // 全局唯一一个sig 存储项相关的符号
+    static GTermBank_p GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
+    static Sig_p sig; // 全局唯一一个sig 存储项相关的符号 只存储不删除
 public:
-    static uint64_t global_formula_counter;
-    static uint64_t global_clause_counter;
-    static uint64_t backword_CMP_counter; //backword 比较次数
-    static uint64_t backword_Finded_counter; //backword 找到冗余次数
-    
+    static string tptpFileName; //文件名
+
+    static uint32_t global_formula_counter;
+    static uint32_t global_clause_counter;
+    static uint32_t backword_CMP_counter; //backword 比较次数
+    static uint32_t backword_Finded_counter; //backword 找到冗余次数
+    static uint32_t forward_Finded_counter; //backword 找到冗余次数
+
+    static uint16_t S_OverMaxLitLimit_Num;
+    static uint16_t S_ASame2R_Num;
+    static uint16_t S_ASame2A_Num; //主界线文字相同次数
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -37,8 +44,13 @@ public:
     /*                          Static Function                            */
     /*---------------------------------------------------------------------*/
     //
+    /// 初始化全局扫描器,读取文件
+    /// \param type 扫描器类型
+    /// \param name 读取文件名称
+    /// \param ignore_comments 是否忽略注释,往往是/*开头
+    /// \param default_dir 默认路径(一般为nullptr)
 
-    static void iniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
+    static void IniScanner(StreamType type, char *name, bool ignore_comments, char *default_dir) {
         in = new Scanner(type, name, ignore_comments, default_dir);
         in->SetFormat(parseFormat);
         if (parseFormat == IOFormat::AutoFormat && Env::in->format == IOFormat::TSTPFormat) {
@@ -51,11 +63,11 @@ public:
         return in;
     }
 
-    static TermBank* getTb() {
-        if (!termBank)
-            termBank = new TermBank();
-        assert(termBank);
-        return termBank;
+    static GTermBank_p getGTbank() {
+        if (!GTBank)
+            GTBank = new GroundTermBank();
+        assert(GTBank);
+        return GTBank;
     }
 
     static Sigcell* getSig() {
@@ -65,24 +77,78 @@ public:
         return sig;
     }
 
+    /*--------------------------------------------------------------------------
+    /* Print resource usage to given stream.
+    /-------------------------------------------------------------------------*/
+    static inline double GetTotalTime() {
+        struct rusage usage, cusage;
+
+        if (getrusage(RUSAGE_SELF, &usage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        if (getrusage(RUSAGE_CHILDREN, &cusage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
+        usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
+        usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
+        usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
+
+        double spanTime = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+        return spanTime;
+    }
+
+    static inline void PrintRusage(FILE* out) {
+        struct rusage usage, cusage;
+
+        if (getrusage(RUSAGE_SELF, &usage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        if (getrusage(RUSAGE_CHILDREN, &cusage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
+        usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
+        usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
+        usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
+
+        fprintf(out,
+                "\n# -------------------------------------------------\n");
+        fprintf(out,
+                "# Maximum ClauseID         : %d \n", Env::global_clause_counter);
+        fprintf(out,
+                "# User time                : %.3f s\n",
+                (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
+        fprintf(out,
+                "# System time              : %.3f s\n",
+                (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
+        fprintf(out,
+                "# Total time               : %.3f s\n",
+                (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
+        fprintf(out,
+                "# Maximum resident set size: %ld pages\n",
+                usage.ru_maxrss);
+    }
+
+    static inline void PrintRunInfo(FILE* out) {
+        fprintf(out,
+                "# R与主界线相同次数        : %u \n", S_ASame2R_Num);
+        fprintf(out,
+                "# 主界线文字相同次数       : %u \n", S_ASame2A_Num);
+        fprintf(out,
+                "# R超过最大文字数限制      : %u \n", S_OverMaxLitLimit_Num);
+
+    }
 private:
 
 };
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-static inline double cpuTime(void);
 
-static inline double cpuTime(void) {
-    struct rusage ru;
-    getrusage(RUSAGE_SELF, &ru);
-    return (double) ru.ru_utime.tv_sec + (double) ru.ru_utime.tv_usec / 1000000;
-}
-
-static inline void paseTime(const char* tip, double initial_time) {
-    printf("|  %stime:           %12.2f s                 |\n", tip, cpuTime() - initial_time);
-
-}
 
 
 #endif /* ENVIRONMENT_H */

@@ -18,26 +18,30 @@
 #include <climits>
 #include <string>
 #include <cstring>
-
+#include <algorithm>
+#include <unistd.h>
 #include <list>
 #include <vector>
 #include <set>
 //#include "Environment.h"
 #include <sys/param.h>
+#include<sys/wait.h>
 #include "LIB/Out.h"
+
 //#define NDEBUG
+
 #include <cassert>
 using namespace std;
 #define New
-#define  OUTINFO
+//#define  OUTINFO
 #define WEI 0.0f
 
 #define MAX_ERRMSG_ADD   512
 #define MAX_ERRMSG_LEN   MAX_ERRMSG_ADD+MAXPATHLEN
 
 
-extern const uint32_t MAX_SUBTERM_SIZE;//预设最大子项个数,用于优化 vector 2^n
-extern const uint32_t MAX_VAR_SIZE;//预设项中,最大变元数
+extern const uint32_t MAX_SUBTERM_SIZE; //预设最大子项个数,用于优化 vector 2^n
+extern const uint32_t MAX_VAR_SIZE; //预设项中,最大变元数
 
 typedef char* StreamType;
 /* 定义函数符为一个　正整数　Function symbols in terms are represented by positive numbers,
@@ -57,6 +61,23 @@ enum class CompareResult : uint8_t {
     toNotgteq, /* For caching partial LPO results */
     toNotleeq
 };
+
+
+
+/*---------------------------------------------------------------------*/
+/*                       【全局返回类型】相关枚举                      */
+/*---------------------------------------------------------------------*/
+//枚举定义返回类型
+//返回：100 不可满足;  101 可满足;  102 不可判定;103 无子句参与归结 200 错误起步ID; 201创建网络连接错误;  202 后台输出目录错误; 203 程序调用错误,
+//-101 文件格式错误
+
+enum class RESULT {
+    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
+    ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, OUT_OF_MEMORY = 204, CPU_LIMIT_ERROR, SYS_ERROR, UnknownFile,
+
+    NOMGU/*没有合一*/, SUCCES, RollBack, FAIL
+};
+
 /*---------------------------------------------------------------------*/
 /*                          宏定义-两个函数指针                           */
 /*---------------------------------------------------------------------*/
@@ -128,7 +149,12 @@ template<typename T, typename V>
 inline bool IsAnyPropSet(T&obj, V prop) {
     return ((int32_t) obj & (int32_t) prop) == (int32_t) prop;
 }
+//判断两个对象是否有相同的属性prop
 
+template<typename T, typename V>
+inline bool PropsAreEquiv(T&obj1, T&obj2, V prop) {
+    return ((int32_t) obj1 & (int32_t) prop) == ((int32_t) obj2 & (int32_t) prop);
+}
 
 #define ASSERT_MSG(expr,msg) (void)((expr)?((void)0):assert_msg(msg))
 
@@ -152,6 +178,83 @@ inline bool IsAnyPropSet(T&obj, V prop) {
 
 #define KILO 1024
 #define MEGA (1024*1024)
+
+/*****************************************************************************
+ * 定义系统时间宏定义
+ ****************************************************************************/
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+//宏定义开关--定义cpu时间输出
+#ifdef DEF_OUT_CPUTIME
+
+#define CPUTIME_DEFINE(name)  long long name = 0; long long name##_store = 0
+#define CPUTIME_DECL(name)    extern long long name; extern long long name##_store
+#define CPUTIME_RESET(name)   name = 0
+#define CPUTIME_ENTRY(name)   name##_store = CPUTime()
+#define CPUTIME_EXIT(name)    name+=(CPUTime()-(name##_store));name##_store=0
+#define CPUTIME_PRINT(out, name) fprintf((out), "# PC%-34s : %f\n", "(" #name ")", ((float)name)/1000000.0)
+#else
+#define CPUTIME_DEFINE(name)  enum { name##_store } // Used to silence compiler warnings
+#define CPUTIME_DECL(name)    enum { name }         // about extra semicolons.
+#define CPUTIME_RESET(name)
+#define CPUTIME_ENTRY(name)
+#define CPUTIME_EXIT(name)
+#define CPUTIME_PRINT(out, name)
+#endif
+
+
+/* 四种时间精度
+ * clock()函数的精确度是10毫秒(ms)；
+ * times()函数的精确度是10毫秒(ms)；
+ * gettimofday()函数的精确度是微秒(μs)；
+ * getrusage()函数的精确度是纳秒(ns)。
+ */
+static inline double CPUTime(void);
+static inline double GetTotalCPUTime(void);
+
+static inline double CPUTime(void) {
+    struct rusage ru;
+    getrusage(RUSAGE_SELF, &ru);
+    return (double) ru.ru_utime.tv_sec + (double) ru.ru_utime.tv_usec / 1000000;
+}
+
+static inline void PaseTime(const char* tip, double initial_time) {
+    printf("|  %stime:           %12.2f s                 |\n", tip, CPUTime() - initial_time);
+}
+
+static inline void PaseTime(const char* tip) {
+    printf("|  %stime:           %12.2f ms                 |\n", tip, GetTotalCPUTime());
+}
+
+static inline long long GetUSecTime(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long long) tv.tv_sec * 1000000ll + tv.tv_usec;
+}
+
+static inline long long GetUSecClock(void) {
+    long long res = (clock()*1000000ll) / CLOCKS_PER_SEC;
+    return res;
+}
+
+/*--------------------------------------------------------------------------
+/* 得到程序运行时间
+/-------------------------------------------------------------------------*/
+static inline double GetTotalCPUTime(void) {
+    double res = -1;
+    struct rusage usage;
+    if (!getrusage(RUSAGE_SELF, &usage)) {
+        res = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+    }
+    return res;
+}
+
+
+
+
 
 
 

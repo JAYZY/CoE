@@ -35,6 +35,7 @@ int Subst::SubstAddBinding(TermCell* var, TermCell* bind) {
     /* printf("# %ld <- %ld \n", var->f_code, bind->f_code); */   
     var->binding = bind;   
     vecSubst.push_back(var);
+    return vecSubst.size();
 }
 
 /***************************************************************************** 
@@ -46,9 +47,9 @@ bool Subst::SubstBacktrackSingle() {
     if (vecSubst.empty()) {
         return false;
     }
-    handle = vecSubst.back();
+    handle = vecSubst.back();  
+    handle->binding = NULL;  
     vecSubst.pop_back();
-    handle->binding = NULL;
     return true;
 }
 
@@ -88,7 +89,7 @@ int Subst::SubstBacktrack() {
  ****************************************************************************/
     FunCode Subst::SubstNormTerm(TermCell* term, VarBank_p vars) {
     //DerefType deref = DEREF_ALWAYS;
-    FunCode ret = vars->vCount;
+    FunCode ret = vars->VarBankGetVCount();
     vector<TermCell*> vecStack;
     vecStack.push_back(term);
     TermCell* newvar = nullptr;
@@ -98,7 +99,7 @@ int Subst::SubstBacktrack() {
         vecStack.pop_back();
         if (term->IsVar()) {
             if (!term->TermCellQueryProp(TermProp::TPSpecialFlag)) {
-                newvar = vars->VarBankGetFreshVar();
+                newvar = vars->VarBankGetFreshVar(0);
                 newvar->TermCellSetProp(TermProp::TPSpecialFlag);
                 SubstAddBinding(term, newvar);
             }
@@ -244,4 +245,13 @@ void Subst::SubstCompleteInstance(TermCell* term, TermCell* defaultBinding) {
             SubstCompleteInstance(term->args[i], defaultBinding);
         }
     }
+}
+bool Subst::isReverseSubst(int claId,int pos){
+    for(int i=pos+1;i<vecSubst.size();++i){
+        TermCell* term=vecSubst[i];
+        assert(term->IsVar());
+        if(term->claId!=claId)
+            return true; //逆向替换
+    }
+    return false;
 }

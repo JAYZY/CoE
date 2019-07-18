@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="Alg" displayName="Alg" projectFiles="true">
+      <itemPath>Alg/Resolution.cpp</itemPath>
+      <itemPath>Alg/Resolution.h</itemPath>
+      <itemPath>Alg/TriAlg.cpp</itemPath>
+      <itemPath>Alg/TriAlg.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="BASIC" displayName="BASIC" projectFiles="true">
       <itemPath>BASIC/SplayTree.h</itemPath>
       <itemPath>BASIC/TreeNodeDef.h</itemPath>
@@ -11,13 +17,18 @@
       <itemPath>CLAUSE/Literal.cpp</itemPath>
       <itemPath>CLAUSE/Literal.h</itemPath>
       <itemPath>CLAUSE/LiteralCompare.h</itemPath>
-      <itemPath>Prover/Prover.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="f1" displayName="Doc" projectFiles="true">
+      <itemPath>Doc/myAlgorithm.puml</itemPath>
+      <itemPath>Doc/record.txt</itemPath>
+      <itemPath>Doc/test.puml</itemPath>
+      <itemPath>Doc/问题记录</itemPath>
     </logicalFolder>
     <logicalFolder name="Formula" displayName="Formula" projectFiles="true">
       <itemPath>Formula/ClauseSet.cpp</itemPath>
       <itemPath>Formula/ClauseSet.h</itemPath>
-      <itemPath>CLAUSE/Formula.cpp</itemPath>
-      <itemPath>CLAUSE/Formula.h</itemPath>
+      <itemPath>Formula/Formula.cpp</itemPath>
+      <itemPath>Formula/Formula.h</itemPath>
       <itemPath>Formula/FormulaSet.cpp</itemPath>
       <itemPath>Formula/FormulaSet.h</itemPath>
       <itemPath>Formula/WFormula.cpp</itemPath>
@@ -26,19 +37,27 @@
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
       <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>Global/Environment.h</itemPath>
+      <itemPath>Global/GlobalFunc.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
+      <itemPath>Global/SysDate.cpp</itemPath>
       <itemPath>Global/SysDate.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HEURISTICS" displayName="HEURISTICS" projectFiles="true">
       <itemPath>HEURISTICS/Options.cpp</itemPath>
       <itemPath>HEURISTICS/Options.h</itemPath>
+      <itemPath>HEURISTICS/SortRule.cpp</itemPath>
+      <itemPath>HEURISTICS/SortRule.h</itemPath>
+      <itemPath>HEURISTICS/StrategyParam.cpp</itemPath>
+      <itemPath>HEURISTICS/StrategyParam.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Indexing" displayName="Indexing" projectFiles="true">
       <itemPath>Indexing/TermIndexing.cpp</itemPath>
       <itemPath>Indexing/TermIndexing.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Inferences" displayName="Inferences" projectFiles="true">
+      <itemPath>Inferences/InferenceInfo.cpp</itemPath>
+      <itemPath>Inferences/InferenceInfo.h</itemPath>
       <itemPath>Inferences/Simplification.cpp</itemPath>
       <itemPath>Inferences/Simplification.h</itemPath>
       <itemPath>Inferences/Subst.cpp</itemPath>
@@ -62,29 +81,41 @@
       <itemPath>LIB/Out.cpp</itemPath>
       <itemPath>LIB/Out.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="Ordering" displayName="Ordering" projectFiles="true">
-      <itemPath>Ordering/KBO.cpp</itemPath>
-      <itemPath>Ordering/KBO.h</itemPath>
+    <logicalFolder name="Ordering" displayName="Orderings" projectFiles="true">
+      <itemPath>Orderings/KBO.cpp</itemPath>
+      <itemPath>Orderings/KBO.h</itemPath>
+      <itemPath>Orderings/Ordering.cpp</itemPath>
+      <itemPath>Orderings/Ordering.h</itemPath>
     </logicalFolder>
     <logicalFolder name="PROOF" displayName="PROOF" projectFiles="true">
       <itemPath>PROOF/ProofControl.cpp</itemPath>
       <itemPath>PROOF/ProofControl.h</itemPath>
+      <itemPath>PROOF/ProverResultAnalyse.cpp</itemPath>
+      <itemPath>PROOF/ProverResultAnalyse.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="TERMS" displayName="TERMS" projectFiles="true">
-      <itemPath>TERMS/Sigcell.cpp</itemPath>
-      <itemPath>TERMS/Sigcell.h</itemPath>
-      <itemPath>TERMS/TermBank.cpp</itemPath>
-      <itemPath>TERMS/TermBank.h</itemPath>
-      <itemPath>TERMS/TermCell.cpp</itemPath>
-      <itemPath>TERMS/TermCell.h</itemPath>
-      <itemPath>TERMS/TermCellStore.cpp</itemPath>
-      <itemPath>TERMS/TermCellStore.h</itemPath>
-      <itemPath>TERMS/TermTree.cpp</itemPath>
-      <itemPath>TERMS/TermTree.h</itemPath>
-      <itemPath>TERMS/VarBank.cpp</itemPath>
-      <itemPath>TERMS/VarBank.h</itemPath>
-      <itemPath>TERMS/VarHash.cpp</itemPath>
-      <itemPath>TERMS/VarHash.h</itemPath>
+    <logicalFolder name="Prover" displayName="Prover" projectFiles="true">
+      <itemPath>Prover/Prover.cpp</itemPath>
+      <itemPath>Prover/Prover.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TERMS" displayName="Terms" projectFiles="true">
+      <itemPath>Terms/GroundTermBank.cpp</itemPath>
+      <itemPath>Terms/GroundTermBank.h</itemPath>
+      <itemPath>Terms/Sigcell.cpp</itemPath>
+      <itemPath>Terms/Sigcell.h</itemPath>
+      <itemPath>Terms/TermBank.cpp</itemPath>
+      <itemPath>Terms/TermBank.h</itemPath>
+      <itemPath>Terms/TermCell.cpp</itemPath>
+      <itemPath>Terms/TermCell.h</itemPath>
+      <itemPath>Terms/TermCellStore.cpp</itemPath>
+      <itemPath>Terms/TermCellStore.h</itemPath>
+      <itemPath>Terms/TermTree.cpp</itemPath>
+      <itemPath>Terms/TermTree.h</itemPath>
+      <itemPath>Terms/VarBank.cpp</itemPath>
+      <itemPath>Terms/VarBank.h</itemPath>
+      <itemPath>Terms/VarHash.cpp</itemPath>
+      <itemPath>Terms/VarHash.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Tool" displayName="Tool" projectFiles="true">
     </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
     </logicalFolder>
@@ -110,10 +141,29 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>Prover/Prover.h</itemPath>
-    <itemPath>Global/SysDate.cpp</itemPath>
+    <logicalFolder name="TestFiles"
+                   displayName="测试文件"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="重要文件"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="测试文件"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="重要文件"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
     <itemPath>main.cpp</itemPath>
-    <itemPath>问题记录</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -124,7 +174,7 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -135,17 +185,29 @@
           </incDir>
         </cTool>
         <ccTool>
+          <architecture>2</architecture>
           <standard>8</standard>
           <incDir>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
         <linkerTool>
+          <linkerAddLib>
+            <pElem>.</pElem>
+          </linkerAddLib>
           <linkerDynSerch>
             <pElem>.</pElem>
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="Alg/Resolution.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Alg/Resolution.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Alg/TriAlg.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Alg/TriAlg.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="BASIC/SplayTree.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="BASIC/TreeNodeDef.h" ex="false" tool="3" flavor2="0">
@@ -154,19 +216,27 @@
       </item>
       <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="CLAUSE/Formula.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="CLAUSE/Formula.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="CLAUSE/Literal.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/record.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/Formula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/Formula.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Formula/FormulaSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -180,6 +250,8 @@
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Global/GlobalFunc.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
@@ -191,6 +263,14 @@
       <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HEURISTICS/SortRule.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HEURISTICS/SortRule.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HEURISTICS/StrategyParam.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HEURISTICS/StrategyParam.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/CommandLine.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -216,6 +296,10 @@
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Inferences/InferenceInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Inferences/Simplification.h" ex="false" tool="3" flavor2="0">
@@ -232,49 +316,59 @@
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Orderings/KBO.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="Ordering/KBO.h" ex="false" tool="3" flavor2="0">
+      <item path="Orderings/KBO.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Orderings/Ordering.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Orderings/Ordering.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="PROOF/ProverResultAnalyse.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/Sigcell.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/GroundTermBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/GroundTermBank.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermBank.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/Sigcell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermBank.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/Sigcell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermCell.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermBank.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermCell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermCellStore.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermCell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermTree.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermTree.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermCellStore.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/VarBank.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermTree.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/VarBank.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermTree.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/VarBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/VarHash.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/VarBank.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Terms/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Terms/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -310,6 +404,14 @@
           </linkerDynSerch>
         </linkerTool>
       </compileType>
+      <item path="Alg/Resolution.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Alg/Resolution.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Alg/TriAlg.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Alg/TriAlg.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="BASIC/SplayTree.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="BASIC/TreeNodeDef.h" ex="false" tool="3" flavor2="0">
@@ -318,19 +420,27 @@
       </item>
       <item path="CLAUSE/Clause.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="CLAUSE/Formula.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="CLAUSE/Formula.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="CLAUSE/Literal.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="CLAUSE/Literal.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="CLAUSE/LiteralCompare.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Doc/myAlgorithm.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/record.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/test.puml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Doc/问题记录" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Formula/ClauseSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Formula/ClauseSet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Formula/Formula.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Formula/Formula.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Formula/FormulaSet.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -344,6 +454,8 @@
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Global/GlobalFunc.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
@@ -355,6 +467,14 @@
       <item path="HEURISTICS/Options.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HEURISTICS/Options.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HEURISTICS/SortRule.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HEURISTICS/SortRule.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HEURISTICS/StrategyParam.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HEURISTICS/StrategyParam.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="INOUT/CommandLine.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -380,6 +500,10 @@
       </item>
       <item path="Indexing/TermIndexing.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Inferences/InferenceInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Inferences/InferenceInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Inferences/Simplification.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Inferences/Simplification.h" ex="false" tool="3" flavor2="0">
@@ -396,49 +520,59 @@
       </item>
       <item path="LIB/Out.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Ordering/KBO.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Orderings/KBO.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="Ordering/KBO.h" ex="false" tool="3" flavor2="0">
+      <item path="Orderings/KBO.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Orderings/Ordering.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Orderings/Ordering.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PROOF/ProofControl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="PROOF/ProverResultAnalyse.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PROOF/ProverResultAnalyse.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Prover/Prover.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Prover/Prover.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/Sigcell.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/GroundTermBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/Sigcell.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/GroundTermBank.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermBank.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/Sigcell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermBank.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/Sigcell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermCell.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermCell.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermBank.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermCell.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermCellStore.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermCell.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/TermTree.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermCellStore.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/TermTree.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermCellStore.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/VarBank.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/TermTree.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/VarBank.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/TermTree.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="TERMS/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Terms/VarBank.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="TERMS/VarHash.h" ex="false" tool="3" flavor2="0">
+      <item path="Terms/VarBank.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Terms/VarHash.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Terms/VarHash.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="问题记录" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
