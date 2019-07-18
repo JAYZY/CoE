@@ -1,2 +1,2 @@
-# CoE
-Improve for E1.9
+# Coprover
+采用了矛盾体分离理论 构建了一个一阶逻辑证明器
