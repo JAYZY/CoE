@@ -31,13 +31,6 @@ private:
 public:
     uint16_t claId;
     unsigned long inCount; /* TermBank中项个数统计 -- How many terms have been inserted? */
-    //Sig_p sig; /* Store sig info */
-
-    //  TermCell* trueTerm; /* 特殊项$true -- Pointer to the special term with the $true constant. */
-    // TermCell* falseTerm; /* 特殊项$false -- Pointer to the special term with the $false constant. */
-    // TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
-    // unsigned long rewriteSteps; /* 统计TBTermReplace 调用次数;How many calls to TBTermReplace? */
-
     SplayTree<PTreeCell>freeVarSets; /*项中的自由变元,不能共享的. Associates a term (or Tformula) with the set of its free variables.
                                         * Only initalized for specific operations and then reset again */
     TermProp garbageState; /* For the mark-and sweep garbage collection.
@@ -98,14 +91,14 @@ public:
         term->TermPrint(out, DerefType::DEREF_NEVER);
     }
 
-    inline TermCell* VarInert(const string& name, uint16_t claId) {
+    inline TermCell* VarInert(const string& name, uint16_t claId) {//,int litPos
         if (shareVars == nullptr) {
             shareVars = new VarBank();
         }
         return shareVars->Insert(name, claId);
     }
 
-    inline TermCell* VarInert(FunCode fCode, uint16_t claId) {
+    inline TermCell* VarInert(FunCode fCode, uint16_t claId) {//,int litPos
         if (shareVars == nullptr) {
             shareVars = new VarBank();
         }
@@ -147,12 +140,12 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     /*copy new TermBank*/
-    
-//    TermBank* Copy(){
-//        
-//    }
-    
-    
+
+    //    TermBank* Copy(){
+    //        
+    //    }
+
+
     /* 插入一个项到termbank中.但该项的子项已经存在,重用或删除 top cell! */
     TermCell* TBTermTopInsert(TermCell* t);
 

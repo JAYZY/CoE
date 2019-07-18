@@ -67,6 +67,13 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
         selConLit->EqnTSTPPrint(stdout, true);
         cout << endl;
 #endif
+        
+        //等词不做索引树判断
+        if(selConLit->EqnIsEquLit()){
+          selConLit = selConLit->next;
+            continue;
+        }
+        
         //从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
 
@@ -87,6 +94,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
 
                 candVarLit = candVarLits->at(ind);
                 int substPos = indexing->subst->Size();
+                
                 candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句               
                 assert(candVarCla);
 
@@ -461,6 +469,7 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
 bool Simplification::ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsumerVarcla) {
     assert(subsumConCla);
     assert(subsumerVarcla);
+    
     if (subsumConCla->LitsNumber() < subsumerVarcla->LitsNumber())
         return false;
     Unify unify;

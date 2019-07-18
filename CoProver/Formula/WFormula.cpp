@@ -82,15 +82,14 @@ void WFormula::WFormulaTPTPParse(Scanner* in, TermBank_p tbs) {
     Term_p tform;
     WFormulaProp type;
     //WFormula* handle;
-    ClauseInfo* info = new ClauseInfo(nullptr, in->AktToken()->source.c_str(), in->AktToken()->line, in->AktToken()->column);
+    ClauseInfo* info = new ClauseInfo("", in->AktToken()->source.c_str(), in->AktToken()->line, in->AktToken()->column);
 
     in->AcceptInpId("input_formula");
     in->AcceptInpTok(TokenType::OpenBracket);
 
     in->CheckInpTok(TokenType::NamePosInt); //Name | PosInt);
 
-    info->name = in->AktToken()->literal.c_str();
-
+    this->info->name = (in->AktToken())->literal;
     in->NextToken();
 
     in->AcceptInpTok(TokenType::Comma);
@@ -140,12 +139,12 @@ void WFormula::WFormulaTSTPParse(Scanner* in, TermBank_p tbs) {
     // WFormulaProp initial = WFormulaProp::WPInputFormula;
     // WFormula* handle;
 
-    ClauseInfo* info = new ClauseInfo(nullptr, in->AktToken()->source.c_str(), in->AktToken()->line, in->AktToken()->column);
+    ClauseInfo* info = new ClauseInfo("", in->AktToken()->source.c_str(), in->AktToken()->line, in->AktToken()->column);
     in->AcceptInpId("fof");
     in->AcceptInpTok(TokenType::OpenBracket);
     in->CheckInpTok(TokenType::NamePosIntSQStr); // Name | PosInt | SQString);
+    this->info->name = (in->AktToken())->literal;
 
-    info->name = in->AktToken()->literal.c_str();
 
     in->NextToken();
 
@@ -313,7 +312,7 @@ bool WFormula::TFormulaVarIsFree(TermBank_p bank, TFormula_p form, Term_p var) {
 TFormula_p WFormula::TFormulaPropConstantAlloc(TermBank_p tbs, bool positive) {
 
     Literal* handle = new Literal();
-    handle->EqnAlloc(Env::getGTbank()->trueTerm, Env::getGTbank()->trueTerm,  positive);
+    handle->EqnAlloc(Env::getGTbank()->trueTerm, Env::getGTbank()->trueTerm, positive);
     TFormula_p res = TFormulaLitAlloc(handle);
     DelPtr(handle);
     return res;
@@ -630,7 +629,7 @@ TFormula_p WFormula::quantified_tform_tptp_parse(Scanner* in, TermBank_p terms, 
     source_name = in->AktToken()->source;
     type = in->AktToken()->streamType;
 
-    var = terms->TBTermParseReal(in,true);
+    var = terms->TBTermParseReal(in, true);
     if (!var->IsVar()) {
         errpos += in->PosRep(type, source_name, line, column);
         errpos += " Variable expected, non-variable term found";
@@ -659,7 +658,7 @@ TFormula_p WFormula::quantified_tform_tstp_parse(Scanner* in, TermBank_p terms, 
     long column = in->AktToken()->column;
     source_name = in->AktToken()->source;
     StreamType type = in->AktToken()->streamType;
-    var = terms->TBTermParseReal(in,true);
+    var = terms->TBTermParseReal(in, true);
 
     if (!var->IsVar()) {
         errpos += in->PosRep(type, source_name, line, column);

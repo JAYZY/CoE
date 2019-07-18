@@ -61,8 +61,10 @@ class Clause;
 class Literal {
 public:
     uint8_t usedCount; // 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
+    uint8_t pos; //在子句中的位置 一个子句中最大文字数 < 2^8=256
+    
     VarState varState; //文字中变元状态
-    uint16_t pos; //在子句中的位置 一个子句中最大文字数 < 2^16=65536
+    
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
     EqnProp properties; /*prositive ,maximal,equational */
     TermCell* lterm; /*左文字*/
@@ -72,7 +74,6 @@ public:
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
     //long weight;
-
     //float zjlitWight;
 
 public:

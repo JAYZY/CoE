@@ -33,8 +33,8 @@ enum class ClauseProp {
     CPIsDIndexed = 2 * ClauseProp::CPIsOriented, /* Clause is in the demod_index of its set */
     CPIsSIndexed = 2 * ClauseProp::CPIsDIndexed, /* Clause is in the fvindex of its set */
     CPIsGlobalIndexed = 2 * ClauseProp::CPIsSIndexed, /* Clause is in the Subterm FPIndex  */
-    CPRWDetected = 2 * ClauseProp::CPIsGlobalIndexed, /* Rewritability of the clause has been established. Temporary property. */
-    CPDeleteClause = 2 * ClauseProp::CPRWDetected, /* Clause should be deleted for some reason */
+    CPGroundCla = 2 * ClauseProp::CPIsGlobalIndexed, /* Rewritability of the clause has been established. Temporary property. */
+    CPDeleteClause = 2 * ClauseProp::CPGroundCla, /* Clause should be deleted for some reason */
     CPType1 = 2 * ClauseProp::CPDeleteClause, /* Three bits used to encode the Clause type, taken from TPTP or  TSTP input format or assumed */
     CPType2 = 2 * ClauseProp::CPType1,
     CPType3 = 2 * ClauseProp::CPType2,
@@ -71,7 +71,7 @@ enum class ClauseProp {
 
 class ClauseInfo {
 public:
-    const char* name; /* In the input file, if any */
+    string name; /* In the input file, if any */
     //const char* source; /* File name, if any */
     long line;
     long column;
@@ -81,19 +81,18 @@ public:
     //
 
     ClauseInfo() {
-        name = nullptr;
-        //source = nullptr;
+        name = "";
         line = -1;
         column = -1;
     }
 
-    ClauseInfo(const char* _name, const char* _src, long _line, long _col)
+    ClauseInfo(string _name, const char* _src, long _line, long _col)
     : name(_name), /*source(_src),*/ line(_line), column(_col) {
     }
 
     ~ClauseInfo() {
-        DelPtr(name);
-      //  DelPtr(source);
+      //  DelPtr(name);
+        //  DelPtr(source);
     }
     /*---------------------------------------------------------------------*/
     /*                       Inline  Function                              */
@@ -102,11 +101,11 @@ public:
 
     inline void ClauseSourceInfoPrint(FILE* out, const string&inf_lit, const string& delim) {
         string src = "unknown";
-//        if (source) {
-//            src = delim + source + delim;
-//        }
+        //        if (source) {
+        //            src = delim + source + delim;
+        //        }
         string _name = name;
-        if (!name) {
+        if (name.empty()) {
             if (line < 0) {
                 _name = "unknown";
             } else {
@@ -130,22 +129,27 @@ public:
 };
 
 class Clause {
-private :
-     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
+private:
+    /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
     TermBank_p claTB;
+    //记录变元与文字的对应关系,变元x1 有文字L1，L2，
+    map<int,uint16_t>mapVarToLitpos;
 public:
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数    
     uint16_t maxFuncLayer; //文字中最大的函数嵌套层数
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
     uint32_t weight; //子句权重
-    int priority;  //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
+
+    int priority; //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息    
     Clause* parent1; //父子句1;
     Clause* parent2; //父子句2;
     Literal* literals; //文字列表   
-   
+
+
+
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -153,7 +157,7 @@ public:
     //
     Clause();
     Clause(const Clause* orig);
-    Clause(Literal* literal_s);   
+    Clause(Literal* literal_s);
 
     //Clause(const Clause& orig);
     //
@@ -171,18 +175,22 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
-    inline TermBank_p GetClaTB(){
-         if(claTB==nullptr)
-             claTB=new TermBank(ident);
-         return claTB;
+
+    inline TermBank_p GetClaTB() {
+        if (claTB == nullptr)
+            claTB = new TermBank(ident);
+        return claTB;
     }
-    inline void SetClaTB(TermBank_p _tb){
-        
-        claTB=_tb;
+
+    inline void SetClaTB(TermBank_p _tb) {
+
+        claTB = _tb;
     }
-    inline void ClearClaTB(){
+
+    inline void ClearClaTB() {
         DelPtr(claTB);
     }
+
     inline Literal* Lits() {
         return literals;
     }
@@ -200,11 +208,10 @@ public:
         return weight;
     }
 
-    inline uint16_t LitsNumber() const{
+    inline uint16_t LitsNumber() const {
         return posLitNo + negLitNo;
     }
 
-    
     inline bool ClauseIsEmpty() {
         return 0 == LitsNumber();
     }
@@ -222,7 +229,8 @@ public:
     inline bool isUnitNeg() {
         return (0 == posLitNo && 1 == negLitNo);
     }
-    inline bool isDel(){
+
+    inline bool isDel() {
         return this->ClauseQueryProp(ClauseProp::CPDeleteClause);
     }
     //modify ClauseProperties to int
@@ -252,7 +260,7 @@ public:
         return ((int) properties & (int) ClauseProp::CP_CSSCPA_Mask) / (int) ClauseProp::CP_CSSCPA_1;
     }
 
-    
+
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
@@ -262,28 +270,28 @@ public:
     void bindingAndRecopyLits(const vector<Literal*>&vNewR);
 
     void ClausePrint(FILE* out, bool fullterms);
-    void getStrOfClause(string&outStr, bool complete=true);
-    
+    void getStrOfClause(string&outStr, bool complete = true);
+
     void ClausePrintTPTPFormat(FILE* out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
-    
-    void ClauseStandardWeight();    
-    
+
+    void ClauseStandardWeight();
+
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
     //得到字符串
     void getEqnListTSTP(string&outStr, string sep, bool colInfo);
     void SortLits(); //对子句中 单文字进行排序
 
-    void ClauseNormalizeVars(VarBank_p fresh_vars);
+   // void ClauseNormalizeVars(VarBank_p fresh_vars);
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
     Clause* renameCopy(VarBank_p renameVarbank);
 
     //设置文字的变元共享状态
     void SetEqnListVarState();
 
-    uint16_t calcMaxFuncLayer() const ;
-    
+    uint16_t calcMaxFuncLayer() const;
+
     Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal

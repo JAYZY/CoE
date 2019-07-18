@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include "HEURISTICS/StrategyParam.h"
 #include "CLAUSE/Clause.h"
+#include<regex>
+using namespace std;
+
 string FileOp::homePath = getenv("HOME");
 
 string FileOp::TPTP_dir = "";
@@ -79,12 +82,13 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     CloseAll();
 
     string tmpStr = outDir + tptpFileNameNoExt;
-    string sFileName = tmpStr + ".i";
-    if ((fInfo = fopen(+sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
+
+    fInfoFileName = tmpStr + ".i";
+    if ((fInfo = fopen(fInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
         return false;
     }
-    sFileName = tmpStr + ".r";
+    string sFileName = tmpStr + ".r";
     if ((fRun = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".run");
         return false;
@@ -112,9 +116,9 @@ void FileOp::OutUnsatPath(string fileFullName) {
     string sFileName = outDir + tptpFileNameNoExt + ".unsat";
     if (!fUNSAT && (fUNSAT = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".log");
-         
+
     }
-    
+
 
 }
 
@@ -206,4 +210,79 @@ string FileOp::getFileNameNoExt(string fileFullName) {
 }
 // </editor-fold>
 
+/**
+ * 读取.i文件生成最小路径文件.out
+ */
+void FileOp::GenerateEmptyPath() {
+    ifstream fin(fInfoFileName, ios::in);
+    map<int, vector<string> > allFOL;
+    std::string line;
+    regex patternClaNo("c\\d+,", regex::icase);
+    regex patternUseNo("c\\d+", regex::icase);
+    smatch result;
+    bool newCla = false;
+    if (fin) {// 有该文件
+        while (getline(fin, line)) {
+            if (line == "") //空行
+                continue;
+            //   cout<<line<<endl;
+            if ('#' == line[0]) {//注释语句
+                int x = line.find("New Clauses");
+                if (x != string::npos)
+                    newCla = true;
+                continue;
+            }
+            string::const_iterator iter = line.begin();
+            string::const_iterator iterEnd = line.end();
+            int iRowNo;
+            if (regex_search(iter, iterEnd, result, patternClaNo)) {
+                string keyRowNo = result[0];
+                keyRowNo = keyRowNo.substr(1, keyRowNo.length() - 2);
+                iRowNo = stoi(keyRowNo);
+                allFOL[iRowNo].push_back(line);
+                iter = result[0].second;
 
+                if (newCla) { //若为新子句，提取新子句
+                    while (regex_search(iter, iterEnd, result, patternUseNo)) {
+                        string str = result[0];
+                        allFOL[iRowNo].push_back(str);
+                        iter = result[0].second;
+                    }
+                    if (line.find("$false") != string::npos) {
+                        allFOL[0].push_back(keyRowNo);
+                    }
+                }
+            }
+        }
+
+        //输出最短路径
+        set<int>outClaID;
+        int lastClaId = stoi(allFOL[0][0]);
+        outClaID.insert(lastClaId);
+        vector<string> st = allFOL[lastClaId];
+        swap(st[0], st[st.size() - 1]);
+        st.pop_back();
+
+        while (!st.empty()) {
+            int iClaId = stoi(st.back().substr(1));
+            outClaID.insert(iClaId);
+            st.pop_back();
+            for (int i = 1; i < allFOL[iClaId].size(); ++i) {//说明不是原始子句
+                st.push_back(allFOL[iClaId][i]);
+            }
+        }
+        string resPoof = "\n#------ Proof Process ------\n";
+        for (auto id : outClaID) {
+            resPoof += allFOL[id][0] + "\n";
+        }
+        outInfo(resPoof);
+        cout << resPoof;
+
+
+    } else { // 没有该文件
+        cout << "no such file" << endl;
+    }
+
+    fin.clear();
+    fin.close();
+}

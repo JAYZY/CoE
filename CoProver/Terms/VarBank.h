@@ -26,10 +26,12 @@ public:
     /* 使用splayTree 来存储与该变量相关的名称　Associate names and cells */
     //伸展数方式存储 项节点handle: key=name(如："x1" ); val1.p_val =var(项); val2.i_val = var->fCode(项的Fcode) 
     //注意：这个fcode本质上是 子句中 变元数组的下标。变元数组的下标
-    SplayTree<StrTreeCell>extIndex;
+    SplayTree<StrTreeCell>extIndex;  //key = name; val1 = var; var2 = var.fcode
     ///  SplayTree<PTreeCell> freeVarSets;
     /* 使用动态数组 来存储与该变量相关的变元ID(变元项) Associate FunCodes and cells */
     vector<TermCell*> vctFCodes;
+    //记录变元项对应的文字（位置pos)
+    vector<uint32_t> mapVarToLitPos; //用位存储,--限制最多32个文字 64个文字占用内存太多了
 
 public:
 
@@ -103,7 +105,7 @@ public:
     void VarBankVarsDelProp(TermProp prop);
 
     /*  [根据变元项编码fCode] -- 插入一个变元项到varBanks中 */
-    TermCell* Insert(FunCode fCode, uint16_t claId);
+    TermCell* Insert(FunCode fCode, uint16_t claId);//,int litPos
 
 
     /*  [根据变元项名称] -- 插入一个变元项到varBanks中*/

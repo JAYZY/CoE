@@ -37,7 +37,7 @@
     <logicalFolder name="Global" displayName="Global" projectFiles="true">
       <itemPath>Global/Environment.cpp</itemPath>
       <itemPath>Global/Environment.h</itemPath>
-      <itemPath>Global/GlobalStrOp.h</itemPath>
+      <itemPath>Global/GlobalFunc.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
       <itemPath>Global/SysDate.cpp</itemPath>
@@ -250,7 +250,7 @@
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Global/GlobalStrOp.h" ex="false" tool="3" flavor2="0">
+      <item path="Global/GlobalFunc.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -454,7 +454,7 @@
       </item>
       <item path="Global/Environment.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Global/GlobalStrOp.h" ex="false" tool="3" flavor2="0">
+      <item path="Global/GlobalFunc.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>

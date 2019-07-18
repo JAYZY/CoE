@@ -10,14 +10,11 @@
  *
  * Created on 2017年12月13日, 下午1:50
  */
-
+#include "Global/IncDefine.h"
 #include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
 #include "Alg/Resolution.h"
 #include "INOUT/FileOp.h"
-#include <iostream>
-#include <set>
-#include <map>
 using namespace std;
 //#define TEST
 
@@ -62,25 +59,27 @@ int main(int argc, char** argv) {
 
     //预处理操作---------------------       
     RESULT res = fol->preProcess();
-     //添加等词公理
-    if (StrategyParam::ADD_EQULITY&& fol->uEquLitNum>0) {
+    //添加等词公理
+    if (StrategyParam::ADD_EQULITY && fol->uEquLitNum > 0) {
         fol->GenerateEqulitAxiom();
         fol->printEqulityAxioms();
     }
-     FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+    FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
     //输出预处理后子句 
-   // fol->printProcessedClaSet(stdout);
+    // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
         //演绎推理
         Resolution resolution;
-      //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
-       // if (res == RESULT::UNKNOWN) {
-            res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+        //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
+        // if (res == RESULT::UNKNOWN) {
+        res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
         //}
     }
-
-    FileOp::getInstance()->outGlobalInfo(" #Res:" + (100 == (int) res) ? "UNSAT" : "UNKNOWN");
-
+    string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";
+    FileOp::getInstance()->outGlobalInfo(strRes);
+    if (100 == (int) res) {
+        FileOp::getInstance()->GenerateEmptyPath();
+    }
     //fol->printClas(stdout);
     //Env::getGTbank()->GTPrintAllTerm(stdout);
     //cout << "每个子句的共享项==================" << endl;

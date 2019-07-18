@@ -75,7 +75,8 @@ protected:
     struct BackPoint {
         uint32_t queryTermPos; //pos of queryterm
         uint32_t* chgVarPos; // 记录相关位置信息 如:变元替换列表位置  变元替换回退位置 
-        set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt; // iterator of treeNode(parent node)
+       // set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt; // iterator of treeNode(parent node)
+        TermIndNode* parentNode;
         set<TermIndNode*, TermIndNode::cmp>::iterator subNodeIt; // iterator of treeSubNode
 
         /// \param qTermPos 查询项位置
@@ -83,9 +84,9 @@ protected:
         /// \param ParentTNIt   父节点
         /// \param it           子节点      
 
-        BackPoint(uint32_t qTermPos, uint32_t* chgVPos, set<TermIndNode*, TermIndNode::cmp>::iterator&ParentTNIt,
+        BackPoint(uint32_t qTermPos, uint32_t* chgVPos,TermIndNode* _parentNode,// set<TermIndNode*, TermIndNode::cmp>::iterator&ParentTNIt,
                 set<TermIndNode*, TermIndNode::cmp>::iterator&it)
-        : queryTermPos(qTermPos), chgVarPos(chgVPos), parentNodeIt(ParentTNIt), subNodeIt(it) {
+        : queryTermPos(qTermPos), chgVarPos(chgVPos), parentNode(_parentNode), subNodeIt(it) {
         };
 
         virtual ~BackPoint() {
@@ -284,14 +285,14 @@ public:
 
     // <editor-fold defaultstate="collapsed" desc="BackwardSubsump(向后归入冗余检查)">
 
-    TermIndNode* FindBackwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    TermIndNode* FindBackwordSubsumption(uint32_t qTermPos,TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextBackSubsump();
 
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="ForwardSubsump(向前归入冗余检查)">    
-    TermIndNode* FindForwordSubsumption(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    TermIndNode* FindForwordSubsumption(uint32_t qTermPos, TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subNodeIt);
     TermIndNode* NextForwordSubsump();
 
@@ -310,7 +311,7 @@ public:
     /// \param treePos 返回skip后的节点位置
     /// \return     
 
-    bool CheckVarBinding(TermCell* qTerm, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt,
+    bool CheckVarBinding(TermCell* qTerm, TermIndNode* parentNode,
             set<TermIndNode*, TermIndNode::cmp>::iterator&subPosIt);
 
     bool CheckOccurs();
@@ -319,7 +320,7 @@ public:
     /// \param qTermPos
     /// \param funcLevel
     /// \param treePosIt  注意:treePosIt对应的是 变元项所在的父节点
-    void BindingVar(const uint32_t qTermPos, int32_t funcLevel, std::set<TermIndNode*, TermIndNode::cmp>::iterator& parentNodeIt, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
+    void BindingVar(const uint32_t qTermPos, int32_t funcLevel,TermIndNode* parentNode, std::set<TermIndNode*, TermIndNode::cmp>::iterator& treePosIt);
 
     void ClearVarLst();
     void VarLstBacktrackToPos(uint32_t varPos);

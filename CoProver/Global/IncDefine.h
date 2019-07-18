@@ -19,7 +19,7 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
-#include<unistd.h>
+#include <unistd.h>
 #include <list>
 #include <vector>
 #include <set>
@@ -33,7 +33,7 @@
 #include <cassert>
 using namespace std;
 #define New
- //#define  OUTINFO
+//#define  OUTINFO
 #define WEI 0.0f
 
 #define MAX_ERRMSG_ADD   512
@@ -72,12 +72,12 @@ enum class CompareResult : uint8_t {
 //-101 文件格式错误
 
 enum class RESULT {
-    READERR = -101, READOK = -100, NO_ERROR=-1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
-    ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE,OUT_OF_MEMORY=204,CPU_LIMIT_ERROR,SYS_ERROR, UnknownFile,
-    
+    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,
+    ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, OUT_OF_MEMORY = 204, CPU_LIMIT_ERROR, SYS_ERROR, UnknownFile,
+
     NOMGU/*没有合一*/, SUCCES, RollBack, FAIL
 };
- 
+
 /*---------------------------------------------------------------------*/
 /*                          宏定义-两个函数指针                           */
 /*---------------------------------------------------------------------*/

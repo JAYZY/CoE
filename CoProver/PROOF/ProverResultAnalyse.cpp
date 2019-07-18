@@ -6,7 +6,7 @@
  */
 
 #include "ProverResultAnalyse.h"
-#include "Global/GlobalStrOp.h"
+#include "Global/GlobalFunc.h"
 #include <regex>
 using namespace std;
 

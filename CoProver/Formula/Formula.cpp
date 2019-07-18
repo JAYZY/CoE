@@ -66,7 +66,8 @@ void Formula::GenerateEqulitAxiom() {
     claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
     claReflex->ClauseSetProp(ClauseProp::CPType1);
     //claReflex->info->name = "reflexivity";
-    vEqulityAxiom.push_back(claReflex);
+    this->insertNewCla(claReflex, true);
+
     //(2) Symmetry: X1~=X2 | X2 =X1
     Clause* claSymmetry = new Clause();
     TermCell* lt = claSymmetry->GetClaTB()->VarInert("A", claSymmetry->ident);
@@ -80,8 +81,9 @@ void Formula::GenerateEqulitAxiom() {
     claSymmetry->bindingLits(symLitA);
     claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom);
     claSymmetry->ClauseSetProp(ClauseProp::CPType1);
-    //claSymmetry->info->name = "symmetry";
-    vEqulityAxiom.push_back(claSymmetry);
+    //claSymmetry->info->name = "symmetry";    vEqulityAxiom.push_back(claSymmetry);
+    this->insertNewCla(claSymmetry, true);
+
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
     Clause* claTrans = new Clause();
     TermCell* tA = claTrans->GetClaTB()->VarInert("A", claTrans->ident);
@@ -101,7 +103,8 @@ void Formula::GenerateEqulitAxiom() {
     claTrans->ClauseSetProp(ClauseProp::CPType1);
 
     //claTrans->info->name = "transitivity";
-    vEqulityAxiom.push_back(claTrans);
+    // vEqulityAxiom.push_back(claTrans);
+    this->insertNewCla(claTrans, true);
     //(4) add function-substitution and predicate-substitution
     GenerateEqulitAxiomByFunction();
 }
@@ -171,7 +174,8 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 c1->bindingLits(litA);
 
                 DelArrayPtr(arrTerm);
-                this->vEqulityAxiom.push_back(c1);
+                this->insertNewCla(c1, true);
+                // this->vEqulityAxiom.push_back(c1);
             }
         }//读取谓词符号
         else if (sig_p->SigIsPredicate(fCode)&& !sig_p->SigIsSpecial(fCode)) {
@@ -232,7 +236,8 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 litPtr->next->EqnSetProp(EqnProp::EPIsPositive);
                 c1->bindingLits(litA);
                 DelArrayPtr(arrTerm);
-                this->vEqulityAxiom.push_back(c1);
+                this->insertNewCla(c1, true);
+                //this->vEqulityAxiom.push_back(c1);
             }
         }
     }
@@ -261,24 +266,25 @@ void Formula::generateFormula(Scanner* in) {
                         assert(in->TestInpId("input_clause|cnf"));
                         Clause* clause = new Clause();
                         clause->ClauseParse(in);
+                        //debug                        clause->GetClaTB()->TBPrintBankInOrder(stdout);
                         origalClaSet->InsertCla(clause);
-//                      printf("number of clause:%u\n", Env::global_clause_counter);
-//
-//                      cout << "exIndexSize:" << clause->GetClaTB()->extIndex.size() << endl;
-//                      cout << "inCount:" << clause->GetClaTB()->inCount << endl;
-//
-//                      //插入原始子句集
-//                      if (Env::global_clause_counter % 1000 == 0) {
-//                          printf("number of clause:%u\n", Env::global_clause_counter);
-//                          printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
-//                          printf("number of extIndex:%ld\n", Env::getGTbank()->extIndex.size());
-//                          printf("number of Sig:%ld\n", Env::getSig()->fInfo.size());
-//                             
-//                       // Env::getGTbank()->GTPrintAllTerm(stdout);
-//                          Env::PrintRusage(stdout);
-//                          printf("\n");
-//
-//                       }
+                        //                      printf("number of clause:%u\n", Env::global_clause_counter);
+                        //
+                        //                      cout << "exIndexSize:" << clause->GetClaTB()->extIndex.size() << endl;
+                        //                      cout << "inCount:" << clause->GetClaTB()->inCount << endl;
+                        //
+                        //                      //插入原始子句集
+                        //                      if (Env::global_clause_counter % 1000 == 0) {
+                        //                          printf("number of clause:%u\n", Env::global_clause_counter);
+                        //                          printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
+                        //                          printf("number of extIndex:%ld\n", Env::getGTbank()->extIndex.size());
+                        //                          printf("number of Sig:%ld\n", Env::getSig()->fInfo.size());
+                        //                             
+                        //                       // Env::getGTbank()->GTPrintAllTerm(stdout);
+                        //                          Env::PrintRusage(stdout);
+                        //                          printf("\n");
+                        //
+                        //                       }
                     }
                 }
             }
@@ -312,6 +318,7 @@ RESULT Formula::preProcess() {
     /*2. 对原始子句集做约减删除 */
     for (auto claIt = claLst->cbegin(); claIt != claLst->cend(); ++claIt) {
 
+        //debug        if((*claIt)->ident==26)            cout<<"asdf"<<endl;
         //------ 检查子句是否为恒真 ------
         if (Simplification::isTautology(*claIt)) {
             ++uTautologyNum;
@@ -680,6 +687,11 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
 
         //------- 查找索引树上的 备选文字节点 ------
         TermIndexing* indexing = (arraySize == 1) ? this->unitClaIndex : this->allTermIndex;
+        
+        //如果是等词则且非单元子句则不参与索引树操作
+        if (selConLit->EqnIsEquLit() && arraySize > 1) {
+            continue;
+        }
 
         // 从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
@@ -770,7 +782,7 @@ bool Formula::unitLitIsRundacy(Literal* unitLit) {
 
 //将子句添加到公式集中
 
-void Formula::insertNewCla(Cla_p cla) {
+void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     //插入到索引中    1.单元子句索引    2.全局索引
     Literal * lit = cla->Lits();
     //添加到单元子句列表中
@@ -784,21 +796,30 @@ void Formula::insertNewCla(Cla_p cla) {
     }
     uint32_t posLitNum = 0;
     while (lit) {
-        if (lit->EqnIsEquLit()) {
+        if (!isEquAxiom && lit->EqnIsEquLit()) {
             ++(this->uEquLitNum);
         }
-        if (lit->IsPositive()) {
+        if (!isEquAxiom && lit->IsPositive()) {
             ++posLitNum;
         }
         allTermIndex->Insert(lit);
         lit = lit->next;
     }
+    if (isEquAxiom) {//如果是等词公理则不做处理，只加入等词公理集合，不加入workClaSet
+
+        vEqulityAxiom.push_back(cla);
+        if (cla->LitsNumber() > 1) {
+            this->AddPredLst(cla);
+        }
+        return;
+    }
     if (posLitNum > 1) {
         ++(this->uNonHornClaNum);
     } else if (posLitNum == 0) {//目标子句
+        cla->priority = 100;
         this->addGoalClas(cla);
         //目标子句优先,将目标子句的优先级改为一个较高的值(也可以试试 maxint)
-        cla->priority = 100;
+
     }
     //添加到公式集 谓词全局列表中[注意单文字子句不加入谓词列表] 
     if (cla->LitsNumber() > 1) {
@@ -861,9 +882,7 @@ void Formula::AddPredLst(Clause* cla) {
 
 /*得到互补谓词候选文字集合*/
 vector<Literal*>* Formula::getPairPredLst(Literal* lit) {
-    //debug
-    if (lit->EqnIsEquLit())
-        cout << "eqlit" << endl;
+    //debug    if (lit->EqnIsEquLit())        cout << "eqlit" << endl;
     if (lit->IsPositive())
         return (lit->EqnIsEquLit()) ? &g_NegPred[0] : &g_NegPred[lit->lterm->fCode];
     else
@@ -888,7 +907,7 @@ void Formula::printOrigalClasInfo(FILE* out) {
     fprintf(out, "# Maxium Len Of Clauses     %18u #\n", this->uMaxLitNum);
     fprintf(out, "# Maxium Layer Of Function  %18u #\n", this->uMaxFuncLayer);
     fprintf(out, "# Number Of Goal Clauses    %18zu #\n", this->goalClaset.size());
-    fprintf(out, "# Number Of Goal Horn       %18u #\n", uNonHornClaNum);    
+    fprintf(out, "# Number Of Goal Horn       %18u #\n", uNonHornClaNum);
     fprintf(out, "# IS Equlity                %18s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
 }
 

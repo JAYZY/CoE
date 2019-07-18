@@ -55,9 +55,13 @@ TermCell* VarBank::Insert(FunCode fCode, uint16_t claId) {
         var->entryNo = fCode;
         SetProp(var->properties, TermProp::TPIsShared); //给变元项－shared 属性
         vctFCodes.push_back(var);
+
+        // if (litPos > 0)//记录变元项与文字位置的对应关系
+        //   SetBitValue(this->mapVarToLitPos[-fcode], litPos);
+
+        assert(!QueryProp(var->properties, TermProp::TPIsGround)); //确保项不是常元项
+        return var;
     }
-    assert(!QueryProp(var->properties, TermProp::TPIsGround)); //确保项不是常元项
-    return var;
 }
 
 /*****************************************************************************
@@ -65,10 +69,10 @@ TermCell* VarBank::Insert(FunCode fCode, uint16_t claId) {
  * 如果存在返回varTerm的指针．
  * 否则，插入到varBank中
  ****************************************************************************/
-TermCell* VarBank::Insert(const string& name, uint16_t claId) {
+TermCell * VarBank::Insert(const string& name, uint16_t claId) {
     TermCell* var = VarBankExtNameFind(name);
-    if (var==nullptr) {        
-        var = Insert(-(vctFCodes.size()+1),claId); //fCode从-1开始
+    if (var == nullptr) {
+        var = Insert(-(vctFCodes.size() + 1), claId); //fCode从-1开始
         StrTree_p handle = new StrTreeCell();
         handle->key = name;
         handle->val1.p_val = var;
@@ -85,16 +89,11 @@ TermCell* VarBank::Insert(const string& name, uint16_t claId) {
  * 奇数下标保留作为创建子句备份
  * （create clause copies that are　guaranteed to be variable-disjoint.）
  **************************************************************************/
-TermCell* VarBank::VarBankGetFreshVar(uint16_t claId) {    
-    TermCell* var = Insert(-(vctFCodes.size()+1), claId);
+TermCell * VarBank::VarBankGetFreshVar(uint16_t claId) {
+    TermCell* var = Insert(-(vctFCodes.size() + 1), claId);
     assert(var);
     return var;
 }
-
-
-
- 
-
 
 /*****************************************************************************
  * Return a pointer to the variable with the given f_code in the variable bank. 
@@ -104,22 +103,21 @@ Term_p VarBank::VarBankFCodeAssertAlloc(FunCode f_code) {
     Term_p var;
 
     assert(f_code < 0);
-    var=FindByFCode(f_code);
+    var = FindByFCode(f_code);
     //var = VarBankFCodeFind(f_code);
     if (!var) {
         var = new TermCell();
-        var->claId=0;
+        var->claId = 0;
         var->entryNo = f_code;
         var->fCode = f_code;
         var->TermCellSetProp(TermProp::TPIsShared);
         //PDArrayAssignP(bank->f_code_index, -f_code, var);
         vctFCodes.push_back(var);
-        
+
     }
     assert(!var->TermCellQueryProp(TermProp::TPIsGround));
     return var;
 }
-
 
 /*-----------------------------------------------------------------------
 //
@@ -166,13 +164,14 @@ FunCode VarBank::VarBankCheckBindings(FILE* out, Sig_p sig) {
     return res;
 }
 
- 
+
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                           */
+
 /*---------------------------------------------------------------------*/
-VarBank::VarBank()  {
+VarBank::VarBank() {
     vctFCodes.reserve(8);
-    
+
 }
 
 VarBank::~VarBank() {

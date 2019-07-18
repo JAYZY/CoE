@@ -186,7 +186,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
             //主动归结子句,被单元子句约减后没有剩余文字。三角形停止延拓,并输出主界线和R(注意此时R并不一定为空)
             if (actLit == nullptr) {
-               // this->printTri(stdout);                 this->printR(stdout, nullptr);
+                // this->printTri(stdout);                 this->printR(stdout, nullptr);
 
                 Clause* newCla = new Clause();
                 newCla->bindingAndRecopyLits(vNewR);
@@ -367,7 +367,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     if (litptr->EqnQueryProp(EqnProp::EPIsHold))
                         vNewR.push_back(litptr);
                 }
-               // this->printTri(stdout);                this->printR(stdout, nullptr);
+                // this->printTri(stdout);                this->printR(stdout, nullptr);
 
                 Clause* newCla = new Clause();
                 newCla->bindingAndRecopyLits(vNewR);
@@ -375,7 +375,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                 bool isDelNewCla = true;
                 int delRNum = TriMguReduct();
                 if (delRNum > 0) {
-                   // this->printTri(stdout);                    this->printR(stdout, nullptr);
+                    // this->printTri(stdout);                    this->printR(stdout, nullptr);
                     Clause* newClaA = new Clause();
                     newClaA->bindingAndRecopyLits(vNewR);
                     newClas.push_back(newClaA);
@@ -412,7 +412,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     return RESULT::NOMGU;
                 }
                 //-----------------  回退操作 --------------------------------//
-               // cout << "回滚前:";                printTri(stdout);                this->printR(stdout, nullptr);
+                // cout << "回滚前:";                printTri(stdout);                this->printR(stdout, nullptr);
 
                 actLit = vALitTri.back()->alit; //1.设置主动文字==主界线最后一个文字,并且主界线pop(回退)
 
@@ -456,7 +456,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     vPasCandBackPoint.pop_back();
                     resTri = RESULT::NOMGU;
                 }
-             //   cout << "回滚后:";                printTri(stdout);                this->printR(stdout, nullptr);
+                //   cout << "回滚后:";                printTri(stdout);                this->printR(stdout, nullptr);
                 continue;
             }
             //assert(resTri == RESULT::SUCCES);
@@ -1025,15 +1025,16 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
         }
     }
 
-    //来,再加一个 剩余文字判断, come 来啊!相互伤害啊~~
+    //亲,再加一个 剩余文字判断, come on来啊!相互伤害啊~~
+    
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
-//    if (0 < StrategyParam::MaxLitNumOfR && (int) (holdLitSize - delRNum) > (int) StrategyParam::MaxLitNumOfR) {
-//        //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
-//        ++Env::S_OverMaxLitLimit_Num;
-//        return ResRule::MoreLit;
-//    }
+    //    if (0 < StrategyParam::MaxLitNumOfR && (int) (holdLitSize - delRNum) > (int) StrategyParam::MaxLitNumOfR) {
+    //        //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
+    //        ++Env::S_OverMaxLitLimit_Num;
+    //        return ResRule::MoreLit;
+    //    }
 
-    //这个规则方法写的好痛苦^O^  终于到这里了 
+    //这个规则方法写的好痛苦^O^  终于到这里了=== 
     //1. 检查FS归入冗余 A. 将R中没有被删除的文字添加到holdLit数组中
     for (int i = 0; i < vNewR.size(); ++i) {
         if (arryDelRInd[i] == 0) {
@@ -1631,7 +1632,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
          * 2.当前的后续检查将不再使用该文字进行匹配操作    
          */
         vector<Clause* >&cmpUnitClas = givenLitP->IsPositive() ? fol->vNegUnitClas : fol->vPosUnitClas; //可以考虑优化 用索引树
-       
+
         //------ 遍历单元子句 ------
         for (int ind = 0; ind < cmpUnitClas.size(); ++ind) {
             Clause* candUnitCal = cmpUnitClas[ind];
@@ -1793,6 +1794,7 @@ void TriAlg::outR(Literal * lit) {
     if (0 == uSizeR && lit == nullptr) {
         outStr = "R:空子句";
         FileOp::getInstance()->outRun(outStr);
+        //string cnf(c_0_6,plain,    ( $false ),    inference(sr,[status(thm)],[c_0_4,c_0_5]),    [proof]).
         return;
     }
     //输出R   
@@ -1886,7 +1888,13 @@ void TriAlg::printR(FILE* out, Literal * lit) {
 void TriAlg::outNewClaInfo(Clause* newCla, InfereType infereType) {
 
     string strCla = "";
-    newCla->getStrOfClause(strCla, false);
+    if (newCla == nullptr)
+    {
+        strCla = "cnf(c"+to_string(Env::global_clause_counter+1)+",plain,($false)";
+        //    [c_0_4,c_0_5]),    [proof]).       
+    }
+    else
+        newCla->getStrOfClause(strCla, false);
 
     if (this->setUsedCla.empty()) {
         strCla += ", 'proof' ).\n";

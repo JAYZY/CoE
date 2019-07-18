@@ -30,10 +30,14 @@ Literal::Literal() {
 
 }
 
+/**
+ * 根据输入in，创建文字
+ * @param in
+ * @param cla
+ */
 Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     Term_p lt = nullptr, rt = nullptr;
     this->claPtr = cla;
-    // EqnAlloc(lt, rt, positive);
     this->pos = 0;
     this->properties = EqnProp::EPNoProps;
 
@@ -44,20 +48,15 @@ Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     if (positive) { //设置正文字属性
         EqnSetProp(EqnProp::EPIsPositive);
     }
+    //设置文字属性
     if (rt != Env::getGTbank()->trueTerm) {//设置等词属性
         assert(rt->fCode != (FunCode) DerefType::TRUECODE);
         EqnSetProp(EqnProp::EPIsEquLiteral);
     } else {//非等词文字
         assert(rt->TermCellQueryProp(TermProp::TPPredPos));
-        /*printf("# lterm->f_code: %ld <%s>\n", lterm->f_code,
-          SigFindName(bank->sig,lterm->f_code));
-          SigPrint(stdout,bank->sig);
-          fflush(stdout); */
+        /*debug:printf("# lterm->f_code: %ld <%s>\n", lterm->f_code,SigFindName(bank->sig,lterm->f_code));SigPrint(stdout,bank->sig);fflush(stdout); */
         assert(!lt->IsVar());
-        /* TermPrint(stdout, lterm, bank->sig, DEREF_NEVER);
-        printf("===");
-        TermPrint(stdout, rterm, bank->sig, DEREF_NEVER);
-        printf("\n"); */
+        /*debug:TermPrint(stdout, lterm, bank->sig, DEREF_NEVER);printf("===");TermPrint(stdout, rterm, bank->sig, DEREF_NEVER);printf("\n"); */
         assert(Env::getSig()->SigQueryFuncProp(lt->fCode, FPPredSymbol));
 
         lt->TermCellSetProp(TermProp::TPPredPos);
@@ -78,6 +77,7 @@ Literal::Literal(const Literal& orig) {
 }
 
 Literal::~Literal() {
+    
 }
 
 /*---------------------------------------------------------------------*/
@@ -207,9 +207,10 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
     
     //lterm = TBTermParse(in, bank);
     lterm = bank->TBTermParseReal(in, true);
-    if(bank->inCount==0){     
-       claPtr->ClearClaTB();
-    }
+    
+//    if(bank->inCount==0){     
+//       claPtr->ClearClaTB();
+//    }
     //BOOL_TERM_NORMALIZE(lterm);
     if ( Env::getGTbank()->falseTerm ==lterm) {
         lterm = Env::getGTbank()->trueTerm;

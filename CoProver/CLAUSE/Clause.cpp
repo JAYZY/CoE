@@ -5,11 +5,10 @@
  */
 
 #include <stdint.h>
-
 #include "Clause.h"
 #include "Indexing/TermIndexing.h"
 #include "HEURISTICS/SortRule.h"
-
+using namespace std;
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
 /*---------------------------------------------------------------------*/
@@ -459,7 +458,7 @@ void Clause::ClauseParse(Scanner* in) {
 
     ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
     //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
-    ClauseInfo* info = new ClauseInfo(nullptr, (in->AktToken())->source.c_str(), (in->AktToken())->line, (in->AktToken())->column);
+    this->info = new ClauseInfo("", (in->AktToken())->source.c_str(), (in->AktToken())->line, (in->AktToken())->column);
 
 
     //创建文字
@@ -467,7 +466,7 @@ void Clause::ClauseParse(Scanner* in) {
     if (in->format == IOFormat::TPTPFormat) {
         in->AcceptInpId("input_clause");
         in->AcceptInpTok(TokenType::OpenBracket);
-        info->name = (in->AktToken())->literal.c_str();
+        this->info->name = (in->AktToken())->literal;
         in->AcceptInpTok(TokenType::Name);
         in->AcceptInpTok(TokenType::Comma);
         string strId = "axiom|hypothesis|conjecture|lemma|unknown|watchlist";
@@ -490,7 +489,8 @@ void Clause::ClauseParse(Scanner* in) {
 
         in->AcceptInpId("cnf");
         in->AcceptInpTok(TokenType::OpenBracket);
-        info->name = (in->AktToken())->literal.c_str(); //赋值子句名称 如:i_0_266
+
+        this->info->name = (in->AktToken())->literal; //赋值子句名称 如:i_0_266
         in->AcceptInpTok(TokenType::NamePosIntSQStr);
         in->AcceptInpTok(TokenType::Comma);
 
@@ -569,17 +569,11 @@ void Clause::ClauseParse(Scanner* in) {
     //Clause * handle = new Clause(concl);
     this->ClauseSetTPTPType(type);
     this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
-    this->info = info;
-}
-
-/// 将子句中的变元进行重命名
-/// \param fresh_vars
-
-void Clause::ClauseNormalizeVars(VarBank_p renameVarbank) {
-    Subst_p subst = new Subst();
-    renameVarbank->VarBankClearExtNames(); //VarBankResetVCount();
-    Lit_p lit = this->literals;
-
+    
+    //为了节约内存，若为基项则删除ClaTB
+    if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) { 
+        this->ClearClaTB();
+    }
 }
 
 Clause* Clause::renameCopy(VarBank_p renameVarbank) {
@@ -598,24 +592,25 @@ Clause* Clause::renameCopy(VarBank_p renameVarbank) {
     return newCla;
 }
 
-//设置文字的变元共享状态
-
+/**
+ * 设置文字的变元共享状态
+ */
 void Clause::SetEqnListVarState() {
     Lit_p lit = this->Lits();
     //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
-    Lit_p arrVarLit[100]; //假设变元项最多不超出500
-    memset(arrVarLit, 0, 100);
+    Lit_p arrVarLit[500]; //假设变元项最多不超出500
+    memset(arrVarLit, 0, 500);
 
     while (lit) {
         if (lit->IsGround()) {
             lit->varState = VarState::noVar;
             continue;
         }
-
         lit->varState = VarState::freeVar;
         vector<TermCell*> vecT;
         vecT.reserve(32);
         vecT.push_back(lit->lterm);
+
         while (!vecT.empty()) {
             TermCell* t = vecT.back();
             assert(-t->fCode < 500);
@@ -635,10 +630,13 @@ void Clause::SetEqnListVarState() {
                 vecT.push_back(t->args[i]);
             }
         }
+        assert(vecT.empty());
+
         if (lit->EqnIsEquLit()) {
             vecT.push_back(lit->rterm);
             while (!vecT.empty()) {
                 TermCell* t = vecT.back();
+                assert(-t->fCode < 500);
                 vecT.pop_back();
                 if (t->IsVar()) {
                     Lit_p firstLit = arrVarLit[-t->fCode];
@@ -676,12 +674,12 @@ uint16_t Clause::calcMaxFuncLayer() const {
 
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();
-
+    bool isGroundCla=true;
     TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
 
-    if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken)) ||
-            ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok)) ||
-            ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
+    if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken))
+            || ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok))
+            || ((in->format == IOFormat::TSTPFormat) && in->TestInpTok(testTok))) {
 
         Literal *pos_lits = nullptr, *neg_lits = nullptr;
         Lit_p *pos_append = &pos_lits;
@@ -690,6 +688,11 @@ void Clause::EqnListParse(TokenType sep) {
         int originLitPos = 0;
         while (true) {
             handle = new Literal(in, this);
+            
+            if(!handle->IsGround(false)){ //检查文字是否为基文字
+                isGroundCla=false;
+            }                
+            
             handle->pos = ++originLitPos; //记录文字在子句中的原始位置
             if (handle->IsPositive()) {
                 ++posLitNo;
@@ -706,5 +709,9 @@ void Clause::EqnListParse(TokenType sep) {
         *pos_append = neg_lits;
         *neg_append = nullptr;
         this->literals = pos_lits;
+    }
+    //设置基子句属性
+    if(isGroundCla){
+        this->ClauseSetProp(ClauseProp::CPGroundCla);
     }
 }

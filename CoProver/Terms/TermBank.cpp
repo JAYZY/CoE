@@ -366,6 +366,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
             string idStr;
             FuncSymbType id_type;
             if ((id_type = TermCell::TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
+              
                 //若为变元符号    将该项插入文字所在子句的 子句级共享变元集中
                 handle = this->VarInert(idStr, this->claId);
                 handle->uVarCount = 1; //设置变元数=1

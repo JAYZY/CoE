@@ -7,11 +7,18 @@ Changes
 -----------------------------------------------------------------------*/
 #pragma once
 #include "IncDefine.h"
-
+ 
+//#include<bitset>
 using namespace std;
-//去除字符前后空格
 
-inline void TrimStr(string& s) {
+
+// <editor-fold defaultstate="collapsed" desc="全局字符串方法">
+
+/**
+ * 去除字符前后空格
+ * @param s
+ */
+inline void TrimStr( string& s) {
     if (s.empty())
         return;
     s.erase(0, s.find_first_not_of(" "));
@@ -117,3 +124,59 @@ inline bool IsGroundLits(vector<string>& vectStrLits) {
     }
     return isBase;
 }
+// </editor-fold>
+
+
+// <editor-fold defaultstate="collapsed" desc="全局位操作方法">
+/**
+ * 设置二进制指定位的值为0
+ * @param value 修改的数字值
+ * @param index 二进制位
+ * @return 
+ */
+inline void ClearBitValue(uint64_t&value,int index){
+     value&=(~(1<<index));    
+}
+/**
+ * 设置二进制指定位的值为1
+ * @param value 修改的数字值
+ * @param index 二进制位
+ * @return 
+ */
+inline void SetBitValue(uint64_t&value,int index){
+    value |=(1<<index);    
+}
+/**
+ * 取二进制第index位的值
+ * @param value 修改的数字值
+ * @param index 二进制位
+ * @return 
+ */
+inline int GetBitValue(uint64_t value,int index){
+    return (value>>index&1);
+}
+/**
+ * 统计二进制值value有多少个1
+ * @param value 二进制值
+ * @return 二进制数中有多少个1
+ */
+inline int CountBitOne(uint64_t value)
+{                
+    value=(value&0x5555555555555555)+((value>>1)&0x5555555555555555);
+    
+    value=(value&0x3333333333333333)+((value>>2)&0x3333333333333333);
+    
+    value=(value&0x0f0f0f0f0f0f0f0f)+((value>>4)&0x0f0f0f0f0f0f0f0f);
+    
+    value=(value&0x00ff00ff00ff00ff)+((value>>8)&0x00ff00ff00ff00ff);
+    
+    value=(value&0x0000ffff0000ffff)+((value>>16)&0x0000ffff0000ffff);
+    
+    value=(value&0x00000000ffffffff)+((value>>32)&0x00000000ffffffff);
+    
+    return value;
+}
+ 
+// </editor-fold>
+
+

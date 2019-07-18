@@ -128,6 +128,8 @@ public:
 
     uint16_t uVarCount; //变元计数
     uint16_t uMaxFuncLayer;//函数嵌套层
+    uint8_t uMaxVarId;//最大变元Id -- 不超过256个
+    
     //FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:

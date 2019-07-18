@@ -59,8 +59,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             ++iterNum;
             continue;
         }
-//        if(iterNum==203) 
-//            printf("Debug:");
+       //debug if(iterNum==354)                    printf("Debug:");
         //定义起步子句
         Clause* selCla = *itSelCla;
         res = triAlg.GenreateTriLastHope(selCla);
@@ -70,12 +69,18 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-                if (++modifyLitNumCount > 3)
+                if (++modifyLitNumCount > 20)
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
                 ++StrategyParam::MaxLitNumOfR;
-                StrategyParam::HoldLits_NUM_LIMIT += 2;
+                StrategyParam::MaxLitNumOfNewCla = 6;
+                if (StrategyParam::MaxLitNumOfR > fol->uMaxLitNum - 1) {
+                    StrategyParam::MaxLitNumOfR = 1;
+                    StrategyParam::MaxLitNumOfNewCla = 1;
+                }
+
+
                 FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::MaxLitNumOfR) + "\n");
                 notStartClaSet.clear();
             }
@@ -102,6 +107,8 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         /*判定不可满足*/
         if (res == RESULT::UNSAT || triAlg.vNewR.empty()) {
             fprintf(stdout, "Start From Clause %u,proof found!\n", (*itSelCla)->ident);
+            //cnf(c_0_6,plain,    ( $false ),    inference(sr,[status(thm)],[c_0_4,c_0_5]),    [proof]).          
+            triAlg.outNewClaInfo(nullptr, InfereType::SCS);
             return RESULT::UNSAT;
         }
 
@@ -121,11 +128,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                         delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
                         string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
                         FileOp::getInstance()->outLog(strLog);
-                        
+
                     }
                 }
             }
-            if (newCla->LitsNumber() >  StrategyParam::MaxLitNumOfNewCla) {
+            if (newCla->LitsNumber() > StrategyParam::MaxLitNumOfNewCla) {
                 DelPtr(newCla);
                 continue;
             }

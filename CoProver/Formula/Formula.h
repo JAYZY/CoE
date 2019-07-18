@@ -108,7 +108,7 @@ public:
 
     inline void printOrigalClaSet() {
         FILE* out = FileOp::getInstance()->getInfoFile();
-        string sinfo = "#------ Input Clauses ------\n";
+        string sinfo = "#------ CNF Formula ------\n";
         FileOp::getInstance()->outInfo(sinfo);
         origalClaSet->Print(out);
     }
@@ -166,7 +166,7 @@ public:
 
 
     //插入新子句到
-    void insertNewCla(Cla_p cla);
+    void insertNewCla(Cla_p cla,bool isEquAxiom=false);
     //删除子句
     void removeWorkCla(Cla_p cal);
     //添加谓词符号到全局列表中  

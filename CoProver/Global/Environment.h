@@ -80,6 +80,27 @@ public:
     /*--------------------------------------------------------------------------
     /* Print resource usage to given stream.
     /-------------------------------------------------------------------------*/
+    static inline double GetTotalTime() {
+        struct rusage usage, cusage;
+
+        if (getrusage(RUSAGE_SELF, &usage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        if (getrusage(RUSAGE_CHILDREN, &cusage)) {
+            TmpErrno = errno;
+            Out::SysError("Unable to get resource usage information", ErrorCodes::SYS_ERROR);
+        }
+        usage.ru_utime.tv_sec += cusage.ru_utime.tv_sec;
+        usage.ru_utime.tv_usec += cusage.ru_utime.tv_usec;
+        usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
+        usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
+
+        double spanTime = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+        return spanTime;
+    }
+
     static inline void PrintRusage(FILE* out) {
         struct rusage usage, cusage;
 

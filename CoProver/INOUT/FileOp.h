@@ -49,6 +49,7 @@ private:
     string tptpFileNameNoExt; //判断文件名称
 
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
+    string fInfoFileName;//.i文件完整路径
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
@@ -101,8 +102,8 @@ public:
     }
 
     /*
-        ** 写入 info 文件
-        */
+     ** 写入 info 文件
+     */
     inline void outInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fInfo);
         fflush(fInfo);
@@ -117,7 +118,11 @@ public:
         fwrite(msg.c_str(), 1, msg.length(), fRun);
         fflush(fRun);
     }
-    inline FILE* GetfRun(){return fRun;}
+
+    inline FILE* GetfRun() {
+        return fRun;
+    }
+
     inline void outGlobalInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fGlobalInfo);
         fflush(fGlobalInfo);
@@ -127,17 +132,14 @@ public:
     inline void Flush() {
         OutFile->flush();
     }
-    
-    
+
+
 public:
     /* 关闭所有文件 */
     void CloseAll();
     /**
      * 设置并创建目录以及 .r .i 文件*/
     bool setWorkDirAndCreateFile(string strWorkDir);
-
-
-
 
     // <editor-fold defaultstate="collapsed" desc="系统文件操作(文件夹,文件)">
     /**
@@ -155,10 +157,13 @@ public:
     string getFileNameNoExt(string fileFullName);
     // </editor-fold>
 
-   
+    
+    
+     //读取.i文件生成最小路径文件.out
+     void GenerateEmptyPath() ;
 public:
- //输出UNSAT路径
-    void  OutUnsatPath(string fileFullName);
+    //输出UNSAT路径
+    void OutUnsatPath(string fileFullName);
     /*---------------------------------------------------------------------*/
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/
@@ -182,11 +187,13 @@ public:
         }
         return in;
     }
+
+   
     /*---------------------------------------------------------------------*/
     /*                 Static Function[fileName op]                        */
     /*---------------------------------------------------------------------*/
 
-    // <editor-fold defaultstate="collapsed" desc="Static Function">
+    // <editor-fold defaultstate="collapsed" desc="Static Function for FileName">
 
 
     static string TPTP_dir;
@@ -221,6 +228,11 @@ public:
 
     }
     // </editor-fold>
+
+
+
+
+
 
 };
 
