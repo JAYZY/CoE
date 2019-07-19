@@ -1,0 +1,489 @@
+argc:2
+/home/icdc/Documents/myProg/CoE/CoProver/dist/Release/GNU-Linux/coprover
+/home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-GEO228+1.p
+|  GenFormula_time:                   0.00 s                 |
+选中的子句:cnf(c_0_54, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X1,X3) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X4,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X4,X3) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|left_apart_point(X1,reverse_line(X3)) zjW:0.857143 xyw:1.625 EW:5|left_apart_point(X4,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|left_apart_point(X4,reverse_line(X3)) zjW:0.857143 xyw:1.625 EW:5|~distinct_points(X4,X1) zjW:0.833333 xyw:1.5 EW:4|~distinct_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:left_apart_point(X1,reverse_line(X2))
+比较次数:0
+选中的子句:cnf(c_0_55, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X3,X2) zjW:0.833333 xyw:1.5 EW:4|before_on_line(X2,X3,X1) zjW:0.875 xyw:1.5 EW:5|left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|left_apart_point(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|unequally_directed_lines(X2,line_connecting(X3,X1)) zjW:0.863636 xyw:1.625 EW:6|~distinct_points(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:unequally_directed_lines(X2,line_connecting(X3,X1))
+比较次数:0
+选中的子句:cnf(c_0_38, plain, (point(intersection_point(X1,X2)) zjW:1 xyw:1.75 EW:5|~line(X2) zjW:0.75 xyw:1.5 EW:3|~line(X1) zjW:0.75 xyw:1.5 EW:3|~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:point(intersection_point(X1,X2))
+比较次数:0
+选中的子句:cnf(c_0_20, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~line(X2) zjW:0.75 xyw:1.5 EW:3|~line(X1) zjW:0.75 xyw:1.5 EW:3)).
+选择文字:unequally_directed_lines(X1,reverse_line(X2))
+比较次数:0
+选中的子句:cnf(c_0_28, plain, (line(line_connecting(X1,X2)) zjW:1 xyw:1.75 EW:5|~point(X2) zjW:0.75 xyw:1.5 EW:3|~point(X1) zjW:0.75 xyw:1.5 EW:3|~distinct_points(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:line(line_connecting(X1,X2))
+比较次数:0
+选中的子句:cnf(c_0_30, plain, (distinct_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).
+
+选择文字:distinct_lines(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_31, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|unequally_directed_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X3,X1) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X3,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~unequally_directed_lines(X3,reverse_line(X1))
+比较次数:1
+选中的子句:cnf(c_0_34, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|unequally_directed_lines(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~unequally_directed_lines(X3,X1) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X3,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~unequally_directed_lines(X3,reverse_line(X1))
+比较次数:2
+选中的子句:cnf(c_0_35, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|unequally_directed_lines(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~unequally_directed_lines(X1,X3) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X3)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~unequally_directed_lines(X1,reverse_line(X3))
+比较次数:3
+选中的子句:cnf(c_0_36, plain, (left_convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_convergent_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:left_convergent_lines(X1,reverse_line(X2))
+比较次数:0
+选中的子句:cnf(c_0_37, plain, (unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|unequally_directed_lines(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~unequally_directed_lines(X3,X1) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X3,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~unequally_directed_lines(X3,reverse_line(X1))
+比较次数:5
+选中的子句:cnf(c_0_39, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_convergent_lines(line_connecting(X3,X1),X2) zjW:0.863636 xyw:1.625 EW:6|~left_apart_point(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~distinct_points(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:left_convergent_lines(line_connecting(X3,X1),X2)
+比较次数:0
+选中的子句:cnf(c_0_18, plain, (line(parallel_through_point(X1,X2)) zjW:1 xyw:1.75 EW:5|~line(X1) zjW:0.75 xyw:1.5 EW:3|~point(X2) zjW:0.75 xyw:1.5 EW:3)).
+选择文字:line(parallel_through_point(X1,X2))
+比较次数:0
+选中的子句:cnf(c_0_21, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|unequally_directed_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,X3) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~unequally_directed_lines(X1,X3)
+比较次数:13
+选中的子句:cnf(c_0_22, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_convergent_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~left_convergent_lines(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~left_convergent_lines(X3,X1)
+比较次数:0
+选中的子句:cnf(c_0_23, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|distinct_points(X3,X1) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X3,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:distinct_points(X3,X1)
+比较次数:0
+选中的子句:cnf(c_0_24, plain, (distinct_points(X1,X2) zjW:0.833333 xyw:1.5 EW:4|distinct_points(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~distinct_points(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:distinct_points(X1,X2)
+比较次数:1
+选中的子句:cnf(c_0_25, plain, (distinct_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|distinct_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~distinct_lines(X1,X3) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:distinct_lines(X1,X2)
+比较次数:1
+选中的子句:cnf(c_0_26, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~apart_point_and_line(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~apart_point_and_line(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_27, negated_conjecture, (~unequally_directed_lines(esk1_0,esk2_0) zjW:1.5 xyw:2 EW:4|~convergent_lines(esk1_0,esk2_0) zjW:1.5 xyw:2 EW:4|~unequally_directed_lines(esk1_0,reverse_line(esk2_0)) zjW:1.5 xyw:2 EW:5)).
+选择文字:~unequally_directed_lines(esk1_0,reverse_line(esk2_0))
+比较次数:0
+选中的子句:cnf(c_0_29, plain, (convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:convergent_lines(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_43, plain, (divides_points(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|~left_apart_point(X3,X1) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X2,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:divides_points(X1,X2,X3)
+比较次数:0
+选中的子句:cnf(c_0_44, plain, (divides_points(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|~left_apart_point(X2,X1) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X3,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:divides_points(X1,X2,X3)
+比较次数:1
+选中的子句:cnf(c_0_45, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~divides_points(X2,X3,X1) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~divides_points(X2,X3,X1)
+比较次数:0
+选中的子句:cnf(c_0_48, plain, (~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~apart_point_and_line(intersection_point(X1,X2),X2) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~apart_point_and_line(intersection_point(X1,X2),X2)
+比较次数:0
+选中的子句:cnf(c_0_49, plain, (~unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~apart_point_and_line(intersection_point(X1,X2),X1) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~apart_point_and_line(intersection_point(X1,X2),X1)
+比较次数:0
+选中的子句:cnf(c_0_50, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~divides_points(X2,X3,X1) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~divides_points(X2,X3,X1)
+比较次数:1
+选中的子句:cnf(c_0_51, plain, (left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~divides_points(X2,X1,X3) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~divides_points(X2,X1,X3)
+比较次数:2
+选中的子句:cnf(c_0_52, plain, (left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|left_apart_point(X3,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~divides_points(X2,X3,X1) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~divides_points(X2,X3,X1)
+比较次数:3
+选中的子句:cnf(c_0_56, plain, (between_on_line(X1,X2,X3,X4) zjW:0.9 xyw:1.5 EW:6|~before_on_line(X1,X4,X3) zjW:0.875 xyw:1.5 EW:5|~before_on_line(X1,X3,X2) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:between_on_line(X1,X2,X3,X4)
+比较次数:0
+选中的子句:cnf(c_0_57, plain, (between_on_line(X1,X2,X3,X4) zjW:0.9 xyw:1.5 EW:6|~before_on_line(X1,X3,X4) zjW:0.875 xyw:1.5 EW:5|~before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:between_on_line(X1,X2,X3,X4)
+比较次数:1
+选中的子句:cnf(c_0_58, plain, (before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|before_on_line(X1,X3,X2) zjW:0.875 xyw:1.5 EW:5|~between_on_line(X1,X4,X3,X2) zjW:0.9 xyw:1.5 EW:6)).
+选择文字:~between_on_line(X1,X4,X3,X2)
+比较次数:0
+选中的子句:cnf(c_0_59, plain, (before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|before_on_line(X1,X4,X3) zjW:0.875 xyw:1.5 EW:5|~between_on_line(X1,X4,X3,X2) zjW:0.9 xyw:1.5 EW:6)).
+选择文字:~between_on_line(X1,X4,X3,X2)
+比较次数:1
+选中的子句:cnf(c_0_60, plain, (before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|before_on_line(X1,X2,X4) zjW:0.875 xyw:1.5 EW:5|~between_on_line(X1,X4,X2,X3) zjW:0.9 xyw:1.5 EW:6)).
+选择文字:~between_on_line(X1,X4,X2,X3)
+比较次数:2
+选中的子句:cnf(c_0_61, plain, (before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|before_on_line(X1,X3,X2) zjW:0.875 xyw:1.5 EW:5|~between_on_line(X1,X3,X2,X4) zjW:0.9 xyw:1.5 EW:6)).
+选择文字:~between_on_line(X1,X3,X2,X4)
+比较次数:3
+选中的子句:cnf(c_0_12, plain, (line(reverse_line(X1)) zjW:1 xyw:1.75 EW:4|~line(X1) zjW:0.75 xyw:1.5 EW:3)).
+选择文字:line(reverse_line(X1))
+比较次数:0
+选中的子句:cnf(c_0_13, negated_conjecture, (unequally_directed_lines(esk1_0,esk2_0) zjW:1.5 xyw:2 EW:4|convergent_lines(esk1_0,esk2_0) zjW:1.5 xyw:2 EW:4)).
+选择文字:unequally_directed_lines(esk1_0,esk2_0)
+比较次数:0
+选中的子句:cnf(c_0_14, negated_conjecture, (convergent_lines(esk1_0,esk2_0) zjW:1.5 xyw:2 EW:4|unequally_directed_lines(esk1_0,reverse_line(esk2_0)) zjW:1.5 xyw:2 EW:5)).
+选择文字:unequally_directed_lines(esk1_0,reverse_line(esk2_0))
+比较次数:0
+选中的子句:cnf(c_0_15, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~convergent_lines(X1,X2)
+比较次数:1
+选中的子句:cnf(c_0_16, plain, (apart_point_and_line(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:apart_point_and_line(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_17, plain, (unequally_directed_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5|~convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~convergent_lines(X1,X2)
+比较次数:2
+选中的子句:cnf(c_0_19, plain, (apart_point_and_line(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:apart_point_and_line(X1,X2)
+比较次数:1
+选中的子句:cnf(c_0_32, plain, (~distinct_points(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~apart_point_and_line(X2,line_connecting(X1,X2)) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~apart_point_and_line(X2,line_connecting(X1,X2))
+比较次数:0
+选中的子句:cnf(c_0_33, plain, (~distinct_points(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~apart_point_and_line(X1,line_connecting(X1,X2)) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~apart_point_and_line(X1,line_connecting(X1,X2))
+比较次数:0
+选中的子句:cnf(c_0_40, plain, (distinct_points(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~before_on_line(X3,X1,X2) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~before_on_line(X3,X1,X2)
+比较次数:4
+选中的子句:cnf(c_0_41, plain, (~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~before_on_line(X2,X3,X1) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~before_on_line(X2,X3,X1)
+比较次数:5
+选中的子句:cnf(c_0_42, plain, (~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~before_on_line(X2,X1,X3) zjW:0.875 xyw:1.5 EW:5)).
+选择文字:~before_on_line(X2,X1,X3)
+比较次数:6
+选中的子句:cnf(c_0_46, plain, (~before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|~left_apart_point(X3,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~left_apart_point(X3,reverse_line(X1))
+比较次数:3
+选中的子句:cnf(c_0_47, plain, (~before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|~left_apart_point(X2,reverse_line(X1)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~left_apart_point(X2,reverse_line(X1))
+比较次数:4
+选中的子句:cnf(c_0_53, plain, (~before_on_line(X1,X2,X3) zjW:0.875 xyw:1.5 EW:5|~unequally_directed_lines(X1,line_connecting(X2,X3)) zjW:0.863636 xyw:1.625 EW:6)).
+选择文字:~unequally_directed_lines(X1,line_connecting(X2,X3))
+比较次数:0
+选中的子句:cnf(c_0_1, plain, (~unequally_directed_lines(X1,X1) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~unequally_directed_lines(X1,X1)
+比较次数:0
+选中的子句:cnf(c_0_2, plain, (~left_convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~left_convergent_lines(X1,X2)
+
+found backsubsumption!,size:1 
+cnf(c_0_2, plain, (~left_convergent_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4)). ==> cnf(c_0_22, plain, (unequally_directed_lines(X1,X2) zjW:0.833333 xyw:1.5 EW:4|left_convergent_lines(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~left_convergent_lines(X3,X1) zjW:0.833333 xyw:1.5 EW:4)).比较次数:1
+选中的子句:cnf(c_0_3, plain, (~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~left_apart_point(X1,X2)
+
+found backsubsumption!,size:11 
+cnf(c_0_3, plain, (~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4)). ==> cnf(c_0_16, plain, (apart_point_and_line(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).比较次数:11
+选中的子句:cnf(c_0_4, plain, (~distinct_points(X1,X1) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~distinct_points(X1,X1)
+比较次数:0
+选中的子句:cnf(c_0_5, plain, (~distinct_lines(X1,X1) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~distinct_lines(X1,X1)
+比较次数:0
+选中的子句:cnf(c_0_6, plain, (~left_convergent_lines(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~left_convergent_lines(X1,reverse_line(X2))
+比较次数:0
+选中的子句:cnf(c_0_7, plain, (~left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~left_apart_point(X1,reverse_line(X2))
+
+found backsubsumption!,size:5 
+cnf(c_0_7, plain, (~left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)). ==> cnf(c_0_19, plain, (apart_point_and_line(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~left_apart_point(X1,reverse_line(X2)) zjW:0.857143 xyw:1.625 EW:5)).比较次数:5
+选中的子句:cnf(c_0_8, plain, (~distinct_lines(X1,reverse_line(X1)) zjW:1.10714 xyw:1.625 EW:5)).
+选择文字:~distinct_lines(X1,reverse_line(X1))
+比较次数:0
+选中的子句:cnf(c_0_9, plain, (~apart_point_and_line(X1,parallel_through_point(X2,X1)) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~apart_point_and_line(X1,parallel_through_point(X2,X1))
+比较次数:0
+选中的子句:cnf(c_0_10, plain, (~unequally_directed_lines(parallel_through_point(X1,X2),X1) zjW:1.0303 xyw:1.625 EW:6)).
+选择文字:~unequally_directed_lines(parallel_through_point(X1,X2),X1)
+比较次数:0
+|  FindBacktime:                   0.00 s                 |
+FNE-GEO228+1.p,83,17, 0.00
+|  Saturate_time:                   0.00 s                 |
+argc:2
+/home/icdc/Documents/myProg/CoE/CoProver/dist/Release/GNU-Linux/coprover
+/home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-SYO605+1.p
+|  GenFormula_time:                   0.00 s                 |
+选中的子句:cnf(c_0_63, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:epred1_0
+比较次数:0
+选中的子句:cnf(c_0_64, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:epred1_0
+比较次数:1
+选中的子句:cnf(c_0_65, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:4
+选中的子句:cnf(c_0_66, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+
+found backsubsumption!,size:2 
+cnf(c_0_66, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)). ==> cnf(c_0_63, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).比较次数:4
+选中的子句:cnf(c_0_91, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:epred2_0
+比较次数:0
+选中的子句:cnf(c_0_92, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:epred2_0
+比较次数:1
+选中的子句:cnf(c_0_93, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:epred2_0
+比较次数:2
+选中的子句:cnf(c_0_94, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:14
+选中的子句:cnf(c_0_48, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:16
+选中的子句:cnf(c_0_49, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:18
+选中的子句:cnf(c_0_50, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:20
+选中的子句:cnf(c_0_51, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:22
+选中的子句:cnf(c_0_52, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:24
+选中的子句:cnf(c_0_53, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:26
+选中的子句:cnf(c_0_54, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:28
+选中的子句:cnf(c_0_55, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:30
+选中的子句:cnf(c_0_56, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:32
+选中的子句:cnf(c_0_59, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+
+found backsubsumption!,size:2 
+cnf(c_0_59, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)). ==> cnf(c_0_48, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).比较次数:32
+选中的子句:cnf(c_0_60, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+
+found backsubsumption!,size:2 
+cnf(c_0_60, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)). ==> cnf(c_0_49, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).比较次数:34
+选中的子句:cnf(c_0_61, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:38
+选中的子句:cnf(c_0_79, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:40
+选中的子句:cnf(c_0_80, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:42
+选中的子句:cnf(c_0_81, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:44
+选中的子句:cnf(c_0_82, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:46
+选中的子句:cnf(c_0_83, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:48
+选中的子句:cnf(c_0_84, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:50
+选中的子句:cnf(c_0_85, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:52
+选中的子句:cnf(c_0_86, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:54
+选中的子句:cnf(c_0_87, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:56
+选中的子句:cnf(c_0_88, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:58
+选中的子句:cnf(c_0_89, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:60
+选中的子句:cnf(c_0_90, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:62
+选中的子句:cnf(c_0_35, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:64
+选中的子句:cnf(c_0_36, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:66
+选中的子句:cnf(c_0_37, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:68
+选中的子句:cnf(c_0_38, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:70
+选中的子句:cnf(c_0_39, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:72
+选中的子句:cnf(c_0_40, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:74
+选中的子句:cnf(c_0_41, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:76
+选中的子句:cnf(c_0_42, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:78
+选中的子句:cnf(c_0_43, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:80
+选中的子句:cnf(c_0_44, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+
+found backsubsumption!,size:2 
+cnf(c_0_44, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)). ==> cnf(c_0_35, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_false_only(esk7_1(X2),esk7_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).比较次数:80
+选中的子句:cnf(c_0_45, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk8_1(X2),esk8_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:84
+选中的子句:cnf(c_0_46, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|g_both(esk9_1(X2),esk9_1(X2)) zjW:1.25 xyw:1.75 EW:6|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:86
+选中的子句:cnf(c_0_67, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:88
+选中的子句:cnf(c_0_68, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:90
+选中的子句:cnf(c_0_69, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:92
+选中的子句:cnf(c_0_70, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:94
+选中的子句:cnf(c_0_71, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:96
+选中的子句:cnf(c_0_72, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:98
+选中的子句:cnf(c_0_73, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:100
+选中的子句:cnf(c_0_74, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:102
+选中的子句:cnf(c_0_75, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:104
+选中的子句:cnf(c_0_76, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_true_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk13_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:106
+选中的子句:cnf(c_0_77, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk12_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:108
+选中的子句:cnf(c_0_78, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk11_2(X2,X3),X2) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:110
+选中的子句:cnf(c_0_30, negated_conjecture, (g_true_only(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_true_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+
+选择文字:~epred1_0
+比较次数:0
+选中的子句:cnf(c_0_31, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:112
+选中的子句:cnf(c_0_32, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:114
+选中的子句:cnf(c_0_33, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(X1,esk10_0) zjW:0.875 xyw:1.75 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:116
+选中的子句:cnf(c_0_34, plain, (epred1_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|g_true_only(esk9_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk8_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|g_both(esk7_1(X2),X2) zjW:1.10714 xyw:1.625 EW:5|~g_both(X3,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X3,X3) zjW:1.08333 xyw:1.5 EW:4)).
+选择文字:~g_both(X3,X2)
+比较次数:118
+选中的子句:cnf(c_0_47, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:120
+选中的子句:cnf(c_0_57, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:122
+选中的子句:cnf(c_0_58, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:124
+选中的子句:cnf(c_0_62, plain, (epred2_0 zjW:1.5 xyw:2 EW:2|g_true_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_false_only(X1,esk14_1(X2)) zjW:0.857143 xyw:1.625 EW:5|g_true_only(esk11_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_false_only(esk12_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|g_both(esk13_2(X2,X3),X3) zjW:1.0303 xyw:1.625 EW:6|~g_both(X4,X3) zjW:0.833333 xyw:1.5 EW:4|~g_both(X4,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_both(X4,X3)
+比较次数:126
+选中的子句:cnf(c_0_27, negated_conjecture, (g_true_only(esk3_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:1
+选中的子句:cnf(c_0_28, negated_conjecture, (g_false_only(esk4_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_true_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:2
+选中的子句:cnf(c_0_29, negated_conjecture, (g_both(esk5_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:3
+选中的子句:cnf(c_0_24, negated_conjecture, (g_true_only(esk3_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk4_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_false_only(esk5_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:4
+选中的子句:cnf(c_0_25, negated_conjecture, (g_true_only(esk3_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_both(esk5_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk4_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:5
+选中的子句:cnf(c_0_26, negated_conjecture, (g_false_only(esk4_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_both(esk5_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_true_only(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|g_both(esk3_1(X1),esk2_0) zjW:1 xyw:1.875 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:6
+选中的子句:cnf(c_0_23, negated_conjecture, (g_true_only(esk3_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_false_only(esk4_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|g_both(esk5_1(X1),X1) zjW:1.10714 xyw:1.625 EW:5|~epred1_0 zjW:1.5 xyw:2 EW:2|~epred2_0 zjW:1.5 xyw:2 EW:2)).
+选择文字:~epred1_0
+比较次数:7
+选中的子句:cnf(c_0_11, plain, (g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_both(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:g_true_only(X1,X2)
+比较次数:172
+选中的子句:cnf(c_0_14, plain, (g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:g_false(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_15, plain, (g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:g_true(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_22, plain, (g_both(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_true(X1,X2)
+比较次数:1
+选中的子句:cnf(c_0_1, plain, (g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_true_only(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_2, plain, (g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:g_true(X1,X2)
+比较次数:2
+选中的子句:cnf(c_0_3, plain, (g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_false_only(X1,X2)
+比较次数:0
+选中的子句:cnf(c_0_4, plain, (g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:g_false(X1,X2)
+比较次数:2
+选中的子句:cnf(c_0_5, negated_conjecture, (~g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_false_only(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_false_only(X1,esk6_0)
+比较次数:0
+选中的子句:cnf(c_0_6, negated_conjecture, (~g_true_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_both(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_true_only(X1,X1)
+比较次数:1
+选中的子句:cnf(c_0_7, negated_conjecture, (~g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_true_only(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_true_only(X1,esk6_0)
+比较次数:0
+选中的子句:cnf(c_0_8, negated_conjecture, (~g_false_only(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_both(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_false_only(X1,X1)
+比较次数:1
+选中的子句:cnf(c_0_9, negated_conjecture, (~g_both(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_true_only(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_true_only(X1,esk6_0)
+比较次数:1
+选中的子句:cnf(c_0_10, negated_conjecture, (~g_both(X1,X1) zjW:1.08333 xyw:1.5 EW:4|~g_false_only(X1,esk6_0) zjW:0.875 xyw:1.75 EW:4)).
+选择文字:~g_false_only(X1,esk6_0)
+比较次数:1
+选中的子句:cnf(c_0_12, plain, (~g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_false(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_true_only(X1,X2)
+比较次数:5
+选中的子句:cnf(c_0_13, plain, (~g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true(X1,X2) zjW:0.833333 xyw:1.5 EW:4)).
+选择文字:~g_false_only(X1,X2)
+比较次数:5
+选中的子句:cnf(c_0_16, negated_conjecture, (~g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true_only(X1,esk1_1(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~g_true_only(X1,esk1_1(X2))
+比较次数:0
+选中的子句:cnf(c_0_17, negated_conjecture, (~g_true_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X1,esk1_1(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~g_true_only(X1,X2)
+比较次数:8
+选中的子句:cnf(c_0_18, negated_conjecture, (~g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_false_only(X1,esk1_1(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~g_false_only(X1,esk1_1(X2))
+比较次数:0
+选中的子句:cnf(c_0_19, negated_conjecture, (~g_false_only(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_both(X1,esk1_1(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~g_false_only(X1,X2)
+比较次数:8
+选中的子句:cnf(c_0_20, negated_conjecture, (~g_both(X1,X2) zjW:0.833333 xyw:1.5 EW:4|~g_true_only(X1,esk1_1(X2)) zjW:0.857143 xyw:1.625 EW:5)).
+选择文字:~g_true_only(X1,esk1_1(X2))
+比较次数:1
+|  FindBacktime:                   0.04 s                 |
+FNE-SYO605+1.p,4232,8, 0.04
+|  Saturate_time:                   0.04 s                 |

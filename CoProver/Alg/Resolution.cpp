@@ -74,7 +74,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
                 //修改文字个数限制
                 ++StrategyParam::MaxLitNumOfR;
-                StrategyParam::MaxLitNumOfNewCla = 6;
+                StrategyParam::MaxLitNumOfNewCla =+2;
                 if (StrategyParam::MaxLitNumOfR > fol->uMaxLitNum - 1) {
                     StrategyParam::MaxLitNumOfR = 1;
                     StrategyParam::MaxLitNumOfNewCla = 1;

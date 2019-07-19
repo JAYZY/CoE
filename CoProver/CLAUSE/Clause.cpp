@@ -38,31 +38,47 @@ Clause::Clause(const Clause* orig) {
     this->parent2 = orig->parent2; //父子句2;
 }
 
+/**
+ * 创建子句中的文字，顺序：正文字-负文字-等词
+ * @param lits
+ */
 Clause::Clause(Literal* lits) : Clause() {
     //Clause_p handle = EmptyClauseAlloc();
-    Literal *pos_lits = nullptr, *neg_lits = nullptr;
+    Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
+    Literal* *eqn_append = &eqn_lits;
     Literal* next = nullptr;
-
-
     while (lits) {
         lits->claPtr = this; /*指定当前文字所在子句*/
         lits->EqnSetProp(EqnProp::EPIsHold);
         next = lits->next;
+
         if (lits->IsPositive()) {
             posLitNo++;
-            *pos_append = lits;
-            pos_append = &((*pos_append)->next);
+            if (lits->EqnIsEquLit()) {
+                *eqn_append = lits;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *pos_append = lits;
+                pos_append = &((*pos_append)->next);
+            }
         } else {
             negLitNo++;
-            *neg_append = lits;
-            neg_append = &((*neg_append)->next);
+            if (lits->EqnIsEquLit()) {
+                *eqn_append = lits;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *neg_append = lits;
+                neg_append = &((*neg_append)->next);
+            }
         }
         lits = next;
     }
+    *neg_append = eqn_lits;
     *pos_append = neg_lits;
-    *neg_append = nullptr;
+    *eqn_append = nullptr;
+    //*neg_append = nullptr;
     literals = pos_lits;
 }
 
@@ -91,9 +107,10 @@ Clause::~Clause() {
 void Clause::bindingLits(Literal* litLst) {
     assert(literals == nullptr);
     assert(litLst);
-    Literal *pos_lits = nullptr, *neg_lits = nullptr;
+    Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
+    Literal* *eqn_append = &eqn_lits;
     Literal* next = nullptr;
 
     int iLitPos = 0;
@@ -104,25 +121,37 @@ void Clause::bindingLits(Literal* litLst) {
         next = litLst->next;
         if (litLst->IsPositive()) {
             posLitNo++;
-            *pos_append = litLst;
-            pos_append = &((*pos_append)->next);
+            if (litLst->EqnIsEquLit()) {
+                *eqn_append = litLst;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *pos_append = litLst;
+                pos_append = &((*pos_append)->next);
+            }
         } else {
             negLitNo++;
-            *neg_append = litLst;
-            neg_append = &((*neg_append)->next);
+            if (litLst->EqnIsEquLit()) {
+                *eqn_append = litLst;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *neg_append = litLst;
+                neg_append = &((*neg_append)->next);
+            }
         }
         litLst = next;
     }
+    *neg_append = eqn_lits;
     *pos_append = neg_lits;
-    *neg_append = nullptr;
+    *eqn_append = nullptr;
     literals = pos_lits;
 }
 
 void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     //插入新子句
-    Literal *pos_lits = nullptr, *neg_lits = nullptr;
+    Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
+    Literal* *eqn_append = &eqn_lits;
     Literal* next = nullptr;
     uint16_t iLitPos = 0;
     auto litTmpPtr = vNewR.begin();
@@ -134,17 +163,28 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
         newLitP->EqnSetProp(EqnProp::EPIsHold);
         if (newLitP->IsPositive()) {
             posLitNo++;
-            *pos_append = newLitP;
-            pos_append = &((*pos_append)->next);
+            if (newLitP->EqnIsEquLit()) {
+                *eqn_append = newLitP;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *pos_append = newLitP;
+                pos_append = &((*pos_append)->next);
+            }
         } else {
             negLitNo++;
-            *neg_append = newLitP;
-            neg_append = &((*neg_append)->next);
+            if (newLitP->EqnIsEquLit()) {
+                *eqn_append = newLitP;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *neg_append = newLitP;
+                neg_append = &((*neg_append)->next);
+            }
         }
         ++litTmpPtr;
     }
+    *neg_append = eqn_lits;
     *pos_append = neg_lits;
-    *neg_append = nullptr;
+    *eqn_append = nullptr;
     literals = pos_lits;
 }
 
@@ -569,9 +609,9 @@ void Clause::ClauseParse(Scanner* in) {
     //Clause * handle = new Clause(concl);
     this->ClauseSetTPTPType(type);
     this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
-    
+
     //为了节约内存，若为基项则删除ClaTB
-    if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) { 
+    if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) {
         this->ClearClaTB();
     }
 }
@@ -674,7 +714,7 @@ uint16_t Clause::calcMaxFuncLayer() const {
 
 void Clause::EqnListParse(TokenType sep) {
     Scanner* in = Env::getIn();
-    bool isGroundCla=true;
+    bool isGroundCla = true;
     TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
 
     if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken))
@@ -688,11 +728,11 @@ void Clause::EqnListParse(TokenType sep) {
         int originLitPos = 0;
         while (true) {
             handle = new Literal(in, this);
-            
-            if(!handle->IsGround(false)){ //检查文字是否为基文字
-                isGroundCla=false;
-            }                
-            
+
+            if (!handle->IsGround(false)) { //检查文字是否为基文字
+                isGroundCla = false;
+            }
+
             handle->pos = ++originLitPos; //记录文字在子句中的原始位置
             if (handle->IsPositive()) {
                 ++posLitNo;
@@ -711,7 +751,7 @@ void Clause::EqnListParse(TokenType sep) {
         this->literals = pos_lits;
     }
     //设置基子句属性
-    if(isGroundCla){
+    if (isGroundCla) {
         this->ClauseSetProp(ClauseProp::CPGroundCla);
     }
 }

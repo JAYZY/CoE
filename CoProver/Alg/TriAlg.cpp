@@ -191,7 +191,6 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                 Clause* newCla = new Clause();
                 newCla->bindingAndRecopyLits(vNewR);
                 //newClas.push_back(newCla);
-
                 // ------ 对子句进行下拉约减 ------
                 {
                     int delRNum = TriMguReduct();
@@ -230,9 +229,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
         //上一轮的被动子句,新一轮的主动子句, 已经被主界线下拉过, 又被单元子句下拉 则判断剩余文字R是否超出限制,是否需要停止三角形演绎
         if (actCla != givenCla && 0 < StrategyParam::MaxLitNumOfR && vNewR.size() + uActHoldLitNum > StrategyParam::MaxLitNumOfR) {
-            // string strOverMaxLitLimitNum = to_string(vNewR.size() + uActHoldLitNum) + " 超出次数:" +to_string(++StrategyParam::S_OverMaxLitLimit_Num) + "\n";
-            // FileOp::getInstance()->outLog("R长度不符合要求:当前R长度:" +strOverMaxLitLimitNum);
-            actLit = nullptr;
+            actLit = nullptr; //表明△已经停止
         }
 
         //=======遍历主动子句中剩余文字 -----------------------------------------------------
@@ -359,14 +356,16 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
         /*======== △无法延拓时候进行处理 ====================*/
         if (resTri == RESULT::NOMGU) {
             /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/
-
+            bool isRollback = true;
             //==================== △构建成功 ====================
             if (isDeduct) {
+
                 //1.将主动文字的剩余文字添加到 vNewR中 
                 for (Lit_p litptr = actCla->literals; litptr; litptr = litptr->next) {
                     if (litptr->EqnQueryProp(EqnProp::EPIsHold))
                         vNewR.push_back(litptr);
                 }
+
                 // this->printTri(stdout);                this->printR(stdout, nullptr);
 
                 Clause* newCla = new Clause();
@@ -378,22 +377,32 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     // this->printTri(stdout);                    this->printR(stdout, nullptr);
                     Clause* newClaA = new Clause();
                     newClaA->bindingAndRecopyLits(vNewR);
-                    newClas.push_back(newClaA);
-                    FileOp::getInstance()->outLog("# R 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
+                    if (newClaA->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
+                        isRollback = false;
+                        newClas.push_back(newClaA);
+                        FileOp::getInstance()->outLog("# R 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
+                    }
                 } else {
-                    newClas.push_back(newCla);
-                    isDelNewCla = false;
+                    if (newCla->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
+                        isRollback = false;
+                        newClas.push_back(newCla);
+                        isDelNewCla = false;
+                    }
                 }
                 if (isDelNewCla) {
                     if (StrategyParam::ADD_CR) {
-                        newClas.push_back(newCla);
+                        if (newCla->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
+                            newClas.push_back(newCla);
+                            isRollback = false;
+                        }
                     } else {
                         DelPtr(newCla);
                     }
                 }
                 return RESULT::SUCCES;
-            }//====== △起步后，没有任何延拓 则进行回退操作 ======
-            else {
+            }
+            //====== △起步后，没有任何延拓 则进行回退操作 ======
+            if(isRollback) {
                 /*
                  * 回退的类型:
                  * 1.主对角线重新查找下一个互补文字(改变被归结文字);2.重新选择主界线文字(改变主动归结文字);3.重新选择被下拉的主界线文字(改变下拉替换)
@@ -729,6 +738,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
       
      ** 5.检查主动子句剩余文字+被动子句剩余文字+R 是否是 forwardsubsume [换被动文字/子句] 
      */
+    
     Clause* pasCla = candLit->claPtr;
     Clause* actCla = actLit->claPtr;
     uint16_t holdLitSize = 0; //剩余文字总个数
@@ -1026,7 +1036,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
     }
 
     //亲,再加一个 剩余文字判断, come on来啊!相互伤害啊~~
-    
+
     /*限制子句中文字数个数 剩余R+主动子句剩余文字数+候选子句文字数-2<=limit*/
     //    if (0 < StrategyParam::MaxLitNumOfR && (int) (holdLitSize - delRNum) > (int) StrategyParam::MaxLitNumOfR) {
     //        //pasLit->usedCount += StrategyParam::LIT_OVERLIMIT_WIGHT;
@@ -1888,12 +1898,10 @@ void TriAlg::printR(FILE* out, Literal * lit) {
 void TriAlg::outNewClaInfo(Clause* newCla, InfereType infereType) {
 
     string strCla = "";
-    if (newCla == nullptr)
-    {
-        strCla = "cnf(c"+to_string(Env::global_clause_counter+1)+",plain,($false)";
+    if (newCla == nullptr) {
+        strCla = "cnf(c" + to_string(Env::global_clause_counter + 1) + ",plain,($false)";
         //    [c_0_4,c_0_5]),    [proof]).       
-    }
-    else
+    } else
         newCla->getStrOfClause(strCla, false);
 
     if (this->setUsedCla.empty()) {

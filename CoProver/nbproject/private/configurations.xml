@@ -35,11 +35,11 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/NLP261+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN986+1.004.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/NUM304+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/PUZ128+2.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FEQ/GEO112+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/PUZ128+2.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FEQ/PUZ128+2.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FEQ/GEO112+1.p</runcommand>
         <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
