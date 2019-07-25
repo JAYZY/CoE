@@ -563,9 +563,9 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
         while (ind < conLitsSize) {
             Literal* conEqn = arrayConLit[ind];
             isMatch = true;
-            //debug      cout << "varEqn ";            varEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug   cout << "varEqn ";            varEqn->EqnTSTPPrint(stdout, true);            cout << endl;
 
-            //debug      cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug    cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 isMatch = false;
 

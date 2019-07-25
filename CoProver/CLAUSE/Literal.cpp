@@ -446,10 +446,9 @@ Literal* Literal::EqnListFlatCopy() {
 
 Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
 
-    Term_p lt = lterm->renameCopy(newCla->GetClaTB(), deref);
-    Term_p rt = rterm->renameCopy(newCla->GetClaTB(), deref);
-    Literal* newLit = new Literal(lt, rt, false);
-
+    Term_p lt = lterm->RenameCopy(newCla->GetClaTB(), deref);
+    Term_p rt = rterm->RenameCopy(newCla->GetClaTB(), deref);
+    Literal* newLit = new Literal(lt, rt, false);   
     newLit->claPtr = newCla;
     newLit->parentLitPtr = this;
     newLit->properties = this->properties;

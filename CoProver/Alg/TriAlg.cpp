@@ -128,6 +128,7 @@ RESULT TriAlg::GenByBinaryCla(Clause* binaryCla) {
 
 RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
+    //debug    if (Env::global_clause_counter >= 150)        cout << endl;
     string strOut = "# 起步子句C" + to_string(givenCla->ident) + ":";
     givenCla->getStrOfClause(strOut);
     FileOp::getInstance()->outRun(strOut);
@@ -157,7 +158,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
     int backpoint = 0; //合一替换的回退点
     uint32_t pasLitInd = 0; //被动归结文字序号
     bool isDeduct = false; //是否发生过归结
-
+    bool isRollback = false; //是否回退
     /************************************************************************/
     /*主动文字选择原则 ,1 尽量选择 负文字 2 尽量选择稳定度低的文字	
     /************************************************************************/
@@ -172,61 +173,62 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
     actLit = actCla->literals;
 
     while (1) {
-        //对主动子句 A.单文字匹配 B.确定起步文字actLit
-        if (actLit) {
-            //检查项的嵌套深度
-            if (-1 == actLit->lterm->CheckTermDepthLimit()) {
-                actLit = actLit->next;
-                continue;
-            }
-            //对主动子句中的剩余文字进行单文字匹配
-            if (unitResolutionrReduct(&actLit, uActHoldLitNum)) {
-                isDeduct = true;
-            }
-
-            //主动归结子句,被单元子句约减后没有剩余文字。三角形停止延拓,并输出主界线和R(注意此时R并不一定为空)
-            if (actLit == nullptr) {
-                // this->printTri(stdout);                 this->printR(stdout, nullptr);
-
-                Clause* newCla = new Clause();
-                newCla->bindingAndRecopyLits(vNewR);
-                //newClas.push_back(newCla);
-                // ------ 对子句进行下拉约减 ------
-                {
-                    int delRNum = TriMguReduct();
-                    if (delRNum > 0) {
-                        Clause* newClaA = new Clause();
-                        newClaA->bindingAndRecopyLits(vNewR);
-                        newClas.push_back(newClaA);
-                        FileOp::getInstance()->outLog("# UR 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
-
-                        if (StrategyParam::ADD_CR) { //若策略 允许保留原始子句，则下拉越减前的子句加入子句集。否则删除
-                            newClas.push_back(newCla);
-                        } else {
-                            DelPtr(newCla);
-                        }
-                    } else {
-                        newClas.push_back(newCla);
-                    }
+        if (!isRollback) {
+            //对主动子句 A.单文字匹配 B.确定起步文字actLit
+            if (actLit) {
+                //检查项的嵌套深度
+                if (-1 == actLit->lterm->CheckTermDepthLimit()) {
+                    actLit = actLit->next;
+                    continue;
                 }
-                return RESULT::SUCCES;
-            }
-            //只剩一个文字 -- 单元子句
-            if (isDeduct && 0 == vNewR.size()&& 1 == uActHoldLitNum) {
-                this->outTri();
-                this->outR(actLit);
-                Clause* newCla = new Clause();
-                assert(actLit->IsHold());
-                Literal* newLitP = actLit->RenameCopy(newCla);
-                newCla->bindingLits(newLitP);
-                fol->insertNewCla(newCla); //直接加入单元子句
-                //输出到.i 文件
-                outNewClaInfo(newCla, InfereType::SCS);
-                //一旦 有剩余文字是单元子句,若该单元子句 找不到拓展的文字,则回退
-                isDeduct = false; //合一&规则检查成功
+                //对主动子句中的剩余文字进行单文字匹配
+                if (unitResolutionrReduct(&actLit, uActHoldLitNum)) {
+                    isDeduct = true;
+                }
+
+                //主动归结子句,被单元子句约减后没有剩余文字。三角形停止延拓,并输出主界线和R(注意此时R并不一定为空)
+                if (actLit == nullptr) {
+                    // this->printTri(stdout);                 this->printR(stdout, nullptr);
+
+                    Clause* newCla = new Clause();
+                    newCla->bindingAndRecopyLits(vNewR);
+                    //newClas.push_back(newCla);
+                    // ------ 对子句进行下拉约减 ------
+                    {
+                        int delRNum = TriMguReduct();
+                        if (delRNum > 0) {
+                            Clause* newClaA = new Clause();
+                            newClaA->bindingAndRecopyLits(vNewR);
+                            newClas.push_back(newClaA);
+                            FileOp::getInstance()->outLog("# UR 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
+
+                            if (StrategyParam::ADD_CR) { //若策略 允许保留原始子句，则下拉越减前的子句加入子句集。否则删除
+                                newClas.push_back(newCla);
+                            } else {
+                                DelPtr(newCla);
+                            }
+                        } else {
+                            newClas.push_back(newCla);
+                        }
+                    }
+                    return RESULT::SUCCES;
+                }
+                //只剩一个文字 -- 单元子句
+                if (isDeduct && 0 == vNewR.size()&& 1 == uActHoldLitNum) {
+                    this->outTri();
+                    this->outR(actLit);
+                    Clause* newCla = new Clause();
+                    assert(actLit->IsHold());
+                    Literal* newLitP = actLit->RenameCopy(newCla);
+                    newCla->bindingLits(newLitP);
+                    fol->insertNewCla(newCla); //直接加入单元子句
+                    //输出到.i 文件
+                    outNewClaInfo(newCla, InfereType::SCS);
+                    //一旦 有剩余文字是单元子句,若该单元子句 找不到拓展的文字,则回退
+                    isDeduct = false; //合一&规则检查成功
+                }
             }
         }
-
         //上一轮的被动子句,新一轮的主动子句, 已经被主界线下拉过, 又被单元子句下拉 则判断剩余文字R是否超出限制,是否需要停止三角形演绎
         if (actCla != givenCla && 0 < StrategyParam::MaxLitNumOfR && vNewR.size() + uActHoldLitNum > StrategyParam::MaxLitNumOfR) {
             actLit = nullptr; //表明△已经停止
@@ -234,7 +236,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
 
         //=======遍历主动子句中剩余文字 -----------------------------------------------------
         while (actLit) {
-
+            isRollback = false;
             //根据文字互补谓词项对应的互补文字得到候选被动文字
             vCandLit = fol->getPairPredLst(actLit);
 
@@ -285,6 +287,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                 //1.规则检查 -----------------------------------
                 //ResRule resRule = this->RuleCheckLastHope(actLit);
                 bool isVarChg = subst->Size() > backpoint;
+                //debug                 if(pasLit->claPtr->ident==15)                    cout<<"debug"<<endl;
                 ResRule resRule = this->RuleCheckOri(actLit, pasLit, uPasHoldLitNum, isVarChg);
                 if (resRule == ResRule::ChgActLit) {//换主界线文字
                     subst->SubstBacktrackToPos(backpoint);
@@ -349,14 +352,13 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                 actLit = actLit->next;
                 pasLitInd = 0;
             }
-
             resTri = RESULT::NOMGU;
         }
 
         /*======== △无法延拓时候进行处理 ====================*/
         if (resTri == RESULT::NOMGU) {
             /*注意此时有两种情况：A.已经成功构建 △。B.选择的*/
-            bool isRollback = true;
+            isRollback = true;
             //==================== △构建成功 ====================
             if (isDeduct) {
 
@@ -365,44 +367,58 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     if (litptr->EqnQueryProp(EqnProp::EPIsHold))
                         vNewR.push_back(litptr);
                 }
-
+                if (vNewR.empty())
+                    return RESULT::SUCCES;
                 // this->printTri(stdout);                this->printR(stdout, nullptr);
-
                 Clause* newCla = new Clause();
+                //debug                 if(newCla->ident==841)                    cout<<endl;
                 newCla->bindingAndRecopyLits(vNewR);
 
-                bool isDelNewCla = true;
-                int delRNum = TriMguReduct();
-                if (delRNum > 0) {
-                    // this->printTri(stdout);                    this->printR(stdout, nullptr);
-                    Clause* newClaA = new Clause();
-                    newClaA->bindingAndRecopyLits(vNewR);
-                    if (newClaA->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
-                        isRollback = false;
-                        newClas.push_back(newClaA);
-                        FileOp::getInstance()->outLog("# R 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
+                //限制最大函数嵌套
+                if (newCla->MinFuncLayer() <= StrategyParam::R_MAX_FUNCLAYER) {
+                    bool isAddReductNewCla = false; //是否添加约减后的子句
+                    int delRNum = TriMguReduct();
+                    if (delRNum > 0) {
+                        if (vNewR.empty())
+                            return RESULT::SUCCES;
+                        // this->printTri(stdout);                    this->printR(stdout, nullptr);
+                        Clause* newClaA = new Clause();
+                        newClaA->bindingAndRecopyLits(vNewR);
+                        if (newClaA->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
+                            //检查FS冗余情况
+                            TermIndexing* indexing = (newClaA->LitsNumber() == 1) ? fol->unitClaIndex : fol->allTermIndex;
+                            if (Simplification::ForwardSubsumption(newClaA, indexing)) {
+                                DelPtr(newClaA);
+                                --Env::global_clause_counter;
+                            } else {
+                                isRollback = false;
+                                newClas.push_back(newClaA);
+                                FileOp::getInstance()->outLog("# R 继续约减.C" + to_string(newClaA->ident) + "合一下拉:" + to_string(delRNum) + "个文字\n");
+                                isAddReductNewCla = true;
+                            }
+                        }
                     }
-                } else {
-                    if (newCla->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
-                        isRollback = false;
-                        newClas.push_back(newCla);
-                        isDelNewCla = false;
-                    }
-                }
-                if (isDelNewCla) {
-                    if (StrategyParam::ADD_CR) {
+                    //没有添加约减子句或 添加了约减子句但是策略允许添加约减前的子句
+                    if (!isAddReductNewCla || (isAddReductNewCla && StrategyParam::ADD_CR)) {
                         if (newCla->LitsNumber() < StrategyParam::MaxLitNumOfNewCla) {
-                            newClas.push_back(newCla);
                             isRollback = false;
+                            newClas.push_back(newCla);
+                        } else {
+                            DelPtr(newCla);
+                            --Env::global_clause_counter;
                         }
                     } else {
                         DelPtr(newCla);
+                        --Env::global_clause_counter;
                     }
+                } else {
+                    DelPtr(newCla);
+                    --Env::global_clause_counter;
                 }
-                return RESULT::SUCCES;
             }
+
             //====== △起步后，没有任何延拓 则进行回退操作 ======
-            if(isRollback) {
+            if (isRollback) {
                 /*
                  * 回退的类型:
                  * 1.主对角线重新查找下一个互补文字(改变被归结文字);2.重新选择主界线文字(改变主动归结文字);3.重新选择被下拉的主界线文字(改变下拉替换)
@@ -410,7 +426,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                  * A 在正常△构建中,从主动文字出发,无法找到Linked文字，则需要尝试主动子句中其他剩余文字。--- 在构建△过程中完成.即，改变归结文字不属于路径回退
                  * B 在正常△构建中,△无法延拓。则主动子句Ci+1 退回到Ci子句重新使用 Li子句查找其他匹配文字。 主动文字为主界线最后一个文字。~Li+1 为不能归结文字（记录位置下标）
                  *  注意：处理流程  被动子句 1）先被主动文字匹配确定被动文字~Li+1, 2）主界线文字下拉；3）单元子句下拉
-                 * 难点：此时主动子句Ci已经经历过主界线 已经经历过：主界线文字下拉，单元子句下拉操作，因此回退的时候需要
+                nf(c78, plain, (sorti1(j(esk2_1(h(esk1_0))))) ,inference(SCS,[status(thm)],[c1,c2,c3,c4]) ). * 难点：此时主动子句Ci已经经历过主界线 已经经历过：主界线文字下拉，单元子句下拉操作，因此回退的时候需要
                  * 
                  * 剩余文字均无法找到Linked文字,此时需要回退.
                  * 若某个主动文字均找不到可以延拓的文字,则说明,类型1(改变被归结文字)不适用. 
@@ -421,35 +437,57 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     return RESULT::NOMGU;
                 }
                 //-----------------  回退操作 --------------------------------//
-                // cout << "回滚前:";                printTri(stdout);                this->printR(stdout, nullptr);
+                //debug cout << "回滚前:";printTri(stdout);  this->printR(stdout, nullptr);   cout << "R" << Env::global_clause_counter << endl;
+                //debug if (Env::global_clause_counter == 76)                     cout << "debug" << endl;
+                // actLit = vALitTri.back()->alit; //1.设置主动文字==主界线最后一个文字,并且主界线pop(回退)
+                while (1) {
+                    ALit* triLits = vALitTri.back();
+                    actLit = triLits->alit; //1.设置主动文字==主界线最后一个文字,并且主界线pop(回退)                    
+                    setUsedCla.erase(triLits->blit->claPtr); //删除使用的子句 
+                    vALitTri.pop_back();
+                    if (actLit->claPtr->LitsNumber() > 1) {
+                        DelPtr(triLits);
+                        break;
+                    }
+                    setUsedCla.erase(actLit->claPtr); //删除使用的子句 
+                    DelPtr(triLits);
+                }
+                if (actLit->claPtr == givenCla && vALitTri.empty()) { //表示 回退到起步子句，则需要把其他下拉的文字变为非下拉文字                     
+                    for (Literal* tmpLit = givenCla->literals; tmpLit; tmpLit = tmpLit->next) {
+                        tmpLit->EqnSetProp(EqnProp::EPIsHold);
+                    }
+                } else {
+                    actLit->EqnSetProp(EqnProp::EPIsHold);
+                }
 
-                actLit = vALitTri.back()->alit; //1.设置主动文字==主界线最后一个文字,并且主界线pop(回退)
-
-                actLit->EqnSetProp(EqnProp::EPIsHold);
-
-                vALitTri.pop_back();
+                //vALitTri.pop_back();
 
                 //2.回退单元子句下拉
-                while ((!vALitTri.empty()) && vALitTri.back()->blit->claPtr == actCla) {
-                    vALitTri.back()->alit->EqnSetProp(EqnProp::EPIsHold);
-                    setUsedCla.erase(vALitTri.back()->alit->claPtr); //删除使用的子句 
-                    vALitTri.pop_back();
-                }
+                //                while ((!vALitTri.empty()) && vALitTri.back()->blit->claPtr == actCla) {
+                //                    vALitTri.back()->alit->EqnSetProp(EqnProp::EPIsHold);
+                //                    setUsedCla.erase(vALitTri.back()->alit->claPtr); //删除使用的子句 
+                //                    vALitTri.pop_back();
+                //                }
+
 
                 //3.修改其他主界线下拉次数 
                 while ((!vReduceLit.empty()) && vReduceLit.back()->cLit->claPtr == actCla) {
                     vReduceLit.back()->aLit->reduceNum--;
                     vReduceLit.pop_back();
                 }
-                setUsedCla.erase(actCla); //删除使用的子句 
+
 
 
                 //回退vNewR
-                while ((!vNewR.empty()) && (vNewR.back()->claPtr == actCla)) {
+                while ((!vNewR.empty())
+                        && ((vNewR.back()->claPtr == actCla) || (vNewR.back()->claPtr == actLit->claPtr))) {
                     Lit_p lit = (vNewR.back());
                     lit->EqnSetProp(EqnProp::EPIsHold);
                     vNewR.pop_back();
                 }
+
+
+
                 actCla = actLit->claPtr;
                 uActHoldLitNum = actLit->claPtr->LitsNumber() - 1;
                 //回退 合一替换
@@ -465,8 +503,13 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     vPasCandBackPoint.pop_back();
                     resTri = RESULT::NOMGU;
                 }
-                //   cout << "回滚后:";                printTri(stdout);                this->printR(stdout, nullptr);
+                //debug                 cout << "回滚后:";  printTri(stdout); this->printR(stdout, nullptr); cout << "actLit:"; actLit->EqnTSTPPrint(stdout, true);
+                //debug    cout << "\n------Used:";        for (auto&usedCla : setUsedCla) {      cout << usedCla->ident << "\t";        }         cout << endl;
+                isDeduct = false;
+
                 continue;
+            } else {
+                return RESULT::SUCCES;
             }
             //assert(resTri == RESULT::SUCCES);
         }/*======== △延拓成功   ==============================*/
@@ -738,7 +781,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
       
      ** 5.检查主动子句剩余文字+被动子句剩余文字+R 是否是 forwardsubsume [换被动文字/子句] 
      */
-    
+
     Clause* pasCla = candLit->claPtr;
     Clause* actCla = actLit->claPtr;
     uint16_t holdLitSize = 0; //剩余文字总个数
@@ -1088,7 +1131,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasCla
  * @param arrayHoldLits 传入的剩余文字集合,PS
  * @return 规则检查结果
  */
-ResRule TriAlg::RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits) {
+ResRule TriAlg::RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits, vector<Literal*>&vDelLit) {
     /*找到可以合一的单文字子句,同样需要检查是否满足一些规则问题，单元子句使得这些检查更简单。
      ** 分析：
      ** 1.主动文字检查:主动文字就是单文字,可能存在的情况;
@@ -1173,7 +1216,7 @@ ResRule TriAlg::RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits) {
                 //return ResRule::ChgActLit;
                 isDel = true;
                 vDelActLit.push_back(litPtrA);
-                FileOp::getInstance()->outLog(to_string(Env::global_clause_counter) + "?? 出现有疑问状态-->单元子句合一下拉后,剩余文字与主界线文字互补!请做最终确定\n");
+                // FileOp::getInstance()->outLog(to_string(Env::global_clause_counter) + "?? 出现有疑问状态-->单元子句合一下拉后,剩余文字与主界线文字互补!请做最终确定\n");
                 break;
             }
         }
@@ -1216,8 +1259,8 @@ ResRule TriAlg::RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits) {
                 break;
             }
             //3.3 与前面的R文字相同(即:R文字与后面的主界线文字不能相同)                [换单元子句] 
-            if (rLitA->isSameProps(alit) && alit->equalsStuct(rLitA))
-                return ResRule::ChgPasLit;
+            //  if (rLitA->isSameProps(alit) && alit->equalsStuct(rLitA))
+            //      return ResRule::ChgPasLit;
             --iTriLitInd;
         }
         if (isdel)continue;
@@ -1247,6 +1290,7 @@ ResRule TriAlg::RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits) {
     //开始标注主动子句中的被删除的剩余文字,被动子句中的被删除的剩余文字,删除R中的文字,添加主动子句中文字到R中.OMG!!!
     for (Literal* delLit : vDelActLit) {
         delLit->EqnDelProp(EqnProp::EPIsHold);
+        vDelLit.push_back(delLit); //添加被删除文字到全局删除列表
     }
 
     //删除R 从后往前删除
@@ -1621,7 +1665,7 @@ bool TriAlg::unitResolutionBySet(Literal* gLit, int ind) {
 bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
     Clause* claPtr = (*actLit)->claPtr;
 
-    Lit_p retLitPtr = nullptr;
+
     bool isReduct = false;
     set<Clause*>cmpCla;
 
@@ -1629,7 +1673,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
     Literal * arrayHoldLits[uActHoldLitNum + vNewR.size() - 1];
 
     Lit_p givenLitP = claPtr->literals;
-
+    vector<Literal*>vDelLit; //被删除的文字列表
     //---- 遍历检查子句的所有剩余文字, 检查所有单元子句下拉情况 ------
     for (; givenLitP; givenLitP = givenLitP->next) {
         if (!givenLitP->EqnQueryProp(EqnProp::EPIsHold)) {
@@ -1673,21 +1717,22 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                 //===1.if 起步子句,else if 2有变元替换发生,做规则检查 
                 if (vALitTri.empty() || backpoint != subst->Size()) {
                     // cout<<"是否发生逆向替换:"<<subst->isReverseSubst(claPtr->ident,backpoint)<<endl;
-                    ResRule res = RuleCheckUnitReduct(claPtr, arrayHoldLits);
+                    ResRule res = RuleCheckUnitReduct(claPtr, arrayHoldLits, vDelLit);
                     if (ResRule::RULEOK != res) {//剩余文字冗余的(FS:向前归入冗余/恒真)    
 
                         //debug         cout << "检查posCal剩余子句: ";                        claPtr->ClauseTSTPPrint(stdout, true, false);                        cout << endl;
+                        if (ResRule::RSubsump == res) {
+                            //res说明该单元文字与该子句进行下拉 容易造成冗余,是否可以修改权重,
+                            givenLitP->usedCount += StrategyParam::LIT_REDUNDANCY_WIGHT;
+                            claPtr->priority -= StrategyParam::CLA_REDUNDANCY_WIGHT;
+                        }
 
                         if (isRN) {
                             DelPtr(candLit); //删除子句
                             DelPtr(candUnitCal);
                             --Env::global_clause_counter;
                         }
-                        if (ResRule::RSubsump == res) {
-                            //res说明该单元文字与该子句进行下拉 容易造成冗余,是否可以修改权重,
-                            givenLitP->usedCount += StrategyParam::LIT_REDUNDANCY_WIGHT;
-                            claPtr->priority -= StrategyParam::CLA_REDUNDANCY_WIGHT;
-                        }
+
                         subst->SubstBacktrackToPos(backpoint);
                         givenLitP->EqnSetProp(EqnProp::EPIsHold);
                         continue; //冗余当前单文字子句不合适 继续尝试下一个单文字子句  
@@ -1697,6 +1742,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                 {
                     isReduct = true;
                     givenLitP->EqnDelProp(EqnProp::EPIsHold);
+                    bool isAddTri = true;
                     if (isRN) {
                         candUnitCal->bindingLits(candLit);
                         //输出新子句到info文件
@@ -1711,23 +1757,17 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                         FileOp::getInstance()->outRun(str);
                         //添加该单元子句副本到删除列表中,完成三角形后删除.
                         delUnitCla.push_back(candUnitCal);
+
+                    } else if (setUsedCla.find(candUnitCal) != setUsedCla.end()) {
+                        isAddTri = false; //说明基项单元子句重复使用 且不需要复制该单元子句，因此可以看成文字的合一下拉。不需要添加到△中
                     }
-                    setUsedCla.insert(candUnitCal);
-                    ++givenLitP->usedCount; //记录主动文字使用次数
-                    //添加到主界线
-                    vALitTri.push_back(new ALit{0, -1, candUnitCal->literals, givenLitP});
-                    //输出单元子句变名
-                    //                    if (isRN) {
-                    //                        string litInfo = "";
-                    //                        fprintf(stdout, "%s", candLit->getLitInfo(litInfo));
-                    //                        candLit->EqnTSTPPrint(stdout, true, DerefType::DEREF_NEVER);
-                    //                        fprintf(stdout, "\nR[%u]:[C%u_%u]", candUnitCal->ident, candLit->parentLitPtr->claPtr->ident, candLit->parentLitPtr->pos);
-                    //                        candUnitCal->literals->EqnTSTPPrint(stdout, true);
-                    //                        fprintf(stdout, "\n");
-                    //                       flag = true;
-                    //                        candUnitCal->ClausePrint(stdout, true);
-                    //                        fprintf(stdout, "\n");
-                    //                    }
+                    if (isAddTri) {
+                        setUsedCla.insert(candUnitCal);
+                        ++givenLitP->usedCount; //记录主动文字使用次数
+                        //添加到主界线
+                        vALitTri.push_back(new ALit{0, -1, candUnitCal->literals, givenLitP});
+                    }
+                    vDelLit.push_back(givenLitP);
                 }
 
                 Clause* tmpCla = cmpUnitClas[ind]; //*(vec.end() - 1);
@@ -1738,7 +1778,7 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
                 //移动匹配成功的 单元子句 -- {两种算法:A.没用一次移到最后,下次使用不用排序;B.每次使用记录weight,下次使用排序.目前使用A算法)
                 cmpUnitClas.erase(cmpUnitClas.begin() + ind);
                 cmpUnitClas.push_back(tmpCla);
-                --uActHoldLitNum; //被约减子句中剩余文字数-1
+
                 break; //匹配成功换下一个剩余文字
             } else {
                 if (isRN) {
@@ -1750,12 +1790,20 @@ bool TriAlg::unitResolutionrReduct(Lit_p *actLit, uint16_t & uActHoldLitNum) {
             }
         }
 
-        if (retLitPtr == nullptr&&(givenLitP->EqnQueryProp(EqnProp::EPIsHold))) {
-            retLitPtr = givenLitP;
+        //        if (retLitPtr == nullptr&&(givenLitP->EqnQueryProp(EqnProp::EPIsHold))) {
+        //            retLitPtr = givenLitP;
+        //        }
+    }
+    uActHoldLitNum -= vDelLit.size(); //被约减子句中剩余文字数-1
+    if (0 == uActHoldLitNum) *actLit = nullptr;
+    else {
+        for (Literal* lit = claPtr->literals; lit; lit = lit->next) {
+            if (lit->EqnQueryProp(EqnProp::EPIsHold)) {
+                *actLit = lit;
+                break;
+            }
         }
     }
-
-    *actLit = retLitPtr;
     cmpCla.clear();
     return isReduct;
 }

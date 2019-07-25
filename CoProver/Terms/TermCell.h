@@ -69,7 +69,7 @@ enum class TermProp : int32_t {
     TPPosPolarity = 1 << 18, /* In the term encoding of a formula,this occurs with positive polarity. */
     TPNegPolarity = 1 << 19, /* In the term encoding of a formula,this occurs with negative polarity. */
 
-  //  TPShareGround = (TermProp::TPIsShared | TermProp::TPIsGround),
+    //  TPShareGround = (TermProp::TPIsShared | TermProp::TPIsGround),
 };
 
 
@@ -127,9 +127,9 @@ public:
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
     uint16_t uVarCount; //变元计数
-    uint16_t uMaxFuncLayer;//函数嵌套层
-    uint8_t uMaxVarId;//最大变元Id -- 不超过256个
-    
+    uint16_t uMaxFuncLayer; //函数嵌套层
+    uint8_t uMaxVarId; //最大变元Id -- 不超过256个
+
     //FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
@@ -146,7 +146,7 @@ public:
     /*构造函数 - 创建一个function term 函数符如　f */
     TermCell(long fCode, int arity);
     /*构造函数,copy TermCell*/
-    TermCell(TermCell& orig);
+   // TermCell(TermCell& orig);
     virtual ~TermCell(); //代替 TermFree方法
 
     static void TermFree(TermCell* junk) {
@@ -246,30 +246,34 @@ public:
         return this->IsGround() ? weight : TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
     }
 
-    /* Return the depth of a term. */
+    /* 重新计算项的变元嵌套深度 - the depth of a term. */
     inline uint16_t TermDepth() {
+        
+        if(0==arity||this->IsVar())
+            return 0;
         uint16_t maxdepth = 0, ldepth;
-        for (int i = 0; i < arity; ++i) {
+        for (int i = 0; i < arity; ++i) {            
             ldepth = args[i]->TermDepth();
             maxdepth = MAX(maxdepth, ldepth);
         }
         return maxdepth + 1;
     }
+    
     //检查最大函数嵌套层限制. >0 -- 符合限制 -1 -- 不符合限制
-
     inline int CheckTermDepthLimit() {
         uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
-            TermCell* term=TermCell::TermDerefAlways(args[i]);
-            ldepth =term->CheckTermDepthLimit();
-            if(-1==ldepth) return -1;
+            TermCell* term = TermCell::TermDerefAlways(args[i]);           
+            ldepth = term->IsGround() ? term->uMaxFuncLayer : ldepth = term->CheckTermDepthLimit();
+            
+            if (-1 == ldepth) return -1;
             if (maxdepth < ldepth) {
                 maxdepth = ldepth;
                 if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
                     return -1;
             }
-        }
-        return  maxdepth + 1;
+        }        
+        return  maxdepth+1;
     }
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
@@ -291,38 +295,7 @@ public:
         termName += to_string(-fCode);
         return termName.c_str();
     }
-    //#define TermIsTopRewritten(term) (TermIsRewritten(term)&&TermRWDemodField(term))
-
-    //    inline bool TermIsTopRewritten() {
-    //        return TermIsRewritten() && TermRWDemodField();
-    //    }
-
-    /* Get the logical value of the replaced term / demodulator */
-    //#define TermRWReplace(term) (TermIsRewritten(term)?TermRWTargetField(term):nullptr)
-
-    //    inline bool TermRWReplace() {
-    //        return TermIsRewritten() ? TermRWTargetField() : nullptr;
-    //    }
-    //#define TermRWDemod(term) (term->TermIsRewritten()?TermRWDemodField(term):nullptr)
-
-    //    inline Clause* TermRWDemod() {
-    //        return TermIsRewritten() ? TermRWDemodField() : nullptr;
-    //    }
-
-    /* Absolutely get the value of the replace and demod fields */
-    //#define TermRWReplaceField(term) ((term)->rw_data.rw_desc.replace)
-
-    //    inline TermCell* TermRWReplaceField() {
-    //        return rw_data.rw_desc.replace;
-    //    }
-
-    //#define TermRWDemodField(term)   ((term)->rw_data.rw_desc.demod)
-
-    //    inline Clause* TermRWDemodField() {
-    //        return rw_data.rw_desc.demod;
-    //    }
-
-    //TermBank
+   
 
     /* 返回项标示:变元为fCode,非变元为entryNo-即termbank中的下标位置 */
     inline long TBCellIdent() {
@@ -404,7 +377,7 @@ public:
 
     FunCode TermFindMaxVarCode();
     TermCell* TermEquivCellAlloc(TermBank* tb);
-    TermCell* renameCopy(TermBank* tb, DerefType deref = DerefType::DEREF_ALWAYS);
+    TermCell* RenameCopy(TermBank* tb, DerefType deref = DerefType::DEREF_ALWAYS);
     TermCell* TermCopy(TermBank* tb, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);

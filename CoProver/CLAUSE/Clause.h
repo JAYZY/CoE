@@ -91,7 +91,7 @@ public:
     }
 
     ~ClauseInfo() {
-      //  DelPtr(name);
+        //  DelPtr(name);
         //  DelPtr(source);
     }
     /*---------------------------------------------------------------------*/
@@ -133,11 +133,11 @@ private:
     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
     TermBank_p claTB;
     //记录变元与文字的对应关系,变元x1 有文字L1，L2，
-    map<int,uint16_t>mapVarToLitpos;
+    map<int, uint16_t>mapVarToLitpos;
 public:
     uint16_t negLitNo; //负文字个数
     uint16_t posLitNo; //正文字个数    
-    uint16_t maxFuncLayer; //文字中最大的函数嵌套层数
+    //uint16_t maxFuncLayer; //文字中最大的函数嵌套层数
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
     uint32_t weight; //子句权重
 
@@ -193,6 +193,19 @@ public:
 
     inline Literal* Lits() {
         return literals;
+    }
+
+    inline uint16_t MinFuncLayer() {
+
+        Literal* lit = this->literals;
+        uint16_t minFuncLayer = lit->MaxFuncLayer();
+        while (true) {
+            lit = lit->next;
+            if (lit == nullptr)
+                break;
+            minFuncLayer=MIN( minFuncLayer,lit->MaxFuncLayer());
+        }
+        return minFuncLayer;
     }
 
     inline uint32_t GetClaId() {
@@ -283,7 +296,7 @@ public:
     void getEqnListTSTP(string&outStr, string sep, bool colInfo);
     void SortLits(); //对子句中 单文字进行排序
 
-   // void ClauseNormalizeVars(VarBank_p fresh_vars);
+    // void ClauseNormalizeVars(VarBank_p fresh_vars);
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
     Clause* renameCopy(VarBank_p renameVarbank);
 

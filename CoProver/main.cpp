@@ -64,10 +64,11 @@ int main(int argc, char** argv) {
         fol->GenerateEqulitAxiom();
         fol->printEqulityAxioms();
     }
-    FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+    
     //输出预处理后子句 
     // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
+        FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
         //演绎推理
         Resolution resolution;
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);

@@ -69,14 +69,14 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-                if (++modifyLitNumCount > 20)
+                if (++modifyLitNumCount > 25)
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
-                ++StrategyParam::MaxLitNumOfR;
-                StrategyParam::MaxLitNumOfNewCla =+2;
-                if (StrategyParam::MaxLitNumOfR > fol->uMaxLitNum - 1) {
-                    StrategyParam::MaxLitNumOfR = 1;
+                 StrategyParam::MaxLitNumOfR;
+               ++ StrategyParam::MaxLitNumOfNewCla;
+                if (StrategyParam::MaxLitNumOfNewCla > fol->uMaxLitNum + 1) {
+                   //StrategyParam::MaxLitNumOfR = 1;
                     StrategyParam::MaxLitNumOfNewCla = 1;
                 }
 
@@ -93,12 +93,12 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             triAlg.disposeRNUnitCla();
             continue;
         }
-        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
-            Env::S_OverMaxLitLimit_Num = 0;
-            //修改文字个数限制          
-            ++StrategyParam::HoldLits_NUM_LIMIT;
-            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
-        }
+//        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
+//            Env::S_OverMaxLitLimit_Num = 0;
+//            //修改文字个数限制          
+//            ++StrategyParam::HoldLits_NUM_LIMIT;
+//            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
+//        }
         //记录三角形构建次数
         ++iterNum;
         //输出到.r/.i文件

@@ -47,6 +47,9 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 
 /*---------------------------------------------------------------------*/
 TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_FWEIGHT) {
+    
+    uMaxFuncLayer=0;
+             
     // zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
@@ -70,19 +73,19 @@ TermCell::TermCell(long f_code, int arity) : TermCell() {
 }
 
 /* 构造函数,copy TermCell */
-TermCell::TermCell(TermCell& orig) : TermCell() {
-    /* All other properties are tied to the specific term! */
-    properties = (TermProp) ((int32_t) orig.properties & (int32_t) TermProp::TPPredPos);
-    /* As it gets a new id below */
-    this->TermCellDelProp(TermProp::TPOutputFlag);
-    fCode = orig.fCode;
-    arity = orig.arity;
-    claId = orig.claId;
-    args = orig.TermArgListCopy();
-    binding = nullptr;
-    lson = nullptr;
-    rson = nullptr;
-}
+//TermCell::TermCell(TermCell& orig) : TermCell() {
+//    /* All other properties are tied to the specific term! */
+//    properties = (TermProp) ((int32_t) orig.properties & (int32_t) TermProp::TPPredPos);
+//    /* As it gets a new id below */
+//    this->TermCellDelProp(TermProp::TPOutputFlag);
+//    fCode = orig.fCode;
+//    arity = orig.arity;
+//    claId = orig.claId;
+//    args = orig.TermArgListCopy();
+//    binding = nullptr;
+//    lson = nullptr;
+//    rson = nullptr;
+//} 
 /*---------------------------------------------------------------------
  - 创建Term  
  ---------------------------------------------------------------------*/
@@ -245,7 +248,7 @@ int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb
     return arity;
 }
 
-TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
+TermCell* TermCell::RenameCopy(TermBank* tb, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
     if (source->TBTermIsGround())//若为全局共享基项,则直接返回GTermBank中的全局共享基项
@@ -256,25 +259,30 @@ TermCell* TermCell::renameCopy(TermBank* tb, DerefType deref) {
         source->getVarName(varName);
         t = tb->VarInert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
         t->uVarCount = 1;
-        t->weight = DEFAULT_VWEIGHT;        
+        t->weight = DEFAULT_VWEIGHT;
         t->uMaxFuncLayer = 0;
     } else {
-        uint16_t uFuncLayer=0;
+        uint16_t uFuncLayer = 0;
         t = new TermCell(source->fCode);
         t->arity = source->arity;
         t->properties = (TermProp) ((int32_t) source->properties & (int32_t) TermProp::TPPredPos); // t = TermCell::TermTopCopy(source); //创建一个 unshared term at the moment
-      
+
         if (t->arity > 0) {
             t->args = new TermCell*[t->arity];
             for (int i = 0; i < t->arity; ++i) {
-                t->args[i] = source->args[i]-> renameCopy(tb);
+                t->args[i] = source->args[i]-> RenameCopy(tb);
                 t->weight += t->args[i]->weight;
                 t->uVarCount += t->args[i]->uVarCount;
-                uFuncLayer=MAX(uFuncLayer,t->args[i]->uMaxFuncLayer);
-            }     
+                uFuncLayer = MAX(uFuncLayer, t->args[i]->uMaxFuncLayer);
+            }
             ++uFuncLayer;
+        } else {
+            t->uVarCount = 0;
+            t->weight = DEFAULT_FWEIGHT;
+            uFuncLayer = 0;
         }
-        t->uMaxFuncLayer =uFuncLayer;
+
+        t->uMaxFuncLayer = uFuncLayer;
         // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中        
         t = tb->TBTermTopInsert(t);
     }
@@ -331,6 +339,9 @@ TermCell* TermCell::TermTopCopy(TermCell* source) {
     t->arity = source->arity;
     t->binding = nullptr;
     t->args = source->TermArgListCopy();
+    t->uMaxFuncLayer = source->uMaxFuncLayer;
+    t->uMaxVarId = source->uMaxVarId;
+    t->uVarCount = source->uVarCount;
     t->lson = nullptr;
     t->rson = nullptr;
 
@@ -1044,12 +1055,17 @@ bool TermCell::equalStruct(TermCell* term) {
     }
     TermCell* t1 = TermCell::TermDerefAlways(this);
     TermCell* t2 = TermCell::TermDerefAlways(term);
-    if (t1 == t2) {
-        return true;
-    }
+    
+    
     if (t1->fCode != t2->fCode) {
         return false;
     }
+    if (t1 == t2) {
+        return true;
+    }else if(t1->IsVar()&&t2->IsVar()){//若两者均为变元，则不相同则为false
+        return false;
+    }
+    
     //注意,尽管 不同子句的x1 存储地方不同,地址不相同,但是fcode一定是相同的.
     for (int i = 0; i < t1->arity; i++) {
         if (!t1->args[i]->equalStruct(t2->args[i])) {

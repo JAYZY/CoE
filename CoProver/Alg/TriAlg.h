@@ -81,10 +81,16 @@ public:
     //
 
     inline void iniVect() {
+        for(int i=0;i<vALitTri.size();++i){
+            DelPtr(vALitTri[i]);
+        }
         this->vALitTri.clear();
         this->vALitTri.reserve(16);
 
-        this->vReduceLit.clear();
+        while(!vReduceLit.empty()){
+            DelPtr(vReduceLit.back());
+            vReduceLit.pop_back();
+        }        
         this->vReduceLit.reserve(16);
 
         this->vNewR.clear();
@@ -133,7 +139,7 @@ public:
     ResRule RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg);
 
     //单元子句约减后的规则检查
-    ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits);
+    ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits,vector<Literal*>&vDelLit);
 
     //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
     ResRule RuleCheckLastHope(Literal*actLit);

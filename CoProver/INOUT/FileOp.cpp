@@ -84,6 +84,7 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     string tmpStr = outDir + tptpFileNameNoExt;
 
     fInfoFileName = tmpStr + ".i";
+    fUnsatFileName = tmpStr + ".unsat";
     if ((fInfo = fopen(fInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
         return false;
@@ -112,15 +113,7 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     return true;
 }
 
-void FileOp::OutUnsatPath(string fileFullName) {
-    string sFileName = outDir + tptpFileNameNoExt + ".unsat";
-    if (!fUNSAT && (fUNSAT = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
-        Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".log");
 
-    }
-
-
-}
 
 // <editor-fold defaultstate="collapsed" desc="系统文件操作(文件夹,文件)">
 
@@ -215,8 +208,10 @@ string FileOp::getFileNameNoExt(string fileFullName) {
  */
 void FileOp::GenerateEmptyPath() {
     ifstream fin(fInfoFileName, ios::in);
+    ofstream fout(fUnsatFileName, ios::out); //输出
     map<int, vector<string> > allFOL;
     std::string line;
+    
     regex patternClaNo("c\\d+,", regex::icase);
     regex patternUseNo("c\\d+", regex::icase);
     smatch result;
@@ -230,8 +225,12 @@ void FileOp::GenerateEmptyPath() {
                 int x = line.find("New Clauses");
                 if (x != string::npos)
                     newCla = true;
+                //if (!newCla)
+                //     fout<<line<<endl;
                 continue;
             }
+            //if (!newCla)
+            //       fout<< line<<endl;
             string::const_iterator iter = line.begin();
             string::const_iterator iterEnd = line.end();
             int iRowNo;
@@ -275,7 +274,8 @@ void FileOp::GenerateEmptyPath() {
         for (auto id : outClaID) {
             resPoof += allFOL[id][0] + "\n";
         }
-        outInfo(resPoof);
+        fout << resPoof;
+        //outInfo(resPoof);
         cout << resPoof;
 
 

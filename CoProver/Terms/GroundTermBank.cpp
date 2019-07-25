@@ -72,15 +72,6 @@ TermCell* GroundTermBank::GTermTopInsert(TermCell* t) {
         t->entryNo = ++(inCount);
         /* Groundness may change below */
         t->TermCellSetProp(TermProp::TPIsGround);
-//        t->weight = DEFAULT_FWEIGHT;
-//        for (int i = 0; i < t->arity; ++i) {
-//            assert(t->args[i]->IsShared() || t->args[i]->IsVar());
-//            t->weight += t->args[i]->weight;
-//            if (!t->args[i]->TermCellQueryProp(TermProp::TPIsGround)) {
-//                t->TermCellDelProp(TermProp::TPIsGround);
-//            }
-//        }
-       
         assert(t->weight == t->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
         assert((t->IsGround() == 0) == (t->TBTermIsGround() == 0));
     }

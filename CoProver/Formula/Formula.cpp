@@ -137,33 +137,41 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 Lit_p litA = new Literal(lt, rt, false); //X~=Y                 
                 litA->EqnSetProp(EqnProp::EPIsEquLiteral);
 
-                //创建n-1个项
-                TermCell** arrTerm = new TermCell*[arity];
-                for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
-                    arrTerm[j]->uVarCount = 1;
-                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
-                }
+                //                //创建n-1个项
+                //                TermCell** arrTerm = new TermCell*[arity];
+                //                for (int j = 1; j < arity; j++) {
+                //                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
+                //                    arrTerm[j]->uVarCount = 1;
+                //                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
+                //                }
 
 
                 //create left term  e.g f3(A,C,D)
                 TermCell* leftSubT = new TermCell(fCode, arity);
+                int varId = 0;
                 for (int j = 1; j <= arity; j++) {
                     if (j == i) {
                         leftSubT->args[j - 1] = lt;
                     } else {
-                        leftSubT->args[j - 1] = arrTerm[j];
+                        TermCell* t = c1->GetClaTB()->VarInert("Z" + to_string(++varId), c1->ident);
+                        t->uVarCount = 1;
+                        t->TermCellSetProp(TermProp::TPIsShared);
+                        leftSubT->args[j - 1] = t;
                     }
                 }
                 leftSubT->uVarCount = arity;
                 leftSubT = c1->GetClaTB()->TBTermTopInsert(leftSubT);
-                //create right term  e.g = f3(B,C,D)
+                //create right term  e.g = f3(B,C,D)                 
                 TermCell* rightSubT = new TermCell(fCode, arity);
+                varId = 0;
                 for (int j = 1; j <= arity; j++) {
                     if (j == i) {
                         rightSubT->args[j - 1] = rt;
                     } else {
-                        rightSubT->args[j - 1] = arrTerm[j];
+                        TermCell* t = c1->GetClaTB()->VarInert("Z" + to_string(++varId), c1->ident);
+                        t->uVarCount = 1;
+                        t->TermCellSetProp(TermProp::TPIsShared);
+                        rightSubT->args[j - 1] = t;
                     }
                 }
                 rightSubT->uVarCount = arity;
@@ -173,7 +181,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 litA->next->EqnSetProp(EqnProp::EPIsEquLiteral);
                 c1->bindingLits(litA);
 
-                DelArrayPtr(arrTerm);
+
                 this->insertNewCla(c1, true);
                 // this->vEqulityAxiom.push_back(c1);
             }
@@ -197,21 +205,25 @@ void Formula::GenerateEqulitAxiomByFunction() {
 
                 litA->EqnSetProp(EqnProp::EPIsEquLiteral);
                 Lit_p litPtr = litA;
-                //创建n-1个项
-                TermCell** arrTerm = new TermCell*[arity];
-                for (int j = 1; j <= arity; j++) {
-                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
-                    arrTerm[j]->uVarCount = 1;
-                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
-                }
+                //                //创建n-1个项
+                //                TermCell** arrTerm = new TermCell*[arity];
+                //                for (int j = 1; j <= arity; j++) {
+                //                    arrTerm[j] = c1->GetClaTB()->VarInert("Z" + to_string(j), c1->ident);
+                //                    arrTerm[j]->uVarCount = 1;
+                //                    arrTerm[j]->TermCellSetProp(TermProp::TPIsShared);
+                //                }
                 /*====== Create first negative literal ======*/
-                //create left term  e.g ~ p2(A,C)
+                //create left term  e.g ~ p2(A,C)                
                 TermCell* leftSubT = new TermCell(fCode, arity);
+                int iVarId = 0;
                 for (int j = 1; j <= arity; j++) {
                     if (j == i) {
                         leftSubT->args[j - 1] = lt;
                     } else {
-                        leftSubT->args[j - 1] = arrTerm[j];
+                        TermCell* t = c1->GetClaTB()->VarInert("Z" + to_string(++iVarId), c1->ident);
+                        t->uVarCount = 1;
+                        t->TermCellSetProp(TermProp::TPIsShared);
+                        leftSubT->args[j - 1] = t;
                     }
                 }
                 leftSubT->uVarCount = arity;
@@ -222,11 +234,15 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 /*====== Create right positive literal ======*/
                 //create right term  e.g p2(B,C)
                 TermCell* rightSubT = new TermCell(fCode, arity);
+                iVarId = 0;
                 for (int j = 1; j <= arity; j++) {
                     if (j == i) {
                         rightSubT->args[j - 1] = rt;
                     } else {
-                        rightSubT->args[j - 1] = arrTerm[j];
+                        TermCell* t = c1->GetClaTB()->VarInert("Z" + to_string(++iVarId), c1->ident);
+                        t->uVarCount = 1;
+                        t->TermCellSetProp(TermProp::TPIsShared);
+                        rightSubT->args[j - 1] = t;
                     }
                 }
                 rightSubT->uVarCount = arity;
@@ -235,7 +251,8 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 litPtr->next = new Literal(rightSubT, Env::getGTbank()->trueTerm, true);
                 litPtr->next->EqnSetProp(EqnProp::EPIsPositive);
                 c1->bindingLits(litA);
-                DelArrayPtr(arrTerm);
+
+                //debug c1->ClausePrint(stdout,true);
                 this->insertNewCla(c1, true);
                 //this->vEqulityAxiom.push_back(c1);
             }
@@ -364,6 +381,18 @@ RESULT Formula::preProcess() {
                         candLit->getStrOfEqnTSTP(litInfo);
                         outStr += litInfo + "\n";
                         outStr += "[R]:空子句";
+                        FileOp::getInstance()->outRun(outStr);
+
+                        FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+                        string strCla =  "cnf(c" + to_string(Env::global_clause_counter + 1) + ",plain,($false)";
+                        string parentCla = "";
+                        parentCla = "c" + to_string((*claIt)->ident);
+                        parentCla += ",c" + to_string(candCla->ident);
+
+                        strCla += ",inference( BR,[status(thm)],[" + parentCla + "]) ).\n";
+                        FileOp::getInstance()->outInfo(strCla);
+
+
                         subst->Clear();
                         return RESULT::UNSAT;
                     }
@@ -683,11 +712,11 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
     set<Clause*> checkedClas; //存储已经检查过的子句
     for (size_t i = 0; i < arraySize; ++i) {
         Lit_p selConLit = arrayHoldLits[i];
-        //debug  cout << "unit 选择文字:C" << selConLit->claPtr->ident << endl;   selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
+        //debug          cout << "unit 选择文字:C" << selConLit->claPtr->ident << endl;   selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
 
         //------- 查找索引树上的 备选文字节点 ------
         TermIndexing* indexing = (arraySize == 1) ? this->unitClaIndex : this->allTermIndex;
-        
+
         //如果是等词则且非单元子句则不参与索引树操作
         if (selConLit->EqnIsEquLit() && arraySize > 1) {
             continue;
@@ -744,9 +773,12 @@ bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
                 checkedClas.insert(candVarCla);
             }
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
+
+
             if (termIndNode == nullptr) {
                 break;
             }
+            //debug             for(auto&tt:termIndNode->leafs){            cout<<tt->claPtr->ident<<endl;}
             candVarLits = &((termIndNode)->leafs);
         }
         indexing->ClearVarLst();

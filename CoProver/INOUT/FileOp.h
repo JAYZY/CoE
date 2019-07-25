@@ -50,6 +50,7 @@ private:
 
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
     string fInfoFileName;//.i文件完整路径
+    string fUnsatFileName ;
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
@@ -162,8 +163,7 @@ public:
      //读取.i文件生成最小路径文件.out
      void GenerateEmptyPath() ;
 public:
-    //输出UNSAT路径
-    void OutUnsatPath(string fileFullName);
+  
     /*---------------------------------------------------------------------*/
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/

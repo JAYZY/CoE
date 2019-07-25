@@ -38,13 +38,12 @@ TermBank::TermBank(uint16_t claIdent) : claId(claIdent) {
     termStore = TermCellStore(8);
 }
 
-
 TermBank::~TermBank() {
     //assert(!sig);
 
     /* printf("TBFree(): %ld\n", TermCellStoreNodes(&(junk->term_store)));*/
     termStore.TermCellStoreExit();
-    
+
     DelPtr(shareVars);
     extIndex.clear();
     vector<TermCell*>().swap(extIndex);
@@ -176,8 +175,8 @@ int TermBank::tb_term_parse_arglist(Scanner* in, TermCell* term, bool isCheckSym
         subT = isCheckSymbProp ? tb_subterm_parse(in) : TBTermParseReal(in, false);
         term->weight += subT->weight;
         term->uVarCount += subT->uVarCount; //记录变元个数
-        if (uFuncLayer < subT->uMaxFuncLayer) //计算函数嵌套层数
-            uFuncLayer = subT->uMaxFuncLayer;
+        //计算函数嵌套层数
+        uFuncLayer = MAX(uFuncLayer, subT->uMaxFuncLayer);
         ++term->arity;
         vectTerm.push_back(subT);
         if (!in->TestInpTok(TokenType::Comma)) {
@@ -185,11 +184,13 @@ int TermBank::tb_term_parse_arglist(Scanner* in, TermCell* term, bool isCheckSym
         }
         in->NextToken();
     }
-    term->uMaxFuncLayer += (++uFuncLayer);
+    //debug    if(term->fCode==245)         cout<<endl;
+
 
     in->AcceptInpTok(TokenType::CloseBracket);
 
     assert(term->arity == vectTerm.size());
+    term->uMaxFuncLayer = (0 == term->arity) ? 0 : (++uFuncLayer);
 
     term->args = new TermCell*[term->arity]; // TermArgArrayAlloc(arity);
     memcpy(term->args, &vectTerm[0], sizeof (TermCell*) * term->arity);
@@ -366,10 +367,11 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
             string idStr;
             FuncSymbType id_type;
             if ((id_type = TermCell::TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
-              
+
                 //若为变元符号    将该项插入文字所在子句的 子句级共享变元集中
                 handle = this->VarInert(idStr, this->claId);
                 handle->uVarCount = 1; //设置变元数=1
+                handle->uMaxFuncLayer = 0;
                 handle->TermCellDelProp(TermProp::TPIsGround);
                 handle->weight = DEFAULT_VWEIGHT;
 
@@ -400,6 +402,7 @@ TermCell* TermBank::TBTermParseReal(Scanner * in, bool isCheckSymbProp) {
 
                 } else {
                     handle->arity = 0;
+                    handle->uMaxFuncLayer = 0;
                     handle->TermCellSetProp(TermProp::TPIsGround);
                 }
 

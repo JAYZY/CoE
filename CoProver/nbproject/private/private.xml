@@ -2,7 +2,7 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
         <activeConfTypeElem>1</activeConfTypeElem>
-        <activeConfIndexElem>1</activeConfIndexElem>
+        <activeConfIndexElem>0</activeConfIndexElem>
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="1">
         <file>
@@ -16,9 +16,14 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.h</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/main.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Global/Environment.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCell.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
         </group>
     </open-files>
 </project-private>

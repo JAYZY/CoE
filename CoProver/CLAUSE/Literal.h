@@ -113,6 +113,13 @@ public:
     inline FunCode EqnGetPredCode() {
         return EqnIsEquLit() ? 0 : this->lterm->fCode;
     }
+    
+    inline uint16_t MaxFuncLayer( ){
+        assert(lterm->uMaxFuncLayer == lterm->TermDepth());
+        assert(rterm->uMaxFuncLayer == rterm->TermDepth());
+        return MAX(lterm->uMaxFuncLayer,rterm->uMaxFuncLayer)+1;
+        
+    }
     //比较两个文字对某个属性的拥有情况一致.要么都有,要么都没有.
 
     inline bool EqnAreEquivProps(Literal* lit, EqnProp prop) {

@@ -140,10 +140,14 @@ void Clause::bindingLits(Literal* litLst) {
         }
         litLst = next;
     }
-    *neg_append = eqn_lits;
+    //    *neg_append = eqn_lits;
+    //    *pos_append = neg_lits;
+    //    *eqn_append = nullptr;
+    //   literals = pos_lits;
+    *neg_append = nullptr;
     *pos_append = neg_lits;
-    *eqn_append = nullptr;
-    literals = pos_lits;
+    *eqn_append = pos_lits;
+    literals = eqn_lits;
 }
 
 void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
@@ -182,10 +186,14 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
         }
         ++litTmpPtr;
     }
-    *neg_append = eqn_lits;
+    //    *neg_append = eqn_lits;
+    //    *pos_append = neg_lits;
+    //    *eqn_append = nullptr;
+    //    literals = pos_lits;
+    *neg_append = nullptr;
     *pos_append = neg_lits;
-    *eqn_append = nullptr;
-    literals = pos_lits;
+    *eqn_append = pos_lits;
+    literals = eqn_lits;
 }
 
 /*****************************************************************************
