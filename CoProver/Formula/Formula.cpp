@@ -11,7 +11,7 @@
  * Created on 2017年12月22日, 下午6:03
  */
 
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 #include <vector>
 #include "Formula.h"
 #include "Global/Environment.h"
@@ -348,7 +348,7 @@ RESULT Formula::preProcess() {
         TermIndexing* indexing = ((*claIt)->LitsNumber() == 1) ? this->unitClaIndex : this->allTermIndex;
         if (Simplification::ForwardSubsumption((*claIt), indexing)) {
             ++uFSNum;
-            fprintf(stdout, "C%ud is deled \n", (*claIt)->ident);
+            //fprintf(stdout, "C%ud is deled \n", (*claIt)->ident);
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
             (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
@@ -409,8 +409,8 @@ RESULT Formula::preProcess() {
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
     this->printOrigalClasInfo(stdout);
-    fprintf(stdout, "# 归入冗余删除子句数   %18u #\n", uFSNum);
-    fprintf(stdout, "# 恒真冗余删除子句数   %18u #\n", uTautologyNum);
+    fprintf(stdout, "# Number Of Subsumption Clause  :%13u #\n", uFSNum);
+    fprintf(stdout, "# Number Of Tautology Clause    :%13u #\n", uTautologyNum);
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }

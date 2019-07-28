@@ -19,7 +19,7 @@
 #include "Sigcell.h"
 #include <stack>
 #include <stdint.h>
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 #include "HEURISTICS/StrategyParam.h"
 
 enum class DerefType : uint8_t {

@@ -59,7 +59,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             ++iterNum;
             continue;
         }
-       //debug if(iterNum==354)                    printf("Debug:");
+        //debug if(iterNum==354)                    printf("Debug:");
         //定义起步子句
         Clause* selCla = *itSelCla;
         res = triAlg.GenreateTriLastHope(selCla);
@@ -68,15 +68,15 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         if (res == RESULT::NOMGU) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
-                fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
+                // fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
                 if (++modifyLitNumCount > 25)
                     return RESULT::UNKNOWN;
 
                 //修改文字个数限制
-                 StrategyParam::MaxLitNumOfR;
-               ++ StrategyParam::MaxLitNumOfNewCla;
+                StrategyParam::MaxLitNumOfR;
+                ++StrategyParam::MaxLitNumOfNewCla;
                 if (StrategyParam::MaxLitNumOfNewCla > fol->uMaxLitNum + 1) {
-                   //StrategyParam::MaxLitNumOfR = 1;
+                    //StrategyParam::MaxLitNumOfR = 1;
                     StrategyParam::MaxLitNumOfNewCla = 1;
                 }
 
@@ -85,7 +85,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 notStartClaSet.clear();
             }
 
-            fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
+            //fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
             (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
             if ((++itSelCla) == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
@@ -93,12 +93,12 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             triAlg.disposeRNUnitCla();
             continue;
         }
-//        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
-//            Env::S_OverMaxLitLimit_Num = 0;
-//            //修改文字个数限制          
-//            ++StrategyParam::HoldLits_NUM_LIMIT;
-//            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
-//        }
+        //        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
+        //            Env::S_OverMaxLitLimit_Num = 0;
+        //            //修改文字个数限制          
+        //            ++StrategyParam::HoldLits_NUM_LIMIT;
+        //            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
+        //        }
         //记录三角形构建次数
         ++iterNum;
         //输出到.r/.i文件
@@ -115,22 +115,22 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         for (Clause* newCla : triAlg.newClas) {//对生成的新子句进行处理,A.backword subsump B.等词处理
             if (newCla->isUnit()) {
                 set<Clause*>outDelClas;
-                newCla->ClauseTSTPPrint(stdout, true, true);
+              //  newCla->ClauseTSTPPrint(stdout, true, true);
                 cout << endl;
-                if (Simplification::BackWardSubsumption(newCla, fol->allTermIndex, outDelClas)) {
-                    /*
-                     * 对冗余子句进行处理  若删除一个子句, 1,删除文字,2.全局索引需要删除 3.其他索引需要删除
-                     * 因此删除子句比较麻烦, 处理思路, 给子句做标注, 然后放到子句集末尾,.....
-                     */
-                    string newClaId = to_string(newCla->ident);
-                    for (Clause* delCla : outDelClas) {
-                        // fol->removeWorkCla(delCla);
-                        delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
-                        string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
-                        FileOp::getInstance()->outLog(strLog);
-
-                    }
-                }
+//                if (Simplification::BackWardSubsumption(newCla, fol->allTermIndex, outDelClas)) {
+//                    /*
+//                     * 对冗余子句进行处理  若删除一个子句, 1,删除文字,2.全局索引需要删除 3.其他索引需要删除
+//                     * 因此删除子句比较麻烦, 处理思路, 给子句做标注, 然后放到子句集末尾,.....
+//                     */
+//                    string newClaId = to_string(newCla->ident);
+//                    for (Clause* delCla : outDelClas) {
+//                        // fol->removeWorkCla(delCla);
+//                        delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
+//                        string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
+//                        FileOp::getInstance()->outLog(strLog);
+//
+//                    }
+//                }
             }
             if (newCla->LitsNumber() > StrategyParam::MaxLitNumOfNewCla) {
                 DelPtr(newCla);
@@ -145,7 +145,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
             newCla->priority = pri / (int) (triAlg.vNewR.size());
             fol->insertNewCla(newCla);
-            newCla->ClausePrint(stdout, true);
+           // newCla->ClausePrint(stdout, true);
             //输出新子句到文件
             triAlg.outNewClaInfo(newCla, InfereType::SCS);
 

@@ -101,7 +101,7 @@ public:
         return spanTime;
     }
 
-    static inline void PrintRusage(FILE* out) {
+    static inline void PrintRusage(char* sRusage) {
         struct rusage usage, cusage;
 
         if (getrusage(RUSAGE_SELF, &usage)) {
@@ -117,32 +117,45 @@ public:
         usage.ru_stime.tv_sec += cusage.ru_stime.tv_sec;
         usage.ru_stime.tv_usec += cusage.ru_stime.tv_usec;
 
-        fprintf(out,
-                "\n# -------------------------------------------------\n");
-        fprintf(out,
-                "# Maximum ClauseID         : %d \n", Env::global_clause_counter);
-        fprintf(out,
-                "# User time                : %.3f s\n",
-                (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
-        fprintf(out,
-                "# System time              : %.3f s\n",
-                (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
-        fprintf(out,
-                "# Total time               : %.3f s\n",
-                (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
-                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
-        fprintf(out,
-                "# Maximum resident set size: %ld pages\n",
-                usage.ru_maxrss);
+        // outStr = "\n# -------------------------------------------------\n";
+        //        outStr+="# Maximum ClauseID         : "+to_string(Env::global_clause_counter)+"\n";
+        //        outStr+="# User time                : "+to_string((usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0)+" s\n";
+        //        outStr+="# System time              : "+to_string((usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0)+" s\n"
+        string sOut =
+                "\n%% -------------------------------------------------\n%% SZS output end Proof.\n";
+        sOut += "%% User time                   : %.3f s\n";
+        sOut += "%% System time                 : %.3f s\n";
+        sOut += "%% Total time                  : %.3f s\n";
+        sOut += "%% Maximum resident set size   : %ld pages\n";
+        sOut += "%% Maximum ClauseID            : %d \n";
+        float userTime = (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0f;
+        float sysTime = (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0f;
+        float totalTime = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0f);
+
+        sprintf(sRusage, sOut.c_str(), userTime, sysTime, totalTime, usage.ru_maxrss, Env::global_clause_counter);
+        //        sprintf(sRusage,
+        //                "%% User time                : %.3f s\n", sOut,
+        //                (usage.ru_utime.tv_sec)+(usage.ru_utime.tv_usec) / 1000000.0);
+        //        sprintf(sRusage,
+        //                "%% System time              : %.3f s\n",
+        //                (usage.ru_stime.tv_sec)+(usage.ru_stime.tv_usec) / 1000000.0);
+        //        sprintf(sRusage,
+        //                "%% Total time               : %.3f s\n",
+        //                (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)+
+        //                ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0));
+        //        sprintf(sRusage,
+        //                "%% Maximum resident set size: %ld pages\n", usage.ru_maxrss);
+        //        sprintf(sRusage,
+        //                "%% Maximum ClauseID         : %d \n", Env::global_clause_counter);
     }
 
     static inline void PrintRunInfo(FILE* out) {
         fprintf(out,
-                "# R与主界线相同次数        : %u \n", S_ASame2R_Num);
+                "# R与主界线相同次数            : %u \n", S_ASame2R_Num);
         fprintf(out,
-                "# 主界线文字相同次数       : %u \n", S_ASame2A_Num);
+                "# 主界线文字相同次数           : %u \n", S_ASame2A_Num);
         fprintf(out,
-                "# R超过最大文字数限制      : %u \n", S_OverMaxLitLimit_Num);
+                "# R超过最大文字数限制          : %u \n", S_OverMaxLitLimit_Num);
 
     }
 private:

@@ -40,14 +40,21 @@ int main(int argc, char** argv) {
 }
 //
 #else
-
+ 
 int main(int argc, char** argv) {
 
+
+    bool isCNF = false;
     //命令行解析
     Env::tptpFileName = argv[1];
 
+    if (!isCNF) {
+        string cmd = "timeout 3600  ./eprover2.1 " + Env::tptpFileName + +" --cnf --output-file=" + FileOp::getInstance()->cnfFileName; //判断文件名称;
+        int res4 = system(const_cast<char*> (cmd.c_str()));
+        Env::tptpFileName = FileOp::getInstance()->cnfFileName;
+    }
     //全局扫描器Scanner读取文件 argv[1]
-    Env::IniScanner(nullptr, argv[1], true, nullptr);
+    Env::IniScanner(nullptr, const_cast<char*> (Env::tptpFileName.c_str()), true, nullptr);
 
     //生成公式集\子句-----------------
     Formula* fol = new Formula();
@@ -64,7 +71,7 @@ int main(int argc, char** argv) {
         fol->GenerateEqulitAxiom();
         fol->printEqulityAxioms();
     }
-    
+
     //输出预处理后子句 
     // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
@@ -90,9 +97,11 @@ int main(int argc, char** argv) {
     //开始浸透算法
     //proofCtr->Saturate();
     //PaseTime("Saturate_", initial_time);
-    Env::PrintRusage(stdout);
+    char sRusage[10000];
+    Env::PrintRusage(sRusage);
+    cout << sRusage << endl;
 
-    Env::PrintRunInfo(stdout);
+    // Env::PrintRunInfo(stdout);
     return (int) res;
 }
 #endif

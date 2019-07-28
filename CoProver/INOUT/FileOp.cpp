@@ -32,6 +32,7 @@ map<string, FileOp*> FileOp::lsOut;
 /*---------------------------------------------------------------------*/
 FileOp::FileOp() {
     tptpFileNameNoExt = this->getFileNameNoExt(Env::tptpFileName);
+    tptpFileName = this->getFileName(Env::tptpFileName);
     setWorkDirAndCreateFile(homePath + "/Desktop/");
 
 }
@@ -82,7 +83,7 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     CloseAll();
 
     string tmpStr = outDir + tptpFileNameNoExt;
-
+    cnfFileName = tmpStr + ".cnf";
     fInfoFileName = tmpStr + ".i";
     fUnsatFileName = tmpStr + ".unsat";
     if ((fInfo = fopen(fInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
@@ -211,7 +212,7 @@ void FileOp::GenerateEmptyPath() {
     ofstream fout(fUnsatFileName, ios::out); //输出
     map<int, vector<string> > allFOL;
     std::string line;
-    
+
     regex patternClaNo("c\\d+,", regex::icase);
     regex patternUseNo("c\\d+", regex::icase);
     smatch result;
@@ -270,10 +271,14 @@ void FileOp::GenerateEmptyPath() {
                 st.push_back(allFOL[iClaId][i]);
             }
         }
-        string resPoof = "\n#------ Proof Process ------\n";
+        string resPoof = "\n%------ Proof Process ------\n";
+        GetProblemInfo(resPoof);        
         for (auto id : outClaID) {
             resPoof += allFOL[id][0] + "\n";
         }
+        char sRusage[10000];
+        Env::PrintRusage(sRusage);
+        resPoof += sRusage;
         fout << resPoof;
         //outInfo(resPoof);
         cout << resPoof;

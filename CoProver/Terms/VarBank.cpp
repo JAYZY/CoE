@@ -10,7 +10,7 @@
  * 
  * Created on 2017年2月24日, 下午4:50
  */
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 
 #include "VarBank.h"
 #include "BASIC/TreeNodeDef.h"

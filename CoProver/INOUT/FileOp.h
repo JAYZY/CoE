@@ -48,9 +48,12 @@ private:
     string outDir; //输出目录
     string tptpFileNameNoExt; //判断文件名称
 
+    string tptpFileName; //文件名称
+
+
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
-    string fInfoFileName;//.i文件完整路径
-    string fUnsatFileName ;
+    string fInfoFileName; //.i文件完整路径
+    string fUnsatFileName;
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
@@ -63,7 +66,7 @@ private:
     static map<string, FileOp*>lsOut;
 
 public:
-
+    string cnfFileName; //CNF文件名称
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
@@ -158,12 +161,19 @@ public:
     string getFileNameNoExt(string fileFullName);
     // </editor-fold>
 
-    
-    
-     //读取.i文件生成最小路径文件.out
-     void GenerateEmptyPath() ;
+
+
+    //读取.i文件生成最小路径文件.out
+    void GenerateEmptyPath();
+
+    void GetProblemInfo(string &strInfo) {
+        strInfo = "start to proof:" + this->tptpFileName;
+        strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;
+        strInfo += "\n% Proof found!\n% SZS status Theorem for " + this->tptpFileName;
+        strInfo += "\n% SZS output start Proof\n";
+    }
 public:
-  
+
     /*---------------------------------------------------------------------*/
     /*                   Static Function[out op]                           */
     /*---------------------------------------------------------------------*/
@@ -188,7 +198,7 @@ public:
         return in;
     }
 
-   
+
     /*---------------------------------------------------------------------*/
     /*                 Static Function[fileName op]                        */
     /*---------------------------------------------------------------------*/
@@ -227,6 +237,16 @@ public:
         return fileFullName.substr(pos + 1);
 
     }
+
+//    string static GetProgramDir() {
+//        char exeFullPath[1024]; // Full path
+//        string strPath = "";
+//
+//        GetModuleFileName(nullptr, exeFullPath, 1024);
+//        strPath = (string) exeFullPath; // Get full path of the file
+//        int pos = strPath.find_last_of('\\', strPath.length());
+//        return strPath.substr(0, pos); // Return the directory without the file name
+//    }
     // </editor-fold>
 
 

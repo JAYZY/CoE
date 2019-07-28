@@ -14,7 +14,7 @@
 #ifndef INFERENCEINFO_H
 #define INFERENCEINFO_H
 #include "Global/IncDefine.h"
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 
 enum class InfereType : uint16_t {
     RN, //rename

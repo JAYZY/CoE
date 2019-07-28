@@ -107,7 +107,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                 // if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
                 if (ClauseSubsumeArrayLit(genCla, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    fprintf(stdout, "\n# [FS]C%u invalid by c%d\n", selConLit->claPtr->ident, candVarCla->GetClaId());
+                    //fprintf(stdout, "\n# [FS]C%u invalid by c%d\n", selConLit->claPtr->ident, candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
                     //FileOp::getInstance()->outRun(tmpstr);
                     FileOp::getInstance()->outLog("[FS]c" + to_string(genCla->GetClaId()) + " by c" + to_string(candVarCla->GetClaId()) + "\n");

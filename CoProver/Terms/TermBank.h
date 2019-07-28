@@ -16,7 +16,7 @@
 
 #ifndef TERMBANK_H
 #define TERMBANK_H
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 
 #include "VarBank.h"
 #include "TermCellStore.h"

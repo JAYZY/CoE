@@ -14,7 +14,7 @@
 #ifndef LITERAL_H 
 #define LITERAL_H
 #include <map>
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 #include "Terms/TermCell.h"
 #include "Terms/TermBank.h"
 #include "Global/Environment.h"

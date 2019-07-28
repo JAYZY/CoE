@@ -14,7 +14,7 @@
 #define VARBANK_H
 
 //#include "Sigcell.h"
-#include <bits/stdint-uintn.h>
+//#include <bits/stdint-uintn.h>
 
 #include "TermCell.h"
 //class TermCell;

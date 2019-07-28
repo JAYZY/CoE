@@ -17,7 +17,7 @@
 /*                          Static Function                            */
 /*---------------------------------------------------------------------*/
 string Env::tptpFileName = ""; //判定文件名
-
+ 
 
 uint32_t Env::global_formula_counter = 0u;
 uint32_t Env::global_clause_counter = 0u; //全局子句个数,从1开始编号
