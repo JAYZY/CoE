@@ -163,7 +163,8 @@ public:
 
     // </editor-fold>
 
-
+    //检查单元子句是否存在互补合一 -- unsat
+    bool isUnsat(Clause* unitCal);
 
     //插入新子句到
     void insertNewCla(Cla_p cla,bool isEquAxiom=false);

@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 int main(int argc, char** argv) {
 
 
-    bool isCNF = false;
+    bool isCNF = true;
     //命令行解析
     Env::tptpFileName = argv[1];
 
@@ -97,9 +97,9 @@ int main(int argc, char** argv) {
     //开始浸透算法
     //proofCtr->Saturate();
     //PaseTime("Saturate_", initial_time);
-    char sRusage[10000];
-    Env::PrintRusage(sRusage);
-    cout << sRusage << endl;
+   // char sRusage[10000];
+    //Env::PrintRusage(sRusage);
+    //cout << sRusage << endl;
 
     // Env::PrintRunInfo(stdout);
     return (int) res;

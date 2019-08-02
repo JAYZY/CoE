@@ -50,6 +50,20 @@ typedef struct reduceLit {
     ALit_p aLit; // 下拉作用的主界线文字
 } RLit, *RLit_p;
 
+/**
+ * 定义一个回退点结构体
+ */
+typedef struct RollBackPoint {
+    Literal* litP; //对应的项 
+
+    uint16_t substSize; //变元替换位置
+    uint16_t delLitPos; //被删除文字的位置
+    uint16_t uTriPos; //主界线的位置
+    uint matchPos; //匹配项的位置
+    //vector<Literal*> vHoldLits; //该回退点被保留的文字
+    // RollBackPoint(TermCell* t,mPos,sSize):term(t),matchPos(mPos),substSize(sSize){}
+} RollBackPiont, *RBPoint_p;
+
 class TriAlg {
 public:
     Unify unify;
@@ -70,7 +84,7 @@ public:
     Formula* fol;
 
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
-    bool unitResolutionBySet(Literal* lit, int ind = 0);    
+    bool unitResolutionBySet(Literal* lit, int ind = 0);
     bool UnitClasReduct(Lit_p *actLit, uint16_t & uActHoldLitNum);
 public:
     TriAlg(Formula* _fol);
@@ -82,16 +96,16 @@ public:
     //
 
     inline void iniVect() {
-        for(int i=0;i<vALitTri.size();++i){
+        for (int i = 0; i < vALitTri.size(); ++i) {
             DelPtr(vALitTri[i]);
         }
         this->vALitTri.clear();
         this->vALitTri.reserve(16);
 
-        while(!vReduceLit.empty()){
-            DelPtr(vReduceLit.back());
-            vReduceLit.pop_back();
-        }        
+        while (!vReduceLit.empty()) {
+            DelPtr(vReduceLit.back());            
+        }
+        this->vReduceLit.clear();
         this->vReduceLit.reserve(16);
 
         this->vNewR.clear();
@@ -124,6 +138,12 @@ public:
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
     RESULT GenreateTriLastHope(Clause* givenCla);
+    
+    /// 添加新子句到新子句集
+    /// \param newClaA 需要添加的新子句
+    /// \return 是否成功添加到新子句集中。 false -- 没有添加到新子句集&该子句被删除
+    bool Add2NewClas(Clause* newClaA);
+
     //二元子句与单元子句生成新子句
     RESULT GenByBinaryCla(Clause* givenCla);
 
@@ -140,7 +160,7 @@ public:
     ResRule RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg);
 
     //单元子句约减后的规则检查
-    ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits,vector<Literal*>&vDelLit);
+    ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits, vector<Literal*>&vDelLit);
 
     //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
     ResRule RuleCheckLastHope(Literal*actLit);
@@ -167,8 +187,9 @@ public:
     void printR(FILE* out, Literal* lit);
 
     void outTri();
-    void outR(Literal* lit);
-    void outNewClaInfo(Clause* newCla, InfereType infereType);
+    void outTri(vector<ALit_p>& vTri, string&outStr);
+    void outR(Clause * actCla);
+    void outNewClaInfo(Clause* newCla, InfereType infereType, set<Cla_p>*setUCla = nullptr);
 
     // </editor-fold>
 

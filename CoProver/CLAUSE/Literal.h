@@ -125,6 +125,7 @@ public:
     inline bool EqnAreEquivProps(Literal* lit, EqnProp prop) {
         return PropsAreEquiv(this->properties, lit->properties, prop);
     }
+    
     //比较两个文字是否是互补谓词文字.
 
     inline bool isComplementProps(Literal* lit) {
@@ -894,7 +895,7 @@ public:
     void EqnAlloc(Term_p lt, Term_p rt, bool positive) {
 
         this->pos = 0;
-        this->properties = EqnProp::EPNoProps;
+        this->properties = EqnProp::EPIsHold;
         if (positive) { //设置正文字属性
             EqnSetProp(EqnProp::EPIsPositive);
         }

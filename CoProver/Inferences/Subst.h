@@ -33,6 +33,14 @@ public:
         assert(s == icount);
         vecSubst.clear();
     }
+    /**
+     * 返回替换列表中的指定替换项
+     * @param idx
+     * @return 
+     */
+    inline TermCell* GetSubSt(int idx){
+        return vecSubst.at(idx);
+    }
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/

@@ -17,8 +17,11 @@
 //#include <bits/stdint-uintn.h>
 
 enum class InfereType : uint16_t {
+    UD,
     RN, //rename
+    RD,//REDUCT 合一下拉
     SCS//矛盾体分离    
+            
 };
 
 class InferenceInfo {

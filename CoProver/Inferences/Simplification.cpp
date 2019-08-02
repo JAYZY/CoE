@@ -105,7 +105,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                 ++Env::backword_CMP_counter;
                 //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 // if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
-                if (ClauseSubsumeArrayLit(genCla, candVarCla)) {
+                if (ClauseSubsumeClause(genCla, candVarCla)) {
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
                     //fprintf(stdout, "\n# [FS]C%u invalid by c%d\n", selConLit->claPtr->ident, candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
@@ -374,7 +374,7 @@ bool Simplification::BackWardSubsumption(Clause* genCla, TermIndexing* indexing,
                 //#ifdef OUTINFO
                 ++tmpTest;
                 //#endif
-                if (ClauseSubsumeArrayLit(candCla, genCla)) {
+                if (ClauseSubsumeClause(candCla, genCla)) {
                     // if (LitListSubsume(genCla->Lits(), nullptr, candCla->Lits(), subst, nullptr)) {
                     //记录找到的冗余子句
                     ++Env::backword_Finded_counter;
@@ -464,9 +464,12 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
     return true;
 }
 
-//检查 subsumerVarcla子句归入 subsumConCla子句
 
-bool Simplification::ClauseSubsumeArrayLit(Clause* subsumConCla, Clause* subsumerVarcla) {
+/// 检查 subsumerVarcla子句归入 subsumConCla子句
+/// \param subsumConCla 被检查子句（冗余？）
+/// \param subsumerVarcla
+/// \return 
+bool Simplification::ClauseSubsumeClause(Clause* subsumConCla, Clause* subsumerVarcla) {
     assert(subsumConCla);
     assert(subsumerVarcla);
     

@@ -359,46 +359,8 @@ RESULT Formula::preProcess() {
         insertNewCla(*claIt);
 
         //若为单元子句,检查是否有其他单元子句 合一
-        if ((*claIt)->isUnit()) {
-            Lit_p checkLit = (*claIt)->literals;
-            if (!checkLit->EqnIsEquLit()) {
-                vector<Clause*>&vUnits = checkLit->IsPositive() ? this->vNegUnitClas : this->vPosUnitClas;
-                Unify unify;
-                Subst* subst = new Subst();
-                for (Clause* candCla : vUnits) {
-                    Lit_p candLit = candCla->literals;
-
-                    if (unify.literalMgu(checkLit, candLit, subst)) //找到unsat
-                    {
-                        string litInfo = "";
-                        checkLit->getLitInfo(litInfo);
-                        checkLit->getStrOfEqnTSTP(litInfo);
-
-                        string outStr = litInfo + "\n";
-
-                        litInfo = "";
-                        candLit->getLitInfo(litInfo);
-                        candLit->getStrOfEqnTSTP(litInfo);
-                        outStr += litInfo + "\n";
-                        outStr += "[R]:空子句";
-                        FileOp::getInstance()->outRun(outStr);
-
-                        FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
-                        string strCla =  "cnf(c" + to_string(Env::global_clause_counter + 1) + ",plain,($false)";
-                        string parentCla = "";
-                        parentCla = "c" + to_string((*claIt)->ident);
-                        parentCla += ",c" + to_string(candCla->ident);
-
-                        strCla += ",inference( BR,[status(thm)],[" + parentCla + "]) ).\n";
-                        FileOp::getInstance()->outInfo(strCla);
-
-
-                        subst->Clear();
-                        return RESULT::UNSAT;
-                    }
-                    subst->Clear();
-                }
-            }
+        if ((*claIt)->isUnit()&&(isUnsat((*claIt)))){   
+            return RESULT::UNSAT;
         }
     }
 
@@ -414,6 +376,60 @@ RESULT Formula::preProcess() {
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
+
+
+//检查单元子句是否存在互补合一 -- unsat
+
+bool Formula::isUnsat(Clause* unitCla) {
+    assert(unitCla->isUnit());
+    Lit_p checkLit = unitCla->literals;
+    if (!checkLit->EqnIsEquLit()) {
+        vector<Clause*>&vUnits = checkLit->IsPositive() ? this->vNegUnitClas : this->vPosUnitClas;
+        Unify unify;
+        Subst* subst = new Subst();
+        for (Clause* candCla : vUnits) {
+            Lit_p candLit = candCla->literals;
+            if (unify.literalMgu(checkLit, candLit, subst)) //找到unsat
+            {
+                string litInfo = "";
+                checkLit->getLitInfo(litInfo);
+                checkLit->getStrOfEqnTSTP(litInfo);
+
+                string outStr = litInfo + "\n";
+
+                litInfo = "";
+                candLit->getLitInfo(litInfo);
+                candLit->getStrOfEqnTSTP(litInfo);
+                outStr += litInfo + "\n";
+                outStr += "[R]:空子句";
+                FileOp::getInstance()->outRun(outStr);
+
+                FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+                string strCla = "cnf(c" + to_string(Env::global_clause_counter + 1) + ",plain,($false)";
+                string parentCla = "";
+                parentCla = "c" + to_string(unitCla->ident);
+                parentCla += ",c" + to_string(candCla->ident);
+                strCla += ",inference( BR,[status(thm)],[" + parentCla + "]) ).\n";
+                FileOp::getInstance()->outInfo(strCla);
+
+                subst->Clear();
+                return true;
+            }
+            subst->Clear();
+        }
+    }
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
 
 /// 给定两个剩余文字集合,检查它们组成子句后是否是冗余
 /// \param pasClaLeftLits

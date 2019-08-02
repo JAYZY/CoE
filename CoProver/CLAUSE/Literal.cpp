@@ -17,7 +17,7 @@
 
 Literal::Literal() {
     usedCount = 0;
-    this->properties = EqnProp::EPNoProps;
+    this->properties = EqnProp::EPIsHold;
     pos = 0;
     reduceTime = 0;
     lterm = nullptr;
@@ -39,7 +39,7 @@ Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     Term_p lt = nullptr, rt = nullptr;
     this->claPtr = cla;
     this->pos = 0;
-    this->properties = EqnProp::EPNoProps;
+    this->properties = EqnProp::EPIsHold;
 
 
     bool positive = eqn_parse_real(in, &lt, &rt, false);

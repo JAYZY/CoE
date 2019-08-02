@@ -13,7 +13,9 @@
 
 #include "InferenceInfo.h"
 string InferenceInfo::TOInferTypeNames[] = {
+    "UD",
     "RN", //rename
+    "RD", //reduce 合一下拉
     "SCS"//矛盾体分离
 };
 

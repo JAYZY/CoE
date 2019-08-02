@@ -160,11 +160,14 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     uint16_t iLitPos = 0;
     auto litTmpPtr = vNewR.begin();
     while (litTmpPtr != vNewR.end()) {
-
+        
         Literal* newLitP = (*litTmpPtr)->RenameCopy(this);
+        
+        assert(newLitP->EqnQueryProp(EqnProp::EPIsHold));
+        
         newLitP->claPtr = this; /*指定当前文字所在子句*/
         newLitP->pos = ++iLitPos;
-        newLitP->EqnSetProp(EqnProp::EPIsHold);
+       // newLitP->EqnSetProp(EqnProp::EPIsHold);
         if (newLitP->IsPositive()) {
             posLitNo++;
             if (newLitP->EqnIsEquLit()) {
@@ -649,9 +652,9 @@ void Clause::SetEqnListVarState() {
     Lit_p arrVarLit[500]; //假设变元项最多不超出500
     memset(arrVarLit, 0, 500);
 
-    while (lit) {
+    for (;lit; lit=lit->next) {
         if (lit->IsGround()) {
-            lit->varState = VarState::noVar;
+            lit->varState = VarState::noVar;            
             continue;
         }
         lit->varState = VarState::freeVar;
@@ -703,7 +706,7 @@ void Clause::SetEqnListVarState() {
                 }
             }
         }
-        lit = lit->next;
+        //lit = lit->next;
     }
 
 }
