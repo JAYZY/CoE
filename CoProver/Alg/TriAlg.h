@@ -85,7 +85,8 @@ public:
 
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
     bool unitResolutionBySet(Literal* lit, int ind = 0);
-    bool UnitClasReduct(Lit_p *actLit, uint16_t & uActHoldLitNum);
+        
+    int UnitClasReduct(Lit_p *actLit, uint16_t & uActHoldLitNum);
 public:
     TriAlg(Formula* _fol);
     TriAlg(const TriAlg& orig);

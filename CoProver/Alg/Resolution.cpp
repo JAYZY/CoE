@@ -117,7 +117,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             if (newCla->isUnit() && (fol->isUnsat(newCla))) {
                 return RESULT::UNSAT;
             }
-            //===若新子句为单元子句则做BS冗余检查,workset子句集中的子句是否为冗余子句
+            //=== 若新子句为单元子句则做BS冗余检查,workset子句集中的子句是否为冗余子句
             {
                 //            if (newCla->isUnit()) {
                 //                set<Clause*>outDelClas;
@@ -143,15 +143,17 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 //                continue;
                 //            }
             }
-            //修改新子句权重-------------
+           
+            //=== 修改新子句权重-------------
             int pri = 0;
-            for_each(triAlg.vNewR.begin(), triAlg.vNewR.end(), [&pri](Literal * lit) {
-                pri += lit->claPtr->priority;
+            Literal* tmpLit=newCla->literals;
+            for(;tmpLit;tmpLit=tmpLit->next){
+                pri += tmpLit->parentLitPtr->claPtr->priority;
             }
-            );
-            /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+             /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
             //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
-            newCla->priority = pri / (int) (triAlg.vNewR.size());
+            newCla->priority = pri / (int) (newCla->LitsNumber());
+            
             fol->insertNewCla(newCla);
             //输出新子句到文件 .i
             // triAlg.outNewClaInfo(newCla, InfereType::SCS);

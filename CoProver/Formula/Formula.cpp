@@ -371,8 +371,8 @@ RESULT Formula::preProcess() {
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
     this->printOrigalClasInfo(stdout);
-    fprintf(stdout, "# Number Of Subsumption Clause  :%13u #\n", uFSNum);
-    fprintf(stdout, "# Number Of Tautology Clause    :%13u #\n", uTautologyNum);
+    fprintf(stdout, "# Number Of Subsumption Clause  :%8u #\n", uFSNum);
+    fprintf(stdout, "# Number Of Tautology Clause    :%8u #\n", uTautologyNum);
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
@@ -951,12 +951,12 @@ list<Clause*>::iterator Formula::getNextStartClause() {
 }
 
 void Formula::printOrigalClasInfo(FILE* out) {
-    fprintf(out, "# Total Number Of Clauses   %18ld #\n", this->origalClaSet->Size());
-    fprintf(out, "# Maxium Len Of Clauses     %18u #\n", this->uMaxLitNum);
-    fprintf(out, "# Maxium Layer Of Function  %18u #\n", this->uMaxFuncLayer);
-    fprintf(out, "# Number Of Goal Clauses    %18zu #\n", this->goalClaset.size());
-    fprintf(out, "# Number Of Goal Horn       %18u #\n", uNonHornClaNum);
-    fprintf(out, "# IS Equlity                %18s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
+    fprintf(out, "# Total Number Of Clauses   %11ld #\n", this->origalClaSet->Size());
+    fprintf(out, "# Maxium Len Of Clauses     %11u #\n", this->uMaxLitNum);
+    fprintf(out, "# Maxium Layer Of Function  %11u #\n", this->uMaxFuncLayer);
+    fprintf(out, "# Number Of Goal Clauses    %11zu #\n", this->goalClaset.size());
+    fprintf(out, "# Number Of Goal Horn       %11u #\n", uNonHornClaNum);
+    fprintf(out, "# IS Equlity                %11s #\n", 0 == this->uEquLitNum ? "FALSE" : "TRUE");
 }
 
 

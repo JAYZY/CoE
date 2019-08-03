@@ -13,8 +13,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_init_file" value=""/>
@@ -28,18 +26,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CRS029+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Orignal/FNE/KRS179+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Orignal/FNE/KRS200+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/KRS200+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/问题求解2.TPTP </runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式10.TPT</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式10.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/一般公式9.TPTP</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/程序验证1.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式9.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/数学定理证明8.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/程序验证1.TPTP</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommand>
         <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -59,8 +57,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_source_dirs" value="."/>
@@ -73,7 +69,6 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/icdc/Problems/CASC-2018/CONVERT/KRS186+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-SWB009+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWB009+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE//home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL638+1.020.p</runcommandpicklistitem>
@@ -83,8 +78,9 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Desktop/test.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

@@ -25,6 +25,7 @@ Literal::Literal() {
     next = nullptr;
     claPtr = nullptr;
     parentLitPtr = nullptr;
+    varState=VarState::unknown;
     //weight = 0;
   //  zjlitWight = 0;
 
