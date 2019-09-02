@@ -13,10 +13,11 @@
 
 #include "InferenceInfo.h"
 string InferenceInfo::TOInferTypeNames[] = {
-    "UD",
-    "RN", //rename
-    "RD", //reduce 合一下拉
-    "SCS"//矛盾体分离
+    "NONE",
+    "UD",   //unit reduce 单元子句约减
+    "RN",   //rename
+    "RD",   //reduce 合一下拉
+    "SCS"   //矛盾体分离
 };
 
 InferenceInfo::InferenceInfo() {

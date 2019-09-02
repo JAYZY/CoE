@@ -13,6 +13,8 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_init_file" value=""/>
@@ -26,18 +28,19 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/KRS200+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/问题求解2.TPTP </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式10.TPT</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式10.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/一般公式9.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/程序验证1.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式9.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" /home/zj/Documents/Problems/myprob/originSample/baseSample/数学定理证明8.TPTP</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/jayzy/Documents/Problem/originSample/baseSample/程序验证2.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/jayzy/Documents/Problem/originSample/baseSample/DL8_1.tptp</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/jayzy/Documents/Problem/originSample/baseSample/一般公式5.TPTP </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/jayzy/Documents/Problem/originSample/baseSample/一般公式5.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problem/originSample/baseSample/一般公式5.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/myprob/originSample/baseSample/一般公式5.TPTP</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL636+1.010.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR115+6.p
+</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/BOO109+1.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/BOO109+1.p</runcommand>
         <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -69,18 +72,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/icdc/Problems/CASC-J9-2017/CNF-FNE/FNE-SWB009+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWB009+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE//home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL638+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL638+1.020.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE//home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN986+1.004.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS179+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Desktop/test.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2018/Convert/CNF_FNE/CSR032+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR0028+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR028+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+26.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWV437+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR057+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+96.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR116+18.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/GEO222+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR034+1.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

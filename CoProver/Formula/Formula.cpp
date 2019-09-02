@@ -359,7 +359,7 @@ RESULT Formula::preProcess() {
         insertNewCla(*claIt);
 
         //若为单元子句,检查是否有其他单元子句 合一
-        if ((*claIt)->isUnit()&&(isUnsat((*claIt)))){   
+        if ((*claIt)->isUnit()&&(isUnsat((*claIt)))) {
             return RESULT::UNSAT;
         }
     }
@@ -367,6 +367,7 @@ RESULT Formula::preProcess() {
     StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
     StrategyParam::HoldLits_NUM_LIMIT = 3;
     StrategyParam::MaxLitNumOfNewCla = 1; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::R_MAX_FUNCLAYER=12;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
@@ -403,8 +404,6 @@ bool Formula::isUnsat(Clause* unitCla) {
                 outStr += litInfo + "\n";
                 outStr += "[R]:空子句";
                 FileOp::getInstance()->outRun(outStr);
-
-                FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
                 string strCla = "cnf(c" + to_string(Env::global_clause_counter + 1) + ",plain,($false)";
                 string parentCla = "";
                 parentCla = "c" + to_string(unitCla->ident);
@@ -723,107 +722,103 @@ bool Formula::leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd
     return false;
 }
 
-bool Formula::holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla, Clause* pasCla) {
-    //-----------  遍历被动子句文字集中保留的文字 ------
+bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>*setUsedCla, Clause* pasCla) {
+
     set<Clause*> checkedClas; //存储已经检查过的子句
+    bool isRundacy = false; //0 NORundacy 1-- LitRundacy 2 -- ClaRundacy
+    //------- 查找索引树上的 备选文字节点 ------
+    TermIndexing* indexing = (arraySize == 1) ? this->unitClaIndex : this->allTermIndex;
+    //-----------  遍历被动子句文字集中保留的文字 ------
     for (size_t i = 0; i < arraySize; ++i) {
+        indexing->ClearVarLst();
         Lit_p selConLit = arrayHoldLits[i];
         //debug          cout << "unit 选择文字:C" << selConLit->claPtr->ident << endl;   selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
 
-        //------- 查找索引树上的 备选文字节点 ------
-        TermIndexing* indexing = (arraySize == 1) ? this->unitClaIndex : this->allTermIndex;
-
-        //如果是等词则且非单元子句则不参与索引树操作
+        //=== 如果是等词则且非单元子句则不参与索引树操作
         if (selConLit->EqnIsEquLit() && arraySize > 1) {
             continue;
         }
 
-        // 从索引树上获取,候选节点(项)
+        //=== 从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
         if (termIndNode == nullptr) {
-
-            continue; //没有找到 重新查找下一个文字           
+            continue; //没有找到,重新查找下一个文字           
         }
-        vector<Literal*>*candVarLits = &((termIndNode)->leafs); //可以匹配的文字集
+        //== 可以匹配的文字集
+        vector<Literal*>*candVarLits = &((termIndNode)->leafs); 
         Clause* candVarCla = nullptr; //待检查的归入冗余的候选子句
-        Literal* candVarLit = nullptr;
+        //Literal* candVarLit = nullptr;
 
         //确保候选子句中所有文字均可以匹配到 查询子句中的文字.
         while (true) {
             //------ 遍历候选文字集合.查找满足向前归入的文字
             for (int ind = 0; ind < candVarLits->size(); ++ind) {
-                candVarLit = candVarLits->at(ind);
-                candVarCla = candVarLit->claPtr; //候选子句                                               
-                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla.find(candVarCla) != setUsedCla.end())) { //找到查询子句中的文字.包括自己
+                candVarCla = candVarLits->at(ind)->claPtr; //候选子句                                               
+                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla && setUsedCla->find(candVarCla) != setUsedCla->end() ) ) { //找到查询子句中的文字.包括自己
                     continue;
                 }
 
                 assert(candVarCla);
                 uint16_t candLitNum = candVarCla->LitsNumber();
-                //单元子句,查询子句为冗余子句     //记录冗余
+                //=== 归入子句为单元子句,则查询子句为冗余子句     //记录冗余
                 if (1 == candLitNum) {
-                    //Print-level  fprintf(stdout, "\n# [FS]R invalid by C%d\n", candVarCla->GetClaId());
-                    string tmpstr = "\n# [FS]R invalid by C" + to_string(candVarCla->GetClaId()) + "\n";
+                    string tmpstr = "\n# [FS]R invalid by UC" + to_string(candVarCla->GetClaId()) + "\n";
                     FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
-                    indexing->ClearVarLst(); //清除替换
-                    return true;
+                    isRundacy = true;
+                    break;
                 }
-                //条件 候选子句文字个数 <=查询子句文字个数 && 不能是检查过的子句
+                //=== 条件 候选子句文字个数 <=查询子句文字个数 && 不能是检查过的子句
                 if (arraySize < candLitNum || checkedClas.find(candVarCla) != checkedClas.end()) {
                     continue;
                 }
-                //++Env::backword_CMP_counter;
-
-                //------ 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
+                //=== 得到候选子句canVarCla  检查是否存在替换r 使得 canVarCla*r=pasCla + vNewR (排除消除的文字)
                 if (Simplification::ClauseSubsumeArrayLit(arrayHoldLits, arraySize, candVarCla)) {
-                    //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
-                    //Print-level  fprintf(stdout, "\n# [FS]R invalid by c%d\n", candVarCla->GetClaId());
-                    string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
+                    //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.      
+                    string tmpstr = "\n# [FS]R invalid by MC" + to_string(candVarCla->GetClaId()) + "[" + to_string(candVarCla->LitsNumber()) + "]\n";
                     FileOp::getInstance()->outLog(tmpstr);
                     ++Env::forward_Finded_counter;
-                    indexing->ClearVarLst(); //清除替换
-                    return true;
+                    isRundacy = true;
+                    break;
                 }
-                //没有找到1.添加已经检查过的子句;2.查找下一个候选子句
+                //==没有找到1.添加已经检查过的子句;2.查找下一个候选子句
                 checkedClas.insert(candVarCla);
             }
+            if (isRundacy)
+                break;
             termIndNode = indexing->NextForwordSubsump(); //查找下一个
-
-
             if (termIndNode == nullptr) {
                 break;
             }
             //debug             for(auto&tt:termIndNode->leafs){            cout<<tt->claPtr->ident<<endl;}
             candVarLits = &((termIndNode)->leafs);
         }
-        indexing->ClearVarLst();
+        if (isRundacy)
+            break;
     }
 
-    //assert(false); //不会执行到这个语句
-    return false;
+    indexing->ClearVarLst();
+    return isRundacy;
 }
-//单文字是否归入冗余
 
 bool Formula::unitLitIsRundacy(Literal* unitLit) {
-
+    bool isRundacy = true;
     // 从索引树上获取,候选节点(项)
     TermIndNode* termIndNode = this->unitClaIndex->Subsumption(unitLit, SubsumpType::Forword);
     if (termIndNode == nullptr) {
-        this->unitClaIndex->ClearVarLst();
-        return false;
-    }
-    vector<Literal*>*candVarLits = &((termIndNode)->leafs); //可以匹配的文字集
-    if (1 == candVarLits->size() && candVarLits->at(0)->claPtr == unitLit->claPtr) {
-        //相同子句查找下一个
-        termIndNode = this->unitClaIndex->NextForwordSubsump(); //查找下一个
-        if (termIndNode == nullptr) {
-            this->unitClaIndex->ClearVarLst();
-            return false;
+        isRundacy = false;
+    } else {
+        vector<Literal*>*candVarLits = &((termIndNode)->leafs); //可以匹配的文字集
+        if (1 == candVarLits->size() && candVarLits->at(0)->claPtr == unitLit->claPtr) {
+            //相同子句查找下一个
+            termIndNode = this->unitClaIndex->NextForwordSubsump(); //查找下一个
+            if (termIndNode == nullptr) {
+                isRundacy = false;
+            }
         }
     }
     this->unitClaIndex->ClearVarLst();
-    return true;
+    return isRundacy;
 }
 
 

@@ -25,9 +25,10 @@ Literal::Literal() {
     next = nullptr;
     claPtr = nullptr;
     parentLitPtr = nullptr;
-    varState=VarState::unknown;
+    varState = VarState::unknown;
+    matchLitPtr=nullptr;
     //weight = 0;
-  //  zjlitWight = 0;
+    //  zjlitWight = 0;
 
 }
 
@@ -36,7 +37,7 @@ Literal::Literal() {
  * @param in
  * @param cla
  */
-Literal::Literal(Scanner* in, Cla_p cla):Literal() {
+Literal::Literal(Scanner* in, Cla_p cla) : Literal() {
     Term_p lt = nullptr, rt = nullptr;
     this->claPtr = cla;
     this->pos = 0;
@@ -70,7 +71,7 @@ Literal::Literal(Scanner* in, Cla_p cla):Literal() {
     this->rterm = rt;
 }
 
-Literal::Literal(Term_p lt, Term_p rt, bool positive):Literal() {
+Literal::Literal(Term_p lt, Term_p rt, bool positive) : Literal() {
     EqnAlloc(lt, rt, positive);
 }
 
@@ -78,7 +79,7 @@ Literal::Literal(const Literal& orig) {
 }
 
 Literal::~Literal() {
-    
+
 }
 
 /*---------------------------------------------------------------------*/
@@ -205,21 +206,21 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
     bool positive = true;
     Scanner* in = Env::getIn();
     TermBank* bank = this->claPtr->GetClaTB();
-    
+
     //lterm = TBTermParse(in, bank);
     lterm = bank->TBTermParseReal(in, true);
-    
-//    if(bank->inCount==0){     
-//       claPtr->ClearClaTB();
-//    }
+
+    //    if(bank->inCount==0){     
+    //       claPtr->ClearClaTB();
+    //    }
     //BOOL_TERM_NORMALIZE(lterm);
-    if ( Env::getGTbank()->falseTerm ==lterm) {
+    if (Env::getGTbank()->falseTerm == lterm) {
         lterm = Env::getGTbank()->trueTerm;
         positive = !positive; //修改项的 正负
     }
-    
-    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign);//'!='  '='
-  
+
+    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign); //'!='  '='
+
     Sigcell* sig = Env::getSig();
     if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) { //不是变元 而且 是谓词符号 ->非等词项
         rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
@@ -230,9 +231,9 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
                 positive = !positive;
             }
             in->AcceptInpTok(equalToke);
-            
+
             rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
-            
+
             if (!rterm->IsVar()) {
                 if (sig->SigIsPredicate(rterm->fCode)) {
                     in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
@@ -281,6 +282,60 @@ VarState Literal::getVarState() {
     return varState;
 }
 
+bool Literal::IsShareVar(Literal* litA) {
+    if (this->claPtr != litA->claPtr)return false;
+    if (this->varState == VarState::freeVar || litA->varState == VarState::freeVar || this->IsGround() || litA->IsGround()) {
+        return false;
+    }
+    //map<TermCell*, Literal*>mapVar2Lit;
+    char arrVarLit[500]; //假设变元项最多不超出500
+    memset(arrVarLit, 0, 500);
+
+    vector<TermCell*> vecT;
+    vecT.reserve(32);
+
+    if (this->EqnIsEquLit()) {
+        vecT.push_back(this->rterm);
+    }
+    vecT.push_back(this->lterm);
+
+    while (!vecT.empty()) {
+        TermCell* t = vecT.back();
+        assert((-t->fCode) < 500);
+        vecT.pop_back();
+        if (t->IsVar()) {
+            arrVarLit[-t->fCode] = 1;
+        }
+        for (int i = 0; i < t->arity; i++) {
+            if (t->args[i]->IsGround())
+                continue;
+            vecT.push_back(t->args[i]);
+        }
+    }
+    assert(vecT.empty());
+    if (litA->EqnIsEquLit()) {
+        vecT.push_back(litA->rterm);
+    }
+    vecT.push_back(litA->lterm);
+    while (!vecT.empty()) {
+        TermCell* t = vecT.back();
+        assert((-t->fCode) < 500);
+        vecT.pop_back();
+        if (t->IsVar()) {
+            char firstLit = arrVarLit[-t->fCode];
+            if (firstLit != 0) {
+                return true;
+            }
+        }
+        for (int i = 0; i < t->arity; i++) {
+            if (t->args[i]->IsGround())
+                continue;
+            vecT.push_back(t->args[i]);
+        }
+    }
+    return false;
+}
+
 TermBank_p Literal::getClaTermBank() {
     return claPtr->GetClaTB();
 }
@@ -301,8 +356,8 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
             //debug            fprintf(stdout,"w:%ld,v:%hu,F:%hu ",lterm->weight,lterm->uVarCount,lterm->uMaxFuncLayer);
             if (IsNegative()) {
                 fputc('~', out);
-            }            
-            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);          
+            }
+            this->getClaTermBank()->TBPrintTerm(out, lterm, fullterms, deref);
         }
     }
 }
@@ -341,7 +396,9 @@ void Literal::getParentLitInfo(string& parentLitInfo) {
         //parentLitInfo += "_" + to_string(this->parentLitPtr->pos);
     }
 }
-
+/// 得到文字信息
+/// \param strLitInfo
+/// \return 
 const char* Literal::getLitInfo(string& strLitInfo) {
     // strLitInfo = "";
     strLitInfo += "[C" + to_string(this->claPtr->ident);
@@ -449,7 +506,8 @@ Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
 
     Term_p lt = lterm->RenameCopy(newCla->GetClaTB(), deref);
     Term_p rt = rterm->RenameCopy(newCla->GetClaTB(), deref);
-    Literal* newLit = new Literal(lt, rt, false);   
+    Literal* newLit = new Literal(lt, rt, false);
+    newLit->usedCount=this->usedCount;
     newLit->claPtr = newCla;
     newLit->parentLitPtr = this;
     newLit->properties = this->properties;

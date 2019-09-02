@@ -144,8 +144,8 @@ public:
     int priority; //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
     ClauseProp properties; //子句属性
     ClauseInfo* info; //子句信息    
-    Clause* parent1; //父子句1;
-    Clause* parent2; //父子句2;
+    set<uint32_t> parentIds; //父子句编号集;
+    InfereType infereType; //子句演绎类型;
     Literal* literals; //文字列表   
 
 
@@ -224,7 +224,7 @@ public:
     inline uint16_t LitsNumber() const {
         return posLitNo + negLitNo;
     }
-
+    
     inline bool ClauseIsEmpty() {
         return 0 == LitsNumber();
     }
@@ -246,8 +246,16 @@ public:
     inline bool isDel() {
         return this->ClauseQueryProp(ClauseProp::CPDeleteClause);
     }
+    inline void SetAllLitsHold(){
+        Literal* litPtr=this->literals;
+        while(litPtr){
+            litPtr->EqnSetProp(EqnProp::EPIsHold);
+            litPtr->matchLitPtr=nullptr;
+            litPtr=litPtr->next;
+        }
+    }
     //modify ClauseProperties to int
-
+    
     inline void ClauseDelProp(ClauseProp prop) {
         DelProp(this->properties, prop);
     }
@@ -302,7 +310,7 @@ public:
 
     //设置文字的变元共享状态
     void SetEqnListVarState();
-
+    
     uint16_t calcMaxFuncLayer() const;
 
     Literal* FindMaxLit();

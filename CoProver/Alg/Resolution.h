@@ -21,7 +21,8 @@ public:
      ****************************************************************************/
     RESULT BaseAlg(Formula *fol);
     RESULT BaseAlgByOnlyBinaryCla(Formula *fol);
-private:
+    RESULT BaseExtendAlg(Formula *fol);
+private: 
 
 };
 

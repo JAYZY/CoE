@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 }
 //
 #else
- 
+
 int main(int argc, char** argv) {
 
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
     //输出原始子句 
     fol->printOrigalClaSet();
-
+    FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
     //预处理操作---------------------       
     RESULT res = fol->preProcess();
     //添加等词公理
@@ -75,12 +75,13 @@ int main(int argc, char** argv) {
     //输出预处理后子句 
     // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
-        FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+
         //演绎推理
         Resolution resolution;
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
         // if (res == RESULT::UNKNOWN) {
-        res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+        //res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
+        res = resolution.BaseExtendAlg(fol); //使用记录路径的方式进行路径回退
         //}
     }
     string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";
@@ -97,7 +98,7 @@ int main(int argc, char** argv) {
     //开始浸透算法
     //proofCtr->Saturate();
     //PaseTime("Saturate_", initial_time);
-   // char sRusage[10000];
+    // char sRusage[10000];
     //Env::PrintRusage(sRusage);
     //cout << sRusage << endl;
 

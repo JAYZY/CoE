@@ -108,6 +108,7 @@ public:
     /*
      ** 写入 info 文件
      */
+   
     inline void outInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fInfo);
         fflush(fInfo);
@@ -167,7 +168,7 @@ public:
     void GenerateEmptyPath();
 
     void GetProblemInfo(string &strInfo) {
-        strInfo = "start to proof:" + this->tptpFileName;
+        strInfo = "% start to proof:" + this->tptpFileName;
         strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;
         strInfo += "\n% Proof found!\n% SZS status Theorem for " + this->tptpFileName;
         strInfo += "\n% SZS output start Proof\n";

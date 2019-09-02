@@ -17,6 +17,8 @@
 #include "Resolution.h"
 #include "TriAlg.h"
 #include "Inferences/Simplification.h"
+#include "HEURISTICS/SortRule.h"
+#include "TriAlgExt.h"
 
 Resolution::Resolution() {
 }
@@ -49,14 +51,27 @@ RESULT Resolution::BaseAlg(Formula* fol) {
     set<Clause*> notStartClaSet;
     RESULT res = RESULT::UNKNOWN;
     TriAlg triAlg(fol);
+    StrategyParam::isFullUC = false;
+    double startTime = CPUTime();
+    bool isCheckT = true;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
-        //        if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
-        //构建三角形
+
+        //先允许非充分的下拉策略 1分钟，再允许 充分下拉策略
+        if (isCheckT && CPUTime() - startTime > 60) {
+            cout << "debug: run full UD" << endl;
+            isCheckT = false;
+            StrategyParam::isFullUC = true;
+            itSelCla = fol->getWorkClas()->begin();
+        }
+
+        //if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
+        //构建三角形               
+        ++iterNum;
         if ((*itSelCla)->isDel()) {//|| (isBinaryCla&&(*itSelCla)->LitsNumber()<3)) {
             ++itSelCla;
             if (itSelCla == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();
-            ++iterNum;
+
             continue;
         }
         //debug if(iterNum==354)                    printf("Debug:");
@@ -75,7 +90,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 // fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-                if (++modifyLitNumCount > 25) {
+                if (++modifyLitNumCount > 100) {
                     cout << "UNKNOWN" << endl;
                     return RESULT::UNKNOWN;
                 }
@@ -86,8 +101,9 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 if (StrategyParam::MaxLitNumOfNewCla > fol->uMaxLitNum + 1) {
                     //StrategyParam::MaxLitNumOfR = 1;
                     StrategyParam::MaxLitNumOfNewCla = 1;
-                }
 
+                }
+                itSelCla = fol->getNextStartClause();
 
                 FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::MaxLitNumOfR) + "\n");
                 notStartClaSet.clear();
@@ -101,19 +117,14 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             triAlg.disposeRNUnitCla();
             continue;
         }
-        //        if (0 == Env::S_OverMaxLitLimit_Num % 30000 && StrategyParam::HoldLits_NUM_LIMIT < fol->uMaxLitNum + 2) {
-        //            Env::S_OverMaxLitLimit_Num = 0;
-        //            //修改文字个数限制          
-        //            ++StrategyParam::HoldLits_NUM_LIMIT;
-        //            FileOp::getInstance()->outLog("修改R长度限制:" + to_string(StrategyParam::HoldLits_NUM_LIMIT) + "\n");
-        //        }
         //记录三角形构建次数
-        ++iterNum;
+        //++iterNum;
 
 
 
         for (Clause* newCla : triAlg.newClas) {//对生成的新子句进行处理,A.backword subsump B.等词处理
             //若为单元子句,检查是否有其他单元子句 合一
+            triAlg.OutNewClaInfo(newCla);
             if (newCla->isUnit() && (fol->isUnsat(newCla))) {
                 return RESULT::UNSAT;
             }
@@ -143,18 +154,19 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 //                continue;
                 //            }
             }
-           
+
             //=== 修改新子句权重-------------
             int pri = 0;
-            Literal* tmpLit=newCla->literals;
-            for(;tmpLit;tmpLit=tmpLit->next){
+            Literal* tmpLit = newCla->literals;
+            for (; tmpLit; tmpLit = tmpLit->next) {
                 pri += tmpLit->parentLitPtr->claPtr->priority;
             }
-             /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+            /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
             //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
             newCla->priority = pri / (int) (newCla->LitsNumber());
-            
+
             fol->insertNewCla(newCla);
+
             //输出新子句到文件 .i
             // triAlg.outNewClaInfo(newCla, InfereType::SCS);
         }
@@ -166,11 +178,45 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         //        });
         //只修改起步子句的优先级
         --(*itSelCla)->priority;
-        itSelCla = fol->getNextStartClause();
+
+        if ((++itSelCla) == fol->getWorkClas()->end()) {
+            // itSelCla = fol->getWorkClas()->begin();
+
+            itSelCla = fol->getNextStartClause();
+        }
         triAlg.subst->Clear();
         triAlg.disposeRNUnitCla(); //删除所有重命名的单元子句
     }
     return RESULT::UNKNOWN;
+}
+
+/// 扩展三角形
+/*-----------------------------------------------------------------------
+ *算法描述: 
+ * 1. 选择起步子句. A.非单元子句; B.非等词公理子句S
+ * 2. 完成三角形构建 选择子句，放入
+ * 3. 重新选择起步子句
+ * 
+/*---------------------------------------------------------------------*/
+/// \param fol
+/// \return 
+
+RESULT Resolution::BaseExtendAlg(Formula *fol) {
+    //排序目标子句--文字由多到少.
+    list<Clause*>* lsWorkClas = fol->getWorkClas();
+    RESULT res = RESULT::UNKNOWN;
+    TriAlgExt triAlgExt(fol);
+    while (true) {
+        lsWorkClas->sort(SortRule::ClaCmp);
+        //std::sort(lsWorkClas->begin(), lsWorkClas->end(), SortRule::ClaCmp);
+
+        res = triAlgExt.ExtendTri();
+        if (RESULT::UNSAT == res) {
+            break;
+        }
+    }
+    return res;
+
 }
 
 /// 只对二元子句进行单元子句处理合一

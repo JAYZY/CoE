@@ -19,6 +19,7 @@
 #include "CLAUSE/LiteralCompare.h"
 #include "INOUT/FileOp.h"
 
+
 class Formula {
 private:
     //谓词索引------
@@ -119,7 +120,7 @@ public:
     }
 
     inline void printEqulityAxioms() {
-       string sinfo = "\n#------ EquAxioms Clauses ------\n";
+        string sinfo = "\n#------ EquAxioms Clauses ------\n";
 
         for (Clause* cla : vEqulityAxiom) {
             cla->getStrOfClause(sinfo, true);
@@ -135,7 +136,7 @@ public:
         sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
         sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
     }
-    
+
 
 
 
@@ -157,7 +158,10 @@ public:
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal* actLits, uint16_t uActLeftLitInd, vector<Literal*>&vNewR);
     bool leftLitsIsRundacy(Literal* pasClaHoldLits, uint16_t uPasHoldLitInd, vector<Literal*>&vNewR, set<Cla_p>&setUsedCla);
-    bool holdLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>&setUsedCla, Clause* pasCla);
+    bool HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set<Cla_p>*setUsedCla, Clause* pasCla);
+    
+    
+ 
     //单文字是否归入冗余
     bool unitLitIsRundacy(Literal* unitLit);
 
@@ -167,7 +171,7 @@ public:
     bool isUnsat(Clause* unitCal);
 
     //插入新子句到
-    void insertNewCla(Cla_p cla,bool isEquAxiom=false);
+    void insertNewCla(Cla_p cla, bool isEquAxiom = false);
     //删除子句
     void removeWorkCla(Cla_p cal);
     //添加谓词符号到全局列表中  

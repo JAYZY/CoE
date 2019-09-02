@@ -35,8 +35,15 @@ enum class ClaSelStrategy : uint8_t {
      * 0, "NS(子句冗余次数最少>子句文字数>子句稳定度>主动归结次数最少)"
      * 1, "SN(子句冗余次数最少>子句稳定度>子句文字数>主动归结次数最少)"
      */
-    Num_Weight,
-    Weight_Num
+    Num_Prio_Weight,
+    Num_Weight_Prio,
+    
+    Prio_Weight_Num,
+    Prio_Num_Weight,
+    
+    Weight_Num_Prio,
+    Weight_Prio_Num,
+    
 };
 
 class StrategyParam {
@@ -70,10 +77,12 @@ public:
     //left literals number during the process limit. =0 noLimit
     static uint32_t HoldLits_NUM_LIMIT;
     static uint32_t R_MAX_FUNCLAYER; //最大函数嵌套层限制-不超过256
-    static uint32_t MaxLitNumOfNewCla; //新子句最大的文字数限制（literals number of new clause limit. =0 noLimit）
-
+    static uint32_t MaxLitNumOfNewCla; //新子句最大的文字数限制（literals number of new clause limit. =0 noLimit）    
     // </editor-fold>
 
+    
+    static bool isFullUC;//是否充分单元子句下拉
+    
     //新的启发式策略
     // static INT32 SEL_STARTLit_STRATEGY; //起步文字选择策略
     // static INT32 SEL_STARTLIT_NUMLIT; //起步文字文字数策略

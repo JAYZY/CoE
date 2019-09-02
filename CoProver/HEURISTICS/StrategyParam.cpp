@@ -37,7 +37,7 @@ bool StrategyParam::ADD_CR = true;
 bool StrategyParam::IS_ALitEqualR = false;
 bool StrategyParam::IS_ALitNoEqual = false;
 
-ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Weight;
+ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Weight_Prio;
 POSLIT_STEADY StrategyParam::SEL_POSLIT_STEADY = POSLIT_STEADY::NumDesc;
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;
 int32_t StrategyParam::IterCount_LIMIT = INT_MAX;
@@ -48,4 +48,6 @@ uint32_t StrategyParam::HoldLits_NUM_LIMIT = 5; //归结过程中剩余文字最
 uint32_t StrategyParam::R_MAX_FUNCLAYER = 3;
 uint32_t StrategyParam::MaxLitNumOfNewCla=1;
 
+
+bool StrategyParam::isFullUC=true;
  

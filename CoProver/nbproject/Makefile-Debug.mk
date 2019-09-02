@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/Alg/Resolution.o \
 	${OBJECTDIR}/Alg/TriAlg.o \
+	${OBJECTDIR}/Alg/TriAlgExt.o \
 	${OBJECTDIR}/CLAUSE/Clause.o \
 	${OBJECTDIR}/CLAUSE/Literal.o \
 	${OBJECTDIR}/Formula/ClauseSet.o \
@@ -109,6 +110,11 @@ ${OBJECTDIR}/Alg/TriAlg.o: Alg/TriAlg.cpp
 	${MKDIR} -p ${OBJECTDIR}/Alg
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/TriAlg.o Alg/TriAlg.cpp
+
+${OBJECTDIR}/Alg/TriAlgExt.o: Alg/TriAlgExt.cpp
+	${MKDIR} -p ${OBJECTDIR}/Alg
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Alg/TriAlgExt.o Alg/TriAlgExt.cpp
 
 ${OBJECTDIR}/CLAUSE/Clause.o: CLAUSE/Clause.cpp
 	${MKDIR} -p ${OBJECTDIR}/CLAUSE

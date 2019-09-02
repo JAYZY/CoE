@@ -62,9 +62,9 @@ class Literal {
 public:
     uint8_t usedCount; // 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
     uint8_t pos; //在子句中的位置 一个子句中最大文字数 < 2^8=256
-    
+
     VarState varState; //文字中变元状态
-    
+
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
     EqnProp properties; /*prositive ,maximal,equational */
     TermCell* lterm; /*左文字*/
@@ -73,6 +73,7 @@ public:
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
+    Literal* matchLitPtr; //主界线上配对文字
     //long weight;
     //float zjlitWight;
 
@@ -113,19 +114,19 @@ public:
     inline FunCode EqnGetPredCode() {
         return EqnIsEquLit() ? 0 : this->lterm->fCode;
     }
-    
-    inline uint16_t MaxFuncLayer( ){
+
+    inline uint16_t MaxFuncLayer() {
         assert(lterm->uMaxFuncLayer == lterm->TermDepth());
         assert(rterm->uMaxFuncLayer == rterm->TermDepth());
-        return MAX(lterm->uMaxFuncLayer,rterm->uMaxFuncLayer)+1;
-        
+        return MAX(lterm->uMaxFuncLayer, rterm->uMaxFuncLayer) + 1;
+
     }
     //比较两个文字对某个属性的拥有情况一致.要么都有,要么都没有.
 
     inline bool EqnAreEquivProps(Literal* lit, EqnProp prop) {
         return PropsAreEquiv(this->properties, lit->properties, prop);
     }
-    
+
     //比较两个文字是否是互补谓词文字.
 
     inline bool isComplementProps(Literal* lit) {
@@ -831,6 +832,21 @@ public:
         handle->next = nullptr;
         return handle;
     }
+
+    /// 得到文字的输出字符串，文字位置信息+文字内容字符串
+    /// \param sOut
+    inline void GetLitInfoWithSelf(string&sOut,DerefType deref = DerefType::DEREF_ALWAYS) {
+        this->getLitInfo(sOut);
+        this->getStrOfEqnTSTP(sOut,deref);
+     
+    }
+      /// 得到文字的输出字符串，父文字位置信息+文字内容字符串
+    /// \param sOut
+    inline void GetLitInfoWithParent(string&sOut,DerefType deref = DerefType::DEREF_ALWAYS) {
+        this->getParentLitInfo(sOut);
+        this->getStrOfEqnTSTP(sOut,deref);
+        
+    }
     // </editor-fold>
 
 
@@ -866,6 +882,7 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //    
+
     /**
      * 读取In生成文字
      * @param in
@@ -875,7 +892,7 @@ public:
         //生成左右项
         bool positive = eqn_parse_real(in, &lt, &rt, false);
         EqnAlloc(lt, rt, positive);
-        
+
         //改进的算法 不考虑相同变元
         //        {
         //            this->zjlitWight = this->newWNOSameVar(lt);
@@ -885,7 +902,7 @@ public:
         //            }
         //        }
     }
-    
+
     /**
      * 根据2个项生成文字
      * @param lt
@@ -934,7 +951,7 @@ public:
     }
 
     VarState getVarState();
-
+    bool IsShareVar(Literal* litA);
     TermBank_p getClaTermBank();
 
 

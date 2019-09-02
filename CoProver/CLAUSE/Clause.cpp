@@ -8,6 +8,7 @@
 #include "Clause.h"
 #include "Indexing/TermIndexing.h"
 #include "HEURISTICS/SortRule.h"
+#include "Inferences/InferenceInfo.h"
 using namespace std;
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
@@ -17,9 +18,10 @@ using namespace std;
 
 Clause::Clause()
 : properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(0), priority(0), parent1(nullptr), parent2(nullptr) {
+, negLitNo(0), posLitNo(0), weight(0), priority(0) {
     ident = ++Env::global_clause_counter;
     claTB = nullptr; // new TermBank(ident);
+    infereType = InfereType::NONE;
 }
 
 Clause::Clause(const Clause* orig) {
@@ -31,11 +33,12 @@ Clause::Clause(const Clause* orig) {
     this->negLitNo = 0; //负文字个数
     this->posLitNo = 0; //正文字个数
     this->weight = 0; //子句权重
-    this->priority = 0;
+    this->priority = 100;
     this->claTB = orig->claTB;
-
-    this->parent1 = orig->parent1; //父子句1;
-    this->parent2 = orig->parent2; //父子句2;
+    this->parentIds = orig->parentIds;
+    this->infereType = orig->infereType;
+    //this->parent1 = orig->parent1; //父子句1;
+    //this->parent2 = orig->parent2; //父子句2;
 }
 
 /**
@@ -160,14 +163,14 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     uint16_t iLitPos = 0;
     auto litTmpPtr = vNewR.begin();
     while (litTmpPtr != vNewR.end()) {
-        
+
         Literal* newLitP = (*litTmpPtr)->RenameCopy(this);
-        
+
         assert(newLitP->EqnQueryProp(EqnProp::EPIsHold));
-        
+
         newLitP->claPtr = this; /*指定当前文字所在子句*/
         newLitP->pos = ++iLitPos;
-       // newLitP->EqnSetProp(EqnProp::EPIsHold);
+        // newLitP->EqnSetProp(EqnProp::EPIsHold);
         if (newLitP->IsPositive()) {
             posLitNo++;
             if (newLitP->EqnIsEquLit()) {
@@ -652,9 +655,9 @@ void Clause::SetEqnListVarState() {
     Lit_p arrVarLit[500]; //假设变元项最多不超出500
     memset(arrVarLit, 0, 500);
 
-    for (;lit; lit=lit->next) {
+    for (; lit; lit = lit->next) {
         if (lit->IsGround()) {
-            lit->varState = VarState::noVar;            
+            lit->varState = VarState::noVar;
             continue;
         }
         lit->varState = VarState::freeVar;

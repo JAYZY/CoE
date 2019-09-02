@@ -62,7 +62,25 @@ enum class CompareResult : uint8_t {
     toNotleeq
 };
 
-
+enum class InfereType : uint16_t {
+    NONE,//原始子句
+    UD,
+    RN, //rename
+    RD,//REDUCT 合一下拉
+    SCS//矛盾体分离    
+            
+};
+enum class ResRule : uint8_t {
+    /*主界线文字相同(A文字集中有相同文字)*/
+    ALitSameALits,
+    ALitSameBLits, /*与前面剩余文字相同(A文字与B文字相同)*/
+    BLitSameBLits, /*剩余文字与前面剩余文字相同(B文字与B文字相同)*/
+    DelHoldLit,     /*剩余文字被删除*/
+    ChgPasLit, //换被归结文字
+    ChgActLit, //换主界线文字(主动归结文字)    
+    MoreFunclayer/*函数复合层过多*/, MoreLit/*剩余文字过多*/, NoLeftLit/*没有剩余文字*/, SingleLit, TAUTOLOGY/*R为恒真*/,
+    EqnTautology, RSubsump/*R包含冗余*/, RULEOK/*规则检查通过*/
+};
 
 /*---------------------------------------------------------------------*/
 /*                       【全局返回类型】相关枚举                      */

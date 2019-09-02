@@ -23,16 +23,6 @@ enum class BackType : uint8_t {
     NoBack, ChgLit, ChgNext
 };
 
-enum class ResRule : uint8_t {
-    /*主界线文字相同(A文字集中有相同文字)*/
-    ALitSameALits,
-    ALitSameBLits, /*与前面剩余文字相同(A文字与B文字相同)*/
-    BLitSameBLits, /*剩余文字与前面剩余文字相同(B文字与B文字相同)*/
-    ChgPasLit, //换被归结文字
-    ChgActLit, //换主界线文字(主动归结文字)
-    MoreFunclayer/*函数复合层过多*/, MoreLit/*剩余文字过多*/, NoLeftLit/*没有剩余文字*/, SingleLit, TAUTOLOGY/*R为恒真*/,
-    EqnTautology, RSubsump/*R包含冗余*/, RULEOK/*规则检查通过*/
-};
 
 //主界线文字
 
@@ -85,7 +75,7 @@ public:
 
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
     bool unitResolutionBySet(Literal* lit, int ind = 0);
-        
+
     int UnitClasReduct(Lit_p *actLit, uint16_t & uActHoldLitNum);
 public:
     TriAlg(Formula* _fol);
@@ -104,7 +94,7 @@ public:
         this->vALitTri.reserve(16);
 
         while (!vReduceLit.empty()) {
-            DelPtr(vReduceLit.back());            
+            DelPtr(vReduceLit.back());
         }
         this->vReduceLit.clear();
         this->vReduceLit.reserve(16);
@@ -139,11 +129,14 @@ public:
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
     RESULT GenreateTriLastHope(Clause* givenCla);
+
     
+    
+
     /// 添加新子句到新子句集
     /// \param newClaA 需要添加的新子句
     /// \return 是否成功添加到新子句集中。 false -- 没有添加到新子句集&该子句被删除
-    bool Add2NewClas(Clause* newClaA);
+    bool Add2NewClas(Clause* newClaA, InfereType infereType);
 
     //二元子句与单元子句生成新子句
     RESULT GenByBinaryCla(Clause* givenCla);
@@ -191,7 +184,7 @@ public:
     void outTri(vector<ALit_p>& vTri, string&outStr);
     void outR(Clause * actCla);
     void outNewClaInfo(Clause* newCla, InfereType infereType, set<Cla_p>*setUCla = nullptr);
-
+    void OutNewClaInfo(Clause* newCla);
     // </editor-fold>
 
 
