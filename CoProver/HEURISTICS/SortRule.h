@@ -19,7 +19,7 @@ public:
 
     ~SortRule(void) {
     };
-
+   
     static inline bool LitCmp(Literal* litA, Literal* litB) {
 
         //对子句中的文字进行排序
@@ -33,7 +33,7 @@ public:
             if (litB->IsNegative() && litA->IsPositive())
                 return false;
         }
-        return weight<0; //稳定度由低到高
+        return weight < 0; //稳定度由低到高
     }
 
     /*--------------------------------------------------------------------------
@@ -57,6 +57,16 @@ public:
     /*    子句排序--选择排序规则                                            */
     /************************************************************************/
     static bool ClaCmp(const Clause*pc1, const Clause * pc2);
+
+     /// 单元子句比较
+    /// \param litA
+    /// \param litB
+    /// \return 
+
+    static inline bool UnitClaCmp(const Clause* pc1, const Clause* pc2) {
+
+        return LitCmp(pc1->literals,pc2->literals);
+    }
 
     //优先级比较
 

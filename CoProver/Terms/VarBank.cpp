@@ -171,7 +171,6 @@ FunCode VarBank::VarBankCheckBindings(FILE* out, Sig_p sig) {
 /*---------------------------------------------------------------------*/
 VarBank::VarBank() {
     vctFCodes.reserve(8);
-
 }
 
 VarBank::~VarBank() {

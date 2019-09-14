@@ -67,13 +67,13 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
         selConLit->EqnTSTPPrint(stdout, true);
         cout << endl;
 #endif
-        
+
         //等词不做索引树判断
-        if(selConLit->EqnIsEquLit()){
-          selConLit = selConLit->next;
+        if (selConLit->EqnIsEquLit()) {
+            selConLit = selConLit->next;
             continue;
         }
-        
+
         //从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
 
@@ -94,7 +94,7 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
 
                 candVarLit = candVarLits->at(ind);
                 int substPos = indexing->subst->Size();
-                
+
                 candVarCla = candVarLit->claPtr; //找到可能存在归入冗余的候选子句               
                 assert(candVarCla);
 
@@ -469,10 +469,11 @@ bool Simplification::LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, L
 /// \param subsumConCla 被检查子句（冗余？）
 /// \param subsumerVarcla
 /// \return 
+
 bool Simplification::ClauseSubsumeClause(Clause* subsumConCla, Clause* subsumerVarcla) {
     assert(subsumConCla);
     assert(subsumerVarcla);
-    
+
     if (subsumConCla->LitsNumber() < subsumerVarcla->LitsNumber())
         return false;
     Unify unify;
@@ -489,9 +490,9 @@ bool Simplification::ClauseSubsumeClause(Clause* subsumConCla, Clause* subsumerV
         isMatch = false;
         while (conEqn) {
             isMatch = true;
-            //debug   cout << "\nvarEqn ";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;        
+            //debug               cout << "\nvarEqn ";     varEqn->EqnTSTPPrint(stdout, true);       cout << endl;        
 
-            //debug  cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug              cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 isMatch = false;
 
@@ -625,26 +626,56 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
 
 }
 
-
-///*-----------------------------------------------------------------------
-////   Test wether an equation subsumes another one. If yes, return true
-////   and extend subst to give the substitution, otherwise just return
-////   false and let subst unmodified. Don't deal with commutativity of equality. 
-////----------------------------------------------------------------------*/
+//Implementation of the condensation rule:
 //
-//bool Simplification::LitSubsume(Literal* subsumer, Literal* subsumed, Subst * subst) {
-//    //PStackPointer backtrack = PStackGetSP(subst);
-//    int backtrack = subst->Size();
-//    bool res;
-//    Unify unify;
-//    res = unify.SubstComputeMatch(subsumer->lterm, subsumed->lterm, subst);
-//    if (res) {
-//        res = unify.SubstComputeMatch(subsumer->rterm, subsumed->rterm, subst);
-//    }
-//    if (!res) {
-//        subst->SubstBacktrackToPos(backtrack);
-//    }
-//    return res;
-//}
+//  C
+//  == if C' is a factor of C, C' subsumes C
+//  C'
+//
 
+Clause* Simplification::FactorOnce(Clause* cla) {
+    bool res = false;
+    Unify unify;
+    Subst subSt;
+    Clause* newCla = nullptr;
+    for (Lit_p litA = cla->literals; litA; litA = litA->next) {
+        res = false;
+        for (Lit_p litB = litA->next; litB; litB = litB->next) {
 
+            if (litA->isSameProps(litB) && unify.literalMgu(litA, litB, &subSt)) {
+                
+                
+                //约减成功
+                newCla = cla->RenameCopy(litB);
+                subSt.SubstBacktrack();
+                //检查包含冗余
+                if(cla->ident==1257)
+                    cout<<"DEbug";
+                if (ClauseSubsumeClause(cla, newCla)) {
+                    res = true;
+                    //添加推理类型
+                    newCla->infereType = InfereType::FACTOR;
+                    newCla->parentIds.insert(cla->ident);
+                    FileOp::getInstance()->outLog("[S_FAT]:Factor C" + to_string(newCla->ident) + " From C" + to_string(cla->ident) + "\n");
+
+                    //暂时不删除原始子句 -- 由调用来控制是否删除
+                    //DelPtr(cla);
+                    break;
+
+                } else {
+                    res = false;
+                    //删除新子句
+                    DelPtr(newCla);
+                    --Env::global_clause_counter;
+                }
+
+            }
+            assert(false == res);
+           
+
+        }
+        if (res)
+            break;
+    }
+    return newCla;
+}

@@ -36,8 +36,10 @@ bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
 bool StrategyParam::IS_ALitEqualR = false;
 bool StrategyParam::IS_ALitNoEqual = false;
+bool StrategyParam::ISFactor=true;
 
-ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Weight_Prio;
+
+ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight;//Num_Weight_Prio;
 POSLIT_STEADY StrategyParam::SEL_POSLIT_STEADY = POSLIT_STEADY::NumDesc;
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;
 int32_t StrategyParam::IterCount_LIMIT = INT_MAX;

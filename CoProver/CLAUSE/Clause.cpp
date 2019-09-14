@@ -630,21 +630,34 @@ void Clause::ClauseParse(Scanner* in) {
     }
 }
 
-Clause* Clause::renameCopy(VarBank_p renameVarbank) {
-    Clause* newCla = new Clause(this);
+Clause* Clause::RenameCopy(Literal* except) {
+    
+    Clause* newCla = new Clause();
     Lit_p newlist = nullptr;
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
     while (lit) {
-        *insert = lit->RenameCopy(newCla);
+        if (lit == except){
+             lit = lit->next;
+            continue;
+        }
+        if (lit->IsPositive()) {
+            ++newCla->posLitNo;
+        } else {
+            ++newCla->negLitNo;
+        }       
+            *insert = lit->RenameCopy(newCla);
+        newCla->weight=lit->StandardWeight(true);
         insert = &((*insert)->next);
         lit = lit->next;
     }
+
     *insert = nullptr;
     newCla->literals = newlist;
-
     return newCla;
+    
 }
+ 
 
 /**
  * 设置文字的变元共享状态

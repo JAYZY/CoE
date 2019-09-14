@@ -58,6 +58,10 @@ void FileOp::CloseAll() {
         fclose(fLog);
     if (fUNSAT)
         fclose(fUNSAT);
+    if(fTri)
+        fclose(fTri);
+    
+    
 }
 
 /**
@@ -76,10 +80,11 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     if ((mydir = opendir(outDir.c_str())) == nullptr) {//目录不存在
         if (mkMultiDir(outDir) != 0) {
             Out::SysError("Create dir error %s", ErrorCodes::FILE_ERROR, outDir);
+            DelPtr(mydir);
             return false;
         }
     }
-
+    DelPtr(mydir);
     CloseAll();
 
     string tmpStr = outDir + tptpFileNameNoExt;
@@ -102,7 +107,12 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         return false;
     }
 
-
+    sFileName=tmpStr+".tri";
+    if ((fTri = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
+        Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".tri");
+        return false;
+    }
+    
     if (fGlobalInfo)
         fclose(fGlobalInfo);
     sFileName = workDir + "proofRes.g";

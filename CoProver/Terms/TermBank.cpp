@@ -35,15 +35,15 @@ TermBank::TermBank(uint16_t claIdent) : claId(claIdent) {
     //初始化 varBank
     shareVars = nullptr; //若是全局基项bank 则不占内存空间 ； new VarBank();
     //初始化 TermCellStore
-    termStore = TermCellStore(8);
+     termStore = new TermCellStore(8);
 }
 
 TermBank::~TermBank() {
     //assert(!sig);
 
     /* printf("TBFree(): %ld\n", TermCellStoreNodes(&(junk->term_store)));*/
-    termStore.TermCellStoreExit();
-
+   // termStore->TermCellStoreExit();
+    DelPtr(termStore);
     DelPtr(shareVars);
     extIndex.clear();
     vector<TermCell*>().swap(extIndex);
@@ -214,7 +214,7 @@ TermCell* TermBank::TBTermTopInsert(TermCell* t) {
     }
     //含变元的项
     assert(!t->TermCellQueryProp(TermProp::TPIsGround));
-    TermCell* newTerm = termStore.TermCellStoreInsert(t);
+    TermCell* newTerm = termStore->TermCellStoreInsert(t);
     if (newTerm) { /* TermCell node already existed, just add properties */
         newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
         DelPtr(t);
@@ -280,7 +280,7 @@ TermCell* TermBank::tb_termtop_insert(TermCell* t) {
     assert(t);
     assert(!t->IsVar());
 
-    TermCell* newTerm = termStore.TermCellStoreInsert(t);
+    TermCell* newTerm = termStore->TermCellStoreInsert(t);
 
     if (newTerm) /* Term node already existed, just add properties */ {
         newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
@@ -602,7 +602,7 @@ TermCell* TermBank::TBInsertOpt(TermCell* term, DerefType deref) {
 //    assert(t);
 //    assert(!t->IsVar()); //确保插入的项不能是变元
 //
-//    TermCell* newTerm = termStore.TermCellStoreInsert(t); //插入新项到 termStore中
+//    TermCell* newTerm = termStore->TermCellStoreInsert(t); //插入新项到 termStore中
 //
 //    if (newTerm) /* TermCell node already existed, just add properties */ {
 //        newTerm->properties = (TermProp) ((int32_t) newTerm->properties | (int32_t) t->properties)/*& bank->prop_mask*/;
@@ -639,16 +639,16 @@ TermCell* TermBank::TBFind(TermCell* term) {
     //    if (term->IsVar()) {
     //        return vars->FindByFCode(term->fCode);
     //    }
-    return termStore.TermCellStoreFind(term);
+    return termStore->TermCellStoreFind(term);
 }
 
 /*****************************************************************************
  * 返回基项的总数--Return the number of term nodes (variables and non-variables) in the term bank. 
  ****************************************************************************/
 long TermBank::TBTermNodes() {
-    assert(termStore.entries == termStore.TermCellStoreCountNodes());
+    assert(termStore->entries == termStore->TermCellStoreCountNodes());
     //变元节点数+非变元节点数
-    return termStore.entries; //+ vars->vctFCodes.size();
+    return termStore->entries; //+ vars->vctFCodes.size();
 
 }
 
@@ -677,8 +677,8 @@ long TermBank::TBTermNodes() {
 void TermBank::TBPrintBankInOrder(FILE* out) {
 
     SplayTree<NumTreeCell> splayTree;
-    for (long i = 0; i < termStore.TERM_STORE_HASH_SIZE; i++) {
-        TermTree::TermTreeTraverseInit(termStore.store[i], splayTree);
+    for (long i = 0; i < termStore->TERM_STORE_HASH_SIZE; i++) {
+        TermTree::TermTreeTraverseInit(termStore->store[i], splayTree);
     }
 
     tb_print_dag(out, splayTree.GetRoot());

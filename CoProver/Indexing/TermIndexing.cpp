@@ -195,7 +195,7 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
     //索引树上查找谓词以及子项集
     if (rootNode->subTerms.empty())
         return nullptr; //若谓词下没有子项,return null
-    int iSearchPos=0;
+    int iSearchPos = 0;
     if (!lit->EqnIsEquLit()) {
         TermIndNode* tIndnode = new TermIndNode(lit->lterm);
         set<TermIndNode*, TermIndNode::cmp>::iterator parentNodeIt = rootNode->subTerms.find(tIndnode);
@@ -207,7 +207,7 @@ TermIndNode * DiscrimationIndexing::Subsumption(Literal* lit, SubsumpType subsum
             assert(lit->lterm->arity == 0);
             return rootNode; //该谓词下没有子项,表示为一个命题类型的项
         }
-        iSearchPos=1;
+        iSearchPos = 1;
     }
     //扁平化文字
     FlattenLiteral(lit);
@@ -421,7 +421,8 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
                 }
             }
         } else {
-            subNodeIt = parentNode->subTerms.find(new TermIndNode(queryTerm));
+            TermIndNode cmpTermNode(queryTerm);
+            subNodeIt = parentNode->subTerms.find(&cmpTermNode);
             if (subNodeIt == parentNode->subTerms.end()) {
                 isRollback = true;
             }
@@ -435,16 +436,19 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
             }
             //回滚
             //roll back 回滚
-            qTermPos = backpoint.back()->queryTermPos;
-            parentNode = backpoint.back()->parentNode;
-            subNodeIt = backpoint.back()->subNodeIt;
-            uint32_t chgVarPos = backpoint.back()->chgVarPos[0];
+            BackPoint* backP = backpoint.back();
+            qTermPos = backP->queryTermPos;
+            parentNode = backP->parentNode;
+            subNodeIt = backP->subNodeIt;
+            uint32_t chgVarPos = backP->chgVarPos[0];
             while (stVarChId.size() > chgVarPos) {
                 this->varBinding[stVarChId.back()] = nullptr;
                 stVarChId.pop_back();
             }
             //subst->SubstBacktrackToPos(chgVarPos);
             backpoint.pop_back();
+            DelPtr(backP);
+
         } else {
             parentNode = (*subNodeIt);
             //if ((*parentNodeIt)->subTerms.empty()) return nullptr;
@@ -453,7 +457,10 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
     }
     assert(!parentNode->leafs.empty());
-
+    for(int i=0;i<backpoint.size();++i){
+        DelPtr(backpoint[i]);
+    }
+    vector<BackPoint*>().swap(backpoint);
     return parentNode;
 
 }
@@ -531,6 +538,7 @@ Literal * DiscrimationIndexing::FindNextDemodulator(TermCell *term, bool isEqual
 
 Literal * DiscrimationIndexing::FindDemodulator(uint32_t qTermPos, set<TermIndNode*, TermIndNode::cmp>::iterator&parentNodeIt, set<TermIndNode*, TermIndNode::cmp>::iterator & subNodeIt) {
 
+    
     return nullptr;
 
 }

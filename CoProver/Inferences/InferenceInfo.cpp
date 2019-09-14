@@ -17,6 +17,7 @@ string InferenceInfo::TOInferTypeNames[] = {
     "UD",   //unit reduce 单元子句约减
     "RN",   //rename
     "RD",   //reduce 合一下拉
+    "FACTOR",
     "SCS"   //矛盾体分离
 };
 

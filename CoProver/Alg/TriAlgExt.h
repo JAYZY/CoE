@@ -77,7 +77,7 @@ public:
     /// \param outStr
     /// \param newCla
     /// \return RuleOk; TAUTOLOGY；MoreLit
-    ResRule CheckAndFindUsed(Clause * actCla, vector<Literal*>&vNewR, vector<Clause*> &vTmpUsedCla);
+    ResRule CheckAndFindUsed(Clause * actCla, vector<Literal*>&vNewR );
 
     void OutTriAndR(vector<Literal*>&vNewR);
     void OutTri(string & sOutStr);

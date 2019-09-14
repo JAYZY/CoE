@@ -91,7 +91,7 @@ void ClauseSet::FreeAllClas() {
 }
 //删除子句,只是从集合中删除并不是真正删除该子句
 void ClauseSet::RemoveClause(Clause* cla) {
-    cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
+   // cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
     this->claLst.remove(cla);
     this->litNum-= cla->LitsNumber();
     --this->members;

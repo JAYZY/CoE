@@ -23,10 +23,10 @@
 class Formula {
 private:
     //谓词索引------
-    map<int32_t, vector<Literal*>> g_PostPred; //正谓词
-    map<int32_t, vector<Literal*>> g_NegPred; //负谓词
-    map<TermCell*, set<TermCell*>> g_PostEqn; //正等词列表 a=b a=c a=d;  //只有基项 才可以  
-    map<TermCell*, set<TermCell*>> g_NegEqn; //负等词 a!=b a!=c
+    map<int32_t, vector<Literal*>> g_PostPred;  //正谓词
+    map<int32_t, vector<Literal*>> g_NegPred;   //负谓词
+    map<TermCell*, set<TermCell*>> g_PostEqn;   //正等词列表 a=b a=c a=d;  //只有基项 才可以  
+    map<TermCell*, set<TermCell*>> g_NegEqn;    //负等词 a!=b a!=c
 
     //单文字子句
     // TermIndexing *unitTermIndex = nullptr; //单文字子句索引
@@ -36,11 +36,12 @@ private:
 
     //list<Clause*> axioms;
     ClauseSet* origalClaSet; //原始子句集合
-    ClauseSet* workClaSet; //处理后的子句集,(或工作子句集) --不包含单子子句和等词公理
+    
     Scanner* in;
 
 
 public:
+    ClauseSet* workClaSet; //处理后的子句集,(或工作子句集) --不包含单子子句和等词公理
     //公式集的相关信息
     uint32_t uEquLitNum; //等词个数
     uint32_t uNonHornClaNum; //非Horn子句个数

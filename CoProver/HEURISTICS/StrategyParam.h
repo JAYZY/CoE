@@ -62,6 +62,7 @@ public:
     static uint8_t LIT_REDUNDANCY_WIGHT; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
     static uint8_t LIT_OVERLIMIT_WIGHT; //文字超过限制,改变的优先级
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="启发式策略">
     static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
     static POSLIT_STEADY SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
@@ -96,7 +97,8 @@ public:
     static bool ADD_CR;
     static bool IS_ALitNoEqual; //主界线文字相同
     static bool IS_ALitEqualR; //主界线文字与R文字相同
-
+    
+    static bool ISFactor;//是否执行 因子规则 factor rule
 
 
 

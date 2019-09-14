@@ -57,6 +57,8 @@ private:
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
+    FILE* fTri; //.tri文件，完整的△输出-- 用于内部测试用
+    
 
     FILE* fGlobalInfo; //.g 文件,全局信息输出
     string outName; //输出名称
@@ -123,7 +125,10 @@ public:
         fwrite(msg.c_str(), 1, msg.length(), fRun);
         fflush(fRun);
     }
-
+    inline void outTriExt(const string&msg){
+            fwrite(msg.c_str(), 1, msg.length(), fTri);
+        fflush(fRun);
+    }
     inline FILE* GetfRun() {
         return fRun;
     }

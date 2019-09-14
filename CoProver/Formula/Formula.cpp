@@ -26,6 +26,8 @@ Formula::Formula() {
     this->origalClaSet = new ClauseSet();
     this->workClaSet = new ClauseSet();
     this->allTermIndex = nullptr;
+    this->unitClaIndex = nullptr;
+
     iniFolInfo();
 
 
@@ -37,8 +39,13 @@ Formula::Formula(const Formula& orig) {
 
 Formula::~Formula() {
     DelPtr(this->allTermIndex);
-    DelPtr(this->origalClaSet);
+
     DelPtr(this->workClaSet);
+
+    DelPtr(unitClaIndex);
+
+
+    //DelPtr(this->origalClaSet);
 }
 // <editor-fold defaultstate="collapsed" desc="等词公理添加">
 
@@ -322,7 +329,7 @@ RESULT Formula::preProcess() {
     /*Statistics--    */
     uint16_t uFSNum = 0; //向前归入冗余子句个数
     uint16_t uTautologyNum = 0; //恒真子句个数
-
+    uint16_t uFactorNum = 0;
     iniFolInfo();
 
     double startTime = CPUTime();
@@ -353,27 +360,37 @@ RESULT Formula::preProcess() {
             (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
         }
-        this->uMaxLitNum = MAX(this->uMaxLitNum, (*claIt)->LitsNumber());
+        //------ 对子句进行factor rule 约减 ------
+        Clause* factorCla = Simplification::FactorOnce((*claIt));
+
+        if (factorCla) {
+            ++uFactorNum;
+        } else {
+            factorCla = (*claIt);
+        }
+        this->uMaxLitNum = MAX(this->uMaxLitNum,factorCla->LitsNumber());
         //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
-        insertNewCla(*claIt);
+        insertNewCla(factorCla);
 
         //若为单元子句,检查是否有其他单元子句 合一
-        if ((*claIt)->isUnit()&&(isUnsat((*claIt)))) {
+        if (factorCla->isUnit()&&(isUnsat(factorCla))) {
             return RESULT::UNSAT;
         }
     }
 
-    StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
-    StrategyParam::HoldLits_NUM_LIMIT = 3;
-    StrategyParam::MaxLitNumOfNewCla = 1; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
-    StrategyParam::R_MAX_FUNCLAYER=12;
+
+    StrategyParam::MaxLitNumOfR = 2; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+    StrategyParam::HoldLits_NUM_LIMIT = 2;
+    StrategyParam::MaxLitNumOfNewCla = 3; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::R_MAX_FUNCLAYER = 8;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
     this->printOrigalClasInfo(stdout);
-    fprintf(stdout, "# Number Of Subsumption Clause  :%8u #\n", uFSNum);
-    fprintf(stdout, "# Number Of Tautology Clause    :%8u #\n", uTautologyNum);
+    fprintf(stdout, "# Number Of Subsumption Clause:%8u #\n", uFSNum);
+    fprintf(stdout, "# Number Of Tautology Clause  :%8u #\n", uTautologyNum);
+    fprintf(stdout, "# Number Of Factor  Clause    :%8u #\n", uFactorNum);
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
@@ -745,7 +762,7 @@ bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
             continue; //没有找到,重新查找下一个文字           
         }
         //== 可以匹配的文字集
-        vector<Literal*>*candVarLits = &((termIndNode)->leafs); 
+        vector<Literal*>*candVarLits = &((termIndNode)->leafs);
         Clause* candVarCla = nullptr; //待检查的归入冗余的候选子句
         //Literal* candVarLit = nullptr;
 
@@ -754,7 +771,7 @@ bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
             //------ 遍历候选文字集合.查找满足向前归入的文字
             for (int ind = 0; ind < candVarLits->size(); ++ind) {
                 candVarCla = candVarLits->at(ind)->claPtr; //候选子句                                               
-                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla && setUsedCla->find(candVarCla) != setUsedCla->end() ) ) { //找到查询子句中的文字.包括自己
+                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla && setUsedCla->find(candVarCla) != setUsedCla->end())) { //找到查询子句中的文字.包括自己
                     continue;
                 }
 

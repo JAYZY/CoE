@@ -22,7 +22,7 @@ public:
     TermCell* minTerm; /* A small (ideally the minimal possible) term, to be used for RHS instantiation. */
     
     vector<TermCell*> extIndex; /* 用来存储项的缩写形式 */
-    TermCellStore termStore; /*存放Term的hash结构 -- Here are the terms */
+    TermCellStore *termStore; /*存放Term的hash结构 -- Here are the terms */
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */

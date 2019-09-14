@@ -57,19 +57,19 @@ int main(int argc, char** argv) {
     Env::IniScanner(nullptr, const_cast<char*> (Env::tptpFileName.c_str()), true, nullptr);
 
     //生成公式集\子句-----------------
-    Formula* fol = new Formula();
-    fol->generateFormula(Env::getIn());
+    Formula  fol  ;
+    fol.generateFormula(Env::getIn());
     PaseTime("GenFormula_");
 
     //输出原始子句 
-    fol->printOrigalClaSet();
+    fol.printOrigalClaSet();
     FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
     //预处理操作---------------------       
-    RESULT res = fol->preProcess();
+    RESULT res = fol.preProcess();
     //添加等词公理
-    if (StrategyParam::ADD_EQULITY && fol->uEquLitNum > 0) {
-        fol->GenerateEqulitAxiom();
-        fol->printEqulityAxioms();
+    if (StrategyParam::ADD_EQULITY && fol.uEquLitNum > 0) {
+        fol.GenerateEqulitAxiom();
+        fol.printEqulityAxioms();
     }
 
     //输出预处理后子句 
@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
         Resolution resolution;
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
         // if (res == RESULT::UNKNOWN) {
-        //res = resolution.BaseAlg(fol); //使用记录路径的方式进行路径回退
-        res = resolution.BaseExtendAlg(fol); //使用记录路径的方式进行路径回退
+        //res = resolution.BaseAlg(&fol); //使用记录路径的方式进行路径回退
+        res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
         //}
     }
     string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";

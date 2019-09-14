@@ -45,7 +45,7 @@ public:
 			    replacing does not invalidate entries in ext_index(it would be pretty expensive in terms of time and memory), so higher
 			   layers have to take care of this if they want to both access terms via references and do replacing! */
 
-    TermCellStore termStore; /*存放Term的hash结构 -- Here are the terms */
+    TermCellStore* termStore; /*存放Term的hash结构 -- Here are the terms */
 
 public:
     /*---------------------------------------------------------------------*/
@@ -61,8 +61,7 @@ public:
     // <editor-fold defaultstate="collapsed" desc="Inline Function">   
 
     inline long TBStorageMEM() {
-        return sizeof (TermBank) + sizeof (TermCell) * termStore.entries +
-                termStore.argCount * sizeof (Term_p);
+        return sizeof (TermBank) + sizeof (TermCell) * termStore->entries +termStore->argCount * sizeof (Term_p);
     }
 
     /*清除所有变量名称*/
@@ -73,13 +72,13 @@ public:
 
     /* 返回非变元项个数 */
     inline long TBNonVarTermNodes() {
-        return termStore.entries;
+        return termStore->entries;
     }
 
     /* 返回神仙数字 项个数+函数项的元个数 */
     inline long TBStorage() {
-        return ( sizeof (TermCell) + 4 * sizeof (void*))* termStore.entries + termStore.argCount * sizeof (TermCell*);
-        //return TERMCELL_DYN_MEM * termStore.entries + termStore.argCount*sizeof(TermCell*);
+        return ( sizeof (TermCell) + 4 * sizeof (void*))* termStore->entries + termStore->argCount * sizeof (TermCell*);
+        //return TERMCELL_DYN_MEM * termStore->entries + termStore->argCount*sizeof(TermCell*);
     }
 
     /* 返回项是否为被标注- marked */

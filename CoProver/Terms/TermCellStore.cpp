@@ -16,11 +16,19 @@
 #include "TermCellStore.h"
 #include "TermCell.h"
 
+//TermCellStore::TermCellStore() {
+//    TERM_STORE_HASH_SIZE = 1024;
+//    TERM_STORE_HASH_MASK = TERM_STORE_HASH_SIZE - 1;
+//    entries = argCount = 0;
+//    
+//    store = new TermCell*[TERM_STORE_HASH_SIZE];
+//    memset(store, 0, sizeof (TermCell*) * TERM_STORE_HASH_SIZE);
+//    this->storeEleNum = 0;
+//    this->hashConflict = 0;
+//}
+
 TermCellStore::TermCellStore(int hashSize) : TERM_STORE_HASH_SIZE(hashSize), TERM_STORE_HASH_MASK(hashSize - 1), entries(0), argCount(0) {
-    /*E的代码： for(int i=0; i<TERM_STORE_HASH_SIZE; ++i)
-     {
-        store[i] = NULL;
-     }*/
+     
     //数组初始化改为：*store;//[TERM_STORE_HASH_SIZE];
     store = new TermCell*[TERM_STORE_HASH_SIZE];
     memset(store, 0, sizeof (TermCell*) * TERM_STORE_HASH_SIZE);
@@ -32,7 +40,7 @@ TermCellStore::TermCellStore(const TermCellStore& orig) {
 }
 
 TermCellStore::~TermCellStore() {
-    //TermCellStoreExit();
+    TermCellStoreExit();
 }
 
 /*---------------------------------------------------------------------*/
@@ -46,7 +54,7 @@ TermCellStore::~TermCellStore() {
 
 TermCell* TermCellStore::TermCellStoreInsert(TermCell* term) {
 
-    //term->hashIdx = TermCellHash(term);
+    term->hashIdx = TermCellHash(term);
     TermCell* ret = TermTree::TermTreeInsert(&(store[ TermCellHash(term) ]), term);
     if (!ret) {
         entries++;
@@ -60,6 +68,8 @@ void TermCellStore::TermCellStoreExit() {
         TermTree::TermTreeFree(store[i]);
         store[i] = nullptr;
     }
+    DelArrayPtr(store);
+
 }
 
 /***************************************************************************** 

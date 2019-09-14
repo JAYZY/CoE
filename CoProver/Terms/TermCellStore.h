@@ -29,13 +29,14 @@ public:
     //zj-add hash冲突次数
     long hashConflict;
     long storeEleNum;
-    
+
     TermCell* *store; //[TERM_STORE_HASH_SIZE];
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermCellStore(int hashSize = 1024);
+   // TermCellStore();
+    TermCellStore(int hashSize);
     TermCellStore(const TermCellStore& orig);
     virtual ~TermCellStore();
     void TermCellStoreExit();

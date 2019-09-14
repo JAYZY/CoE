@@ -289,7 +289,8 @@ public:
     //重新绑定文字列表,并重新计算
     void bindingLits(Literal* lit);
     void bindingAndRecopyLits(const vector<Literal*>&vNewR);
-
+    
+    
     void ClausePrint(FILE* out, bool fullterms);
     void getStrOfClause(string&outStr, bool complete = true);
 
@@ -306,8 +307,9 @@ public:
 
     // void ClauseNormalizeVars(VarBank_p fresh_vars);
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
-    Clause* renameCopy(VarBank_p renameVarbank);
+    Clause* RenameCopy(Literal* except);
 
+  
     //设置文字的变元共享状态
     void SetEqnListVarState();
     

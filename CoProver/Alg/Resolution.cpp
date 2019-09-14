@@ -206,10 +206,20 @@ RESULT Resolution::BaseExtendAlg(Formula *fol) {
     list<Clause*>* lsWorkClas = fol->getWorkClas();
     RESULT res = RESULT::UNKNOWN;
     TriAlgExt triAlgExt(fol);
+    int iter=0;
     while (true) {
-        lsWorkClas->sort(SortRule::ClaCmp);
+        string soutInfo="------扩展△次数:"+to_string(++iter)+"非单元集大小:"+to_string(fol->getWorkClas()->size())+"------\n";
+        cout<<soutInfo<<endl;
+        FileOp::getInstance()->outTriExt(soutInfo);
+        //非单元子句排序
+       fol->getWorkClas()->sort(SortRule::ClaCmp);
+        //单元子句排序
+       fol->unitClasSort();
+      // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
+      // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
+       
         //std::sort(lsWorkClas->begin(), lsWorkClas->end(), SortRule::ClaCmp);
-
+       
         res = triAlgExt.ExtendTri();
         if (RESULT::UNSAT == res) {
             break;

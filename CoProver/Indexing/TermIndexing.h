@@ -246,7 +246,7 @@ public:
     }
 
     ~DiscrimationIndexing() {
-        destroy();
+        //destroy();
         ClearVarLst();
 
 

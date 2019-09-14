@@ -130,7 +130,7 @@ public:
     uint16_t uMaxFuncLayer; //函数嵌套层
     uint8_t uMaxVarId; //最大变元Id -- 不超过256个
 
-    //FunCode hashIdx; //hash列表中存储的index(hash值)
+   FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
     static TermCell* parse_cons_list(Scanner* in, TermBank* tb);

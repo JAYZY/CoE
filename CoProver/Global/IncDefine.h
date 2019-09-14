@@ -67,7 +67,9 @@ enum class InfereType : uint16_t {
     UD,
     RN, //rename
     RD,//REDUCT 合一下拉
-    SCS//矛盾体分离    
+    FACTOR,
+    SCS//矛盾体分离 
+            
             
 };
 enum class ResRule : uint8_t {
