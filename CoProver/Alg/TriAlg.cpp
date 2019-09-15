@@ -182,6 +182,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
     subst->Clear();
 
     RESULT resTri = RESULT::NOMGU;
+
     //子句中文字的排序策略;文字的使用次数和发生冗余的次数会影响它的排序
     givenCla->SortLits();
 
@@ -189,12 +190,13 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
     Lit_p actLit = nullptr, pasLit = nullptr; //主动/被动归结文字
 
     uint16_t uActHoldLitNum = givenCla->LitsNumber(); //记录主动归结子句的剩余文字个数
+
     uint16_t uPasHoldLitNum = 0; //记录被动归结子句的剩余文字个数
-    //回退相关
-    vector<uint32_t> vRecodeBackPoint; //替换的回退点,每次成功一个配对 就记录一次 
-    vRecodeBackPoint.reserve(32);
-    vector<uint32_t> vPasCandBackPoint; //候选文字集序号的回退点
-    vPasCandBackPoint.reserve(32);
+    //------ 回退相关
+    //--- 替换的回退点,每次成功一个配对 就记录一次 
+    vector<uint32_t> vRecodeBackPoint;    vRecodeBackPoint.reserve(32);
+    //--- 候选文字集序号的回退点
+    vector<uint32_t> vPasCandBackPoint;    vPasCandBackPoint.reserve(32);
 
     vector<Literal*>* vCandLit = nullptr; //候选文字集合
     Clause* actCla = givenCla; //记录主动子句
@@ -202,21 +204,17 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
     int backpoint = 0; //合一替换的回退点
     uint32_t pasLitInd = 0; //被动归结文字序号
     bool isDeduct = false; //是否发生过归结
-    bool isRollback = false; //是否回退
-    /************************************************************************/
-    /*主动文字选择原则 ,1 尽量选择 负文字 2 尽量选择稳定度低的文字	
-    /************************************************************************/
+    bool isRollback = false; //是否回退   
     setUsedCla.insert(givenCla); //记录起步子句已经使用.
+
+    //对第一次参与归结的文字,修改属性为Hold
+    actCla->SetAllLitsHold();
+
     //对选择的子句 进行 单文字匹配
     actLit = actCla->literals;
-    while (actLit) {
-        //对第一次参与归结的文字,修改属性为Hold
-        actLit->EqnSetProp(EqnProp::EPIsHold);
-        actLit = actLit->next;
-    }
-    actLit = actCla->literals;
 
-    while (1) {
+    while (true) {
+        
         if (!isRollback) {
             //对主动子句 A.单文字匹配 B.确定起步文字actLit
             if (actLit) {
@@ -225,19 +223,17 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     actLit = actLit->next;
                     continue;
                 }
-                //对主动子句中的剩余文字进行单文字匹配
-                // if (unitResolutionrReduct(&actLit, uActHoldLitNum)) {
-                //     isDeduct = true;
-                // }
+                
                 //对主动子句中的剩余文字进行单文字匹配
                 int iUnitState = UnitClasReduct(&actLit, uActHoldLitNum);
+                
                 if (1 == iUnitState) {
                     return RESULT::UNSAT;
                 } else if (iUnitState >-1) {
                     isDeduct = true;
                 }
 
-                //主动归结子句,被单元子句约减后没有剩余文字。三角形停止延拓,并输出主界线和R(注意此时R并不一定为空)
+                //主动归结子句所有文字被下拉没有剩余文字。三角形停止延拓,并输出主界线和R(注意此时R并不一定为空)
                 if (actLit == nullptr) {
                     //1.输出主界线
                     string strOut = "\n";
@@ -276,6 +272,7 @@ RESULT TriAlg::GenreateTriLastHope(Clause * givenCla) {
                     }
                     return RESULT::SUCCES;
                 }
+                
                 //一旦 有剩余文字是单元子句,若该单元子句 找不到拓展的文字,则回退
                 if (isDeduct && 0 == vNewR.size()&& 1 == uActHoldLitNum) {
                     isDeduct = false; //合一&规则检查成功

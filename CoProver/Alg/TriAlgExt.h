@@ -47,20 +47,24 @@ public:
     /// \return 
     RESULT ExtendTri();
 
-    RESULT UnitClaReduce(Clause * actCla, vector<Literal*>&vHoldLits);
+    /// 单元子句下拉
+    /// \param actCla
+    /// \param vNewR
+    /// \return 
+    RESULT UnitClaReduce(Literal **actLit, Clause * actCla, vector<Literal*> &vNewR);
 
     /// 主界线下拉约减
     /// \param actCla
     /// \param vHoldLits
     /// \return 
-    RESULT MainTriReduce(Literal **actLit, vector<Literal*>&vHoldLits, vector<Literal*> &vNewR);
+    RESULT MainTriReduce(Literal **actLit, Clause* actCla, vector<Literal*> &vNewR);
     bool function(vector<Literal*>& vHoldLits, vector<Literal*>& vNewR, set<Literal*>& vDelLits, Literal* alitPtr, bool& res);
 
 
     /// 主界线下拉后的规则检查
     /// \return 
 
-    ResRule RuleCheck(Literal* alitPtr, vector<Literal*>& vHoldLits, vector<Literal*>& vNewR); //, uint8_t* vDelLits
+    ResRule RuleCheck(Literal* alitPtr , vector<Literal*>& vNewR); //, uint8_t* vDelLits
 
     //添加到新子句集中
     bool Add2NewClas(Clause* newClaA, InfereType infereType);

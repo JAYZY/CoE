@@ -209,7 +209,7 @@ RESULT Resolution::BaseExtendAlg(Formula *fol) {
     int iter=0;
     while (true) {
         string soutInfo="------扩展△次数:"+to_string(++iter)+"非单元集大小:"+to_string(fol->getWorkClas()->size())+"------\n";
-        cout<<soutInfo<<endl;
+      //  cout<<soutInfo<<endl;
         FileOp::getInstance()->outTriExt(soutInfo);
         //非单元子句排序
        fol->getWorkClas()->sort(SortRule::ClaCmp);

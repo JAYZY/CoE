@@ -18,7 +18,7 @@ using namespace std;
 
 Clause::Clause()
 : properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(0), priority(0) {
+, negLitNo(0), posLitNo(0), weight(0), priority(-1) {
     ident = ++Env::global_clause_counter;
     claTB = nullptr; // new TermBank(ident);
     infereType = InfereType::NONE;
@@ -33,7 +33,7 @@ Clause::Clause(const Clause* orig) {
     this->negLitNo = 0; //负文字个数
     this->posLitNo = 0; //正文字个数
     this->weight = 0; //子句权重
-    this->priority = 100;
+    this->priority = 1;
     this->claTB = orig->claTB;
     this->parentIds = orig->parentIds;
     this->infereType = orig->infereType;
