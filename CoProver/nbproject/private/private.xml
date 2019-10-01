@@ -16,11 +16,23 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlgExt.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/LiteralCompare.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.h</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Doc/record.log</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/main.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Global/Environment.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Global/IncDefine.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCell.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Indexing/TermIndexing.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Indexing/TermIndexing.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/SortRule.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.cpp</file>
         </group>
     </open-files>
 </project-private>

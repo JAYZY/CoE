@@ -23,6 +23,15 @@ enum class BackType : uint8_t {
     NoBack, ChgLit, ChgNext
 };
 
+//回退 类型
+
+enum class RollBackType : uint8_t {
+    NONE,
+    ChgPasCla, //回退延拓文字
+    ChgUnitLit, //回退单元下拉文字 -- 换一个单元文字下拉
+    ChgTriLit, //回退主界线下拉文字 -- 换一个主界线文字下拉
+};
+
 
 //主界线文字
 
@@ -49,7 +58,10 @@ typedef struct RollBackPoint {
     uint16_t substSize; //变元替换位置
     uint16_t delLitPos; //被删除文字的位置
     uint16_t uTriPos; //主界线的位置
+    uint16_t uHoldPos; //剩余文字列表大小
     uint matchPos; //匹配项的位置
+
+
     //vector<Literal*> vHoldLits; //该回退点被保留的文字
     // RollBackPoint(TermCell* t,mPos,sSize):term(t),matchPos(mPos),substSize(sSize){}
 } RollBackPiont, *RBPoint_p;
@@ -76,7 +88,10 @@ public:
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
     bool unitResolutionBySet(Literal* lit, int ind = 0);
 
-    int UnitClasReduct(Lit_p *actLit, uint16_t & uActHoldLitNum);
+    RESULT UnitClasReductByRollBack(Lit_p *actLit, uint16_t & uActHoldLitNum, vector<uint32_t>&vRecodeBackPoint, int ind);
+    RESULT UnitClasReductByFullPath(Lit_p *actLit, uint16_t & uActHoldLitNum, vector<uint32_t>&vRecodeBackPoint, int ind);
+
+
 public:
     TriAlg(Formula* _fol);
     TriAlg(const TriAlg& orig);
@@ -106,11 +121,12 @@ public:
         this->setUsedCla.clear();
 
         this->newClas.clear();
-        this->newClas.reserve(2);
+        this->newClas.reserve(8);
 
         assert(this->delUnitCla.empty());
         this->delUnitCla.reserve(4);
 
+        subst->Clear();
     }
 
     //销毁三角形过程中所有生成的单元子句副本(有变元的)
@@ -129,9 +145,9 @@ public:
     /*                          Member Function                            */
     /*---------------------------------------------------------------------*/
     RESULT GenreateTriLastHope(Clause* givenCla);
+    RESULT GenreateTriLastHopeOld(Clause* givenCla);
 
-    
-    
+
 
     /// 添加新子句到新子句集
     /// \param newClaA 需要添加的新子句
@@ -151,7 +167,7 @@ public:
      * @param isVarChg  归结过程中是否有变元变化
      * @return 
      */
-    ResRule RuleCheckOri(Literal*actLit, Literal* candLit, uint16_t& uPasClaHoldLitSize, bool isVarChg);
+    ResRule RuleCheckOri(Literal*actLit, Literal* candLit, vector<Literal*>&vPasHoldLits, bool isVarChg);
 
     //单元子句约减后的规则检查
     ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits, vector<Literal*>&vDelLit);
@@ -159,8 +175,14 @@ public:
     //原始的规则检查.不涉及过多的合一替换,只做规则检查的事情
     ResRule RuleCheckLastHope(Literal*actLit);
 
+    /// 主界线下拉约减
+    /// \param actCla
+    /// \param vHoldLits
+    /// \return 
+    RESULT MainTriReduce(Literal **actLit, Literal** pasLit, vector<uint32_t>&vRecodeBackPoint, vector<Literal*>&vPasHoldLits, uint32_t pasLitInd = 0);
+
     //生成一个新的子句时,遍历主界线对剩余文字进行合一下拉
-    int TriMguReduct();
+    RESULT TriMguReduct();
 
     //清楚三角形的所有变元绑定
     void ClearResVTBinding();
@@ -176,15 +198,60 @@ public:
     Clause* getNewCluase(Clause* pasCla);
 
     // <editor-fold defaultstate="collapsed" desc="输出相关">
+
+    inline void OutTriAndR(Clause * actCla, string info = "") {
+        outTri();
+        //=== 生成R输出信息
+        outR(actCla, info);
+        //=== 输出 .r 信息        
+    }
+
+    ///检查剩余文字是否超过函数层限制
+    /// \param vecLit
+    /// \return 
+
+    inline Literal* CheckDepthLimit(vector<Lit_p> vecLit) {
+        Lit_p rtnLit = nullptr;
+        for (Literal* vecLit : vecLit) {
+            //检查项的嵌套深度
+            if (!vecLit->CheckDepthLimit()) {
+                continue;
+            }
+            rtnLit = vecLit;
+            break;
+        }
+        return rtnLit;
+    }
+
+    inline void OutInvalidR() {
+        string sInfo = "| N";
+        FileOp::getInstance()->outRun(sInfo);
+    }
+    //重命名单元子句输出
+
+    inline void OutRNUnitCla(Clause* unitCla) {
+        //输出到.r文件
+        string str = "\n";
+        unitCla->literals->matchLitPtr->GetLitInfoWithSelf(str);
+        str += "\nR[" + to_string(unitCla->ident) + "]:";
+        unitCla->literals->GetLitInfoWithParent(str);
+        FileOp::getInstance()->outRun(str + "\n");
+    }
     void printTri(FILE* out);
 
     void printR(FILE* out, Literal* lit);
 
     void outTri();
     void outTri(vector<ALit_p>& vTri, string&outStr);
-    void outR(Clause * actCla);
+    void outR(Clause * actCla, string&info);
+
+
+
     void outNewClaInfo(Clause* newCla, InfereType infereType, set<Cla_p>*setUCla = nullptr);
     void OutNewClaInfo(Clause* newCla);
+
+
+
     // </editor-fold>
 
 

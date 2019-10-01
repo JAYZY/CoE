@@ -26,7 +26,7 @@ Literal::Literal() {
     claPtr = nullptr;
     parentLitPtr = nullptr;
     varState = VarState::unknown;
-    matchLitPtr=nullptr;
+    matchLitPtr = nullptr;
     //weight = 0;
     //  zjlitWight = 0;
 
@@ -281,7 +281,7 @@ VarState Literal::getVarState() {
     }
     return varState;
 }
-
+//不考虑变元绑定
 bool Literal::IsShareVar(Literal* litA) {
     if (this->claPtr != litA->claPtr)return false;
     if (this->varState == VarState::freeVar || litA->varState == VarState::freeVar || this->IsGround() || litA->IsGround()) {
@@ -312,12 +312,16 @@ bool Literal::IsShareVar(Literal* litA) {
             vecT.push_back(t->args[i]);
         }
     }
+
     assert(vecT.empty());
     if (litA->EqnIsEquLit()) {
         vecT.push_back(litA->rterm);
     }
+
     vecT.push_back(litA->lterm);
+
     while (!vecT.empty()) {
+
         TermCell* t = vecT.back();
         assert((-t->fCode) < 500);
         vecT.pop_back();
@@ -327,12 +331,14 @@ bool Literal::IsShareVar(Literal* litA) {
                 return true;
             }
         }
+
         for (int i = 0; i < t->arity; i++) {
             if (t->args[i]->IsGround())
                 continue;
             vecT.push_back(t->args[i]);
         }
     }
+
     return false;
 }
 
@@ -399,6 +405,7 @@ void Literal::getParentLitInfo(string& parentLitInfo) {
 /// 得到文字信息
 /// \param strLitInfo
 /// \return 
+
 const char* Literal::getLitInfo(string& strLitInfo) {
     // strLitInfo = "";
     strLitInfo += "[C" + to_string(this->claPtr->ident);
@@ -507,7 +514,7 @@ Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
     Term_p lt = lterm->RenameCopy(newCla->GetClaTB(), deref);
     Term_p rt = rterm->RenameCopy(newCla->GetClaTB(), deref);
     Literal* newLit = new Literal(lt, rt, false);
-    newLit->usedCount=this->usedCount;
+    newLit->usedCount = this->usedCount;
     newLit->claPtr = newCla;
     newLit->parentLitPtr = this;
     newLit->properties = this->properties;

@@ -457,10 +457,10 @@ TermIndNode * DiscrimationIndexing::FindForwordSubsumption(uint32_t qTermPos,
         }
     }
     assert(!parentNode->leafs.empty());
-    for(int i=0;i<backpoint.size();++i){
-        DelPtr(backpoint[i]);
-    }
-    vector<BackPoint*>().swap(backpoint);
+//    for(int i=0;i<backpoint.size();++i){
+//        DelPtr(backpoint[i]);
+//    }
+//    vector<BackPoint*>().swap(backpoint);
     return parentNode;
 
 }
@@ -479,6 +479,9 @@ TermIndNode * DiscrimationIndexing::NextForwordSubsump() {
     backpoint.pop_back();
 
     TermIndNode * rtnLit = FindForwordSubsumption(qTermPos, parentNode, subNodeIt);
+    if(rtnLit==nullptr){
+        assert(backpoint.empty());
+    }
     return rtnLit;
 }
 

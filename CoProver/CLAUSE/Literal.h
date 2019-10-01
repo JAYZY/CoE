@@ -993,6 +993,24 @@ public:
     void EqnFOFParse(Scanner* in, TermBank_p bank);
 
     bool equalsStuct(Literal * lit);
+    
+    /// 检查文字的函数嵌套是否超过限制 包括了变元绑定
+    /// \return  true -- 符合限制  false -- 检验没有通过
+    inline bool CheckDepthLimit(){
+        bool res=true;
+        int iDepth=lterm->CheckTermDepthLimit();
+        if(iDepth>-1){
+            if(this->EqnIsEquLit()){
+                iDepth=rterm->CheckTermDepthLimit();
+                if(-1==iDepth){
+                    res=false;
+                }
+            }
+        }else{
+            res=false;
+        }
+        return res;
+    }
     //根据选定的启发式策略来判断两个文字的比较结果
     CompareResult Compare(Literal * lit);
 

@@ -130,7 +130,7 @@ public:
     uint16_t uMaxFuncLayer; //函数嵌套层
     uint8_t uMaxVarId; //最大变元Id -- 不超过256个
 
-   FunCode hashIdx; //hash列表中存储的index(hash值)
+    FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
     static TermCell* parse_cons_list(Scanner* in, TermBank* tb);
@@ -146,7 +146,7 @@ public:
     /*构造函数 - 创建一个function term 函数符如　f */
     TermCell(long fCode, int arity);
     /*构造函数,copy TermCell*/
-   // TermCell(TermCell& orig);
+    // TermCell(TermCell& orig);
     virtual ~TermCell(); //代替 TermFree方法
 
     static void TermFree(TermCell* junk) {
@@ -248,32 +248,35 @@ public:
 
     /* 重新计算项的变元嵌套深度 - the depth of a term. */
     inline uint16_t TermDepth() {
-        
-        if(0==arity||this->IsVar())
+
+        if (0 == arity || this->IsVar())
             return 0;
         uint16_t maxdepth = 0, ldepth;
-        for (int i = 0; i < arity; ++i) {            
+        for (int i = 0; i < arity; ++i) {
             ldepth = args[i]->TermDepth();
             maxdepth = MAX(maxdepth, ldepth);
         }
         return maxdepth + 1;
     }
-    
-    //检查最大函数嵌套层限制. >0 -- 符合限制 -1 -- 不符合限制
+
+
+    /// 检查最大函数嵌套层限制. 包括了 变元绑定
+    /// \return >0 -- 函数嵌套层数 -1 -- 不符合限制
+
     inline int CheckTermDepthLimit() {
         uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
-            TermCell* term = TermCell::TermDerefAlways(args[i]);           
+            TermCell* term = TermCell::TermDerefAlways(args[i]);
             ldepth = term->IsGround() ? term->uMaxFuncLayer : ldepth = term->CheckTermDepthLimit();
-            
-            if (-1 == ldepth) return -1;
+            if (-1 == ldepth)
+                return -1;
             if (maxdepth < ldepth) {
                 maxdepth = ldepth;
                 if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
                     return -1;
             }
-        }        
-        return  maxdepth+1;
+        }
+        return maxdepth + 1;
     }
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
@@ -295,7 +298,6 @@ public:
         termName += to_string(-fCode);
         return termName.c_str();
     }
-   
 
     /* 返回项标示:变元为fCode,非变元为entryNo-即termbank中的下标位置 */
     inline long TBCellIdent() {

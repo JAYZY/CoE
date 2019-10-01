@@ -80,11 +80,11 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     if ((mydir = opendir(outDir.c_str())) == nullptr) {//目录不存在
         if (mkMultiDir(outDir) != 0) {
             Out::SysError("Create dir error %s", ErrorCodes::FILE_ERROR, outDir);
-            DelPtr(mydir);
+            closedir(mydir);
             return false;
         }
     }
-    DelPtr(mydir);
+    closedir(mydir);
     CloseAll();
 
     string tmpStr = outDir + tptpFileNameNoExt;

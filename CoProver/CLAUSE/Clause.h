@@ -148,6 +148,8 @@ public:
     InfereType infereType; //子句演绎类型;
     Literal* literals; //文字列表   
 
+    //------ 记录第一个文字的单元下拉位置
+    uint32_t uFirstURInd;
 
 
 public:
@@ -195,6 +197,21 @@ public:
         return literals;
     }
 
+    inline void PutFirstLitToLast() {
+        assert(literals);
+        if (1 == this->LitsNumber())
+            return;
+        Literal* p = this->literals;
+        while (p->next) {
+            p = p->next;
+        }
+        p->next = literals;
+        this->literals = literals->next;
+        p->next = nullptr;
+    }
+    /// 得到子句的最小函数嵌套层
+    /// \return 
+
     inline uint16_t MinFuncLayer() {
 
         Literal* lit = this->literals;
@@ -203,9 +220,22 @@ public:
             lit = lit->next;
             if (lit == nullptr)
                 break;
-            minFuncLayer=MIN( minFuncLayer,lit->MaxFuncLayer());
+            minFuncLayer = MIN(minFuncLayer, lit->MaxFuncLayer());
         }
         return minFuncLayer;
+    }
+    /// 检查子句中是否有文字满足函数嵌套要求
+    /// \return 第一个满足要求的文字， nullptr 均不符合要求
+
+    inline Literal* CheckDepthLimit() {
+        Literal* litP = this->literals;
+        while (litP) {
+            if (litP->CheckDepthLimit()) {
+                return litP;
+            }
+            litP = litP->next;
+        }
+        return nullptr;
     }
 
     inline uint32_t GetClaId() {
@@ -224,7 +254,7 @@ public:
     inline uint16_t LitsNumber() const {
         return posLitNo + negLitNo;
     }
-    
+
     inline bool ClauseIsEmpty() {
         return 0 == LitsNumber();
     }
@@ -246,16 +276,21 @@ public:
     inline bool isDel() {
         return this->ClauseQueryProp(ClauseProp::CPDeleteClause);
     }
-    inline void SetAllLitsHold(){
-        Literal* litPtr=this->literals;
-        while(litPtr){
+
+    inline bool isGoal() {
+        return posLitNo == 0;
+    }
+
+    inline void SetAllLitsHold() {
+        Literal* litPtr = this->literals;
+        while (litPtr) {
             litPtr->EqnSetProp(EqnProp::EPIsHold);
-            litPtr->matchLitPtr=nullptr;
-            litPtr=litPtr->next;
+            litPtr->matchLitPtr = nullptr;
+            litPtr = litPtr->next;
         }
     }
     //modify ClauseProperties to int
-    
+
     inline void ClauseDelProp(ClauseProp prop) {
         DelProp(this->properties, prop);
     }
@@ -289,8 +324,8 @@ public:
     //重新绑定文字列表,并重新计算
     void bindingLits(Literal* lit);
     void bindingAndRecopyLits(const vector<Literal*>&vNewR);
-    
-    
+
+
     void ClausePrint(FILE* out, bool fullterms);
     void getStrOfClause(string&outStr, bool complete = true);
 
@@ -309,12 +344,13 @@ public:
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
     Clause* RenameCopy(Literal* except);
 
-  
+
     //设置文字的变元共享状态
     void SetEqnListVarState();
-    
+
     uint16_t calcMaxFuncLayer() const;
 
+    Literal* GetFirstHoldLit()const;
     Literal* FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal

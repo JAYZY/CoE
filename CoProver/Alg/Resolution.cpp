@@ -51,19 +51,18 @@ RESULT Resolution::BaseAlg(Formula* fol) {
     set<Clause*> notStartClaSet;
     RESULT res = RESULT::UNKNOWN;
     TriAlg triAlg(fol);
-    StrategyParam::isFullUC = false;
+    StrategyParam::isFullUC = true;
     double startTime = CPUTime();
-    bool isCheckT = true;
+    bool isCheckT = false;
+
+
+
+    Clause* selCla = nullptr;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
 
-        //先允许非充分的下拉策略 1分钟，再允许 充分下拉策略
-        if (isCheckT && CPUTime() - startTime > 60) {
-            cout << "debug: run full UD" << endl;
-            isCheckT = false;
-            StrategyParam::isFullUC = true;
-            itSelCla = fol->getWorkClas()->begin();
-        }
-
+        //单元子句排序
+        fol->unitClasSort();
+       
         //if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
         //构建三角形               
         ++iterNum;
@@ -76,8 +75,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         }
         //debug if(iterNum==354)                    printf("Debug:");
         //定义起步子句
-        Clause* selCla = *itSelCla;
+        if (selCla == nullptr)
+            selCla = *itSelCla;
         res = triAlg.GenreateTriLastHope(selCla);
+        selCla = nullptr;
+
         /*判定不可满足*/
         if (res == RESULT::UNSAT) {
             assert(triAlg.vNewR.empty());
@@ -120,14 +122,13 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         //记录三角形构建次数
         //++iterNum;
 
-
-
         for (Clause* newCla : triAlg.newClas) {//对生成的新子句进行处理,A.backword subsump B.等词处理
             //若为单元子句,检查是否有其他单元子句 合一
             triAlg.OutNewClaInfo(newCla);
             if (newCla->isUnit() && (fol->isUnsat(newCla))) {
                 return RESULT::UNSAT;
             }
+
             //=== 若新子句为单元子句则做BS冗余检查,workset子句集中的子句是否为冗余子句
             {
                 //            if (newCla->isUnit()) {
@@ -157,20 +158,24 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
             //=== 修改新子句权重-------------
             int pri = 0;
-            Literal* tmpLit = newCla->literals;
-            for (; tmpLit; tmpLit = tmpLit->next) {
-                pri += tmpLit->parentLitPtr->claPtr->priority;
-            }
-            /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
-            //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
-            newCla->priority = pri / (int) (newCla->LitsNumber());
 
+            if (newCla->isGoal()) {
+                newCla->priority = 100;
+                //selCla = newCla;
+            } else {
+                Literal* tmpLit = newCla->literals;
+                for (; tmpLit; tmpLit = tmpLit->next) {
+                    pri += tmpLit->parentLitPtr->claPtr->priority;
+                }
+                /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+                //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
+                newCla->priority = pri / (int) (newCla->LitsNumber());
+            }
             fol->insertNewCla(newCla);
 
             //输出新子句到文件 .i
             // triAlg.outNewClaInfo(newCla, InfereType::SCS);
         }
-
 
         //改变参与归结的子句优先级,减1;  ---  理由:参与归结的子句 本质上是由 文字决定的,因此不需要改变参与子句的优先级,只需要改变起步子句的优先级即可
         //        for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
@@ -178,11 +183,11 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         //        });
         //只修改起步子句的优先级
         --(*itSelCla)->priority;
-
-        if ((++itSelCla) == fol->getWorkClas()->end()) {
-            // itSelCla = fol->getWorkClas()->begin();
-
-            itSelCla = fol->getNextStartClause();
+        if (selCla == nullptr) {
+            if ((++itSelCla) == fol->getWorkClas()->end()) {
+                 itSelCla = fol->getWorkClas()->begin();
+                //itSelCla = fol->getNextStartClause();
+            }
         }
         triAlg.subst->Clear();
         triAlg.disposeRNUnitCla(); //删除所有重命名的单元子句
@@ -206,20 +211,20 @@ RESULT Resolution::BaseExtendAlg(Formula *fol) {
     list<Clause*>* lsWorkClas = fol->getWorkClas();
     RESULT res = RESULT::UNKNOWN;
     TriAlgExt triAlgExt(fol);
-    int iter=0;
+    int iter = 0;
     while (true) {
-        string soutInfo="------扩展△次数:"+to_string(++iter)+"非单元集大小:"+to_string(fol->getWorkClas()->size())+"------\n";
-      //  cout<<soutInfo<<endl;
+        string soutInfo = "------扩展△次数:" + to_string(++iter) + "非单元集大小:" + to_string(fol->getWorkClas()->size()) + "------\n";
+        //  cout<<soutInfo<<endl;
         FileOp::getInstance()->outTriExt(soutInfo);
         //非单元子句排序
-       fol->getWorkClas()->sort(SortRule::ClaCmp);
+        fol->getWorkClas()->sort(SortRule::ClaCmp);
         //单元子句排序
-       fol->unitClasSort();
-      // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
-      // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
-       
+        fol->unitClasSort();
+        // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
+        // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
+
         //std::sort(lsWorkClas->begin(), lsWorkClas->end(), SortRule::ClaCmp);
-       
+
         res = triAlgExt.ExtendTri();
         if (RESULT::UNSAT == res) {
             break;

@@ -31,8 +31,7 @@ int main(int argc, char** argv) {
     paseTime("allSet_", initial_time);
 
 
-    initial_time = cpuTime();
-    memset(x, 0, olds * sizeof (int));
+    initial_time = cpuTime()    memset(x, 0, olds * sizeof (int));
 
     paseTime("allSet_", initial_time);
     DelArrayPtr(x);

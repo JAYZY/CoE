@@ -380,10 +380,10 @@ RESULT Formula::preProcess() {
     }
 
 
-    StrategyParam::MaxLitNumOfR = 2; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+    StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
     StrategyParam::HoldLits_NUM_LIMIT = 2;
-    StrategyParam::MaxLitNumOfNewCla = 3; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
-    StrategyParam::R_MAX_FUNCLAYER = 8;
+    StrategyParam::MaxLitNumOfNewCla =6; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::R_MAX_FUNCLAYER = 6;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
     fprintf(stdout, "%18s", "# =====Preprocess Information===========#\n");
@@ -410,14 +410,10 @@ bool Formula::isUnsat(Clause* unitCla) {
             if (unify.literalMgu(checkLit, candLit, subst)) //找到unsat
             {
                 string litInfo = "";
-                checkLit->getLitInfo(litInfo);
-                checkLit->getStrOfEqnTSTP(litInfo);
-
+                checkLit->GetLitInfoWithSelf(litInfo);  
                 string outStr = litInfo + "\n";
-
                 litInfo = "";
-                candLit->getLitInfo(litInfo);
-                candLit->getStrOfEqnTSTP(litInfo);
+                candLit->GetLitInfoWithSelf(litInfo);                
                 outStr += litInfo + "\n";
                 outStr += "[R]:空子句";
                 FileOp::getInstance()->outRun(outStr);
@@ -845,6 +841,7 @@ bool Formula::unitLitIsRundacy(Literal* unitLit) {
 void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     //插入到索引中    1.单元子句索引    2.全局索引
     Literal * lit = cla->Lits();
+    
     //添加到单元子句列表中
     if (cla->IsUnitPos()) {
         this->unitClaIndex->Insert(lit);
@@ -878,6 +875,8 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     } else if (posLitNum == 0) {//目标子句
         cla->priority = 100;
         this->addGoalClas(cla);
+        //添加目标子句
+       // this->workClaSet->InsertCla(cla);
         //目标子句优先,将目标子句的优先级改为一个较高的值(也可以试试 maxint)
 
     }

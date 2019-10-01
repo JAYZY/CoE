@@ -134,8 +134,8 @@ public:
      */
     inline void unitClasSort() {
         //对单元子句集合进行排序 
-        sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
-        sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
+       sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
+       sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
     }
 
 

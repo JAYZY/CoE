@@ -24,10 +24,16 @@ class UnitClaCompareWithWeight {
 public:
 
     bool operator()(Clause* cA, Clause* cB) {
+        //目标子句优先
+
+        int iGoal = cA->isGoal() - cB->isGoal();
+        if (iGoal != 0) {
+            return iGoal < 0;
+        }
         int uesdCount = cA->literals->usedCount - cB->literals->usedCount;
         if (uesdCount == 0)
-            return cA->Lits()->StandardWeight() > cB->Lits()->StandardWeight();
-        return uesdCount<0; //优先使用使用次数少的
+            return cA->Lits()->StandardWeight() < cB->Lits()->StandardWeight();
+        return uesdCount < 0; //优先使用使用次数少的
     }
 };
 

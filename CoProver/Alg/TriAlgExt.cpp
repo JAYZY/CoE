@@ -759,13 +759,11 @@ void TriAlgExt::OutR(vector<Literal*>&vNewR, string & outStr) {
     } else {
         //输出R  
         outStr += "R[" + to_string(Env::global_clause_counter) + "]";
-        vNewR[0]->getLitInfo(outStr);
-        vNewR[0]->getStrOfEqnTSTP(outStr);
+        vNewR[0]->GetLitInfoWithSelf(outStr);        
         for (int i = 1; i < uSizeR; ++i) {
-
             outStr += "+";
-            vNewR[i]->getLitInfo(outStr);
-            vNewR[i]->getStrOfEqnTSTP(outStr);
+            vNewR[i]->GetLitInfoWithSelf(outStr);
+            
         }
         outStr += "\n";
     }
