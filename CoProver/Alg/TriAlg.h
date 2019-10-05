@@ -58,7 +58,7 @@ typedef struct RollBackPoint {
     uint16_t substSize; //变元替换位置
     uint16_t delLitPos; //被删除文字的位置
     uint16_t uTriPos; //主界线的位置
-    uint16_t uHoldPos; //剩余文字列表大小
+    //uint16_t uHoldPos; //剩余文字列表大小
     uint matchPos; //匹配项的位置
 
 
@@ -89,7 +89,7 @@ public:
     bool unitResolutionBySet(Literal* lit, int ind = 0);
 
     RESULT UnitClasReductByRollBack(Lit_p *actLit, uint16_t & uActHoldLitNum, vector<uint32_t>&vRecodeBackPoint, int ind);
-    RESULT UnitClasReductByFullPath(Lit_p *actLit, uint16_t & uActHoldLitNum, vector<uint32_t>&vRecodeBackPoint, int ind);
+    RESULT UnitClasReductByFullPath(Lit_p *actLit /*, uint16_t & uActHoldLitNum*/, vector<uint32_t>&vRecodeBackPoint, int ind);
 
 
 public:
@@ -211,6 +211,7 @@ public:
     /// \return 
 
     inline Literal* CheckDepthLimit(vector<Lit_p> vecLit) {
+        assert(!vecLit.empty());
         Lit_p rtnLit = nullptr;
         for (Literal* vecLit : vecLit) {
             //检查项的嵌套深度
@@ -235,6 +236,9 @@ public:
         unitCla->literals->matchLitPtr->GetLitInfoWithSelf(str);
         str += "\nR[" + to_string(unitCla->ident) + "]:";
         unitCla->literals->GetLitInfoWithParent(str);
+        //debug:
+        if(unitCla->ident==249)
+            cout<<endl;
         FileOp::getInstance()->outRun(str + "\n");
     }
     void printTri(FILE* out);

@@ -59,9 +59,9 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
     Clause* selCla = nullptr;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
-
+        
         //单元子句排序
-        fol->unitClasSort();
+       // fol->unitClasSort();
        
         //if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
         //构建三角形               

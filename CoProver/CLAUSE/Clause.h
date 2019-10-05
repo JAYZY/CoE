@@ -201,13 +201,15 @@ public:
         assert(literals);
         if (1 == this->LitsNumber())
             return;
-        Literal* p = this->literals;
+        Literal* p ,*q;
+        q= this->literals;
+        this->literals = literals->next;
+        p=this->literals;
         while (p->next) {
             p = p->next;
         }
-        p->next = literals;
-        this->literals = literals->next;
-        p->next = nullptr;
+        p->next = q;
+        q->next = nullptr;
     }
     /// 得到子句的最小函数嵌套层
     /// \return 

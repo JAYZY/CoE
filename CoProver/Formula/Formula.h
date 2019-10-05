@@ -25,6 +25,11 @@ private:
     //谓词索引------
     map<int32_t, vector<Literal*>> g_PostPred;  //正谓词
     map<int32_t, vector<Literal*>> g_NegPred;   //负谓词
+    
+    map<int32_t, vector<Literal*>> g_UnitPostPred;  //正单元子句谓词
+    map<int32_t, vector<Literal*>> g_UnitNegPred;   //负单元子句谓词
+    
+    
     map<TermCell*, set<TermCell*>> g_PostEqn;   //正等词列表 a=b a=c a=d;  //只有基项 才可以  
     map<TermCell*, set<TermCell*>> g_NegEqn;    //负等词 a!=b a!=c
 
@@ -175,9 +180,16 @@ public:
     void insertNewCla(Cla_p cla, bool isEquAxiom = false);
     //删除子句
     void removeWorkCla(Cla_p cal);
+    
+    /// 添加单元子句的谓词对应表
+    /// \param unitCla
+    void AddUnitPredLst(Clause* unitCla);
     //添加谓词符号到全局列表中  
     void AddPredLst(Clause * cla);
     vector<Literal*>* getPredLst(Literal * lit);
+    
+    /*得到互补单元谓词候选文字集合*/
+    vector<Literal*>* getPairUnitPredLst(Literal * lit);
     /*得到互补谓词候选文字集合*/
     vector<Literal*>* getPairPredLst(Literal * lit);
     //输出公式集的信息

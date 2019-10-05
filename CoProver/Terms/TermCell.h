@@ -266,7 +266,7 @@ public:
     inline int CheckTermDepthLimit() {
         uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
-            TermCell* term = TermCell::TermDerefAlways(args[i]);
+             TermCell* term = TermCell::TermDerefAlways(args[i]);
             ldepth = term->IsGround() ? term->uMaxFuncLayer : ldepth = term->CheckTermDepthLimit();
             if (-1 == ldepth)
                 return -1;

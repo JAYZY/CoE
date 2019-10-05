@@ -368,7 +368,7 @@ RESULT Formula::preProcess() {
         } else {
             factorCla = (*claIt);
         }
-        this->uMaxLitNum = MAX(this->uMaxLitNum,factorCla->LitsNumber());
+        this->uMaxLitNum = MAX(this->uMaxLitNum, factorCla->LitsNumber());
         //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
         insertNewCla(factorCla);
@@ -382,7 +382,7 @@ RESULT Formula::preProcess() {
 
     StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
     StrategyParam::HoldLits_NUM_LIMIT = 2;
-    StrategyParam::MaxLitNumOfNewCla =6; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::MaxLitNumOfNewCla = 6; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
     StrategyParam::R_MAX_FUNCLAYER = 6;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
@@ -410,10 +410,10 @@ bool Formula::isUnsat(Clause* unitCla) {
             if (unify.literalMgu(checkLit, candLit, subst)) //找到unsat
             {
                 string litInfo = "";
-                checkLit->GetLitInfoWithSelf(litInfo);  
+                checkLit->GetLitInfoWithSelf(litInfo);
                 string outStr = litInfo + "\n";
                 litInfo = "";
-                candLit->GetLitInfoWithSelf(litInfo);                
+                candLit->GetLitInfoWithSelf(litInfo);
                 outStr += litInfo + "\n";
                 outStr += "[R]:空子句";
                 FileOp::getInstance()->outRun(outStr);
@@ -841,7 +841,7 @@ bool Formula::unitLitIsRundacy(Literal* unitLit) {
 void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     //插入到索引中    1.单元子句索引    2.全局索引
     Literal * lit = cla->Lits();
-    
+
     //添加到单元子句列表中
     if (cla->IsUnitPos()) {
         this->unitClaIndex->Insert(lit);
@@ -865,9 +865,13 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     if (isEquAxiom) {//如果是等词公理则不做处理，只加入等词公理集合，不加入workClaSet
 
         vEqulityAxiom.push_back(cla);
-        if (cla->LitsNumber() > 1) {
+        if (cla->isUnit()) {
+            this->AddUnitPredLst(cla);
+        } else {
+            assert(cla->LitsNumber() > 1);
             this->AddPredLst(cla);
         }
+
         return;
     }
     if (posLitNum > 1) {
@@ -876,12 +880,15 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
         cla->priority = 100;
         this->addGoalClas(cla);
         //添加目标子句
-       // this->workClaSet->InsertCla(cla);
+        // this->workClaSet->InsertCla(cla);
         //目标子句优先,将目标子句的优先级改为一个较高的值(也可以试试 maxint)
 
     }
-    //添加到公式集 谓词全局列表中[注意单文字子句不加入谓词列表] 
-    if (cla->LitsNumber() > 1) {
+    //添加到公式集 谓词全局列表中[注意单元子句和非单元子句分开加入谓词列表] 
+    if (cla->isUnit()) {
+        this->AddUnitPredLst(cla);
+    } else {
+        assert(cla->LitsNumber() > 1);
         this->AddPredLst(cla);
         //添加到处理后的子句集中
         this->workClaSet->InsertCla(cla);
@@ -894,6 +901,44 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
  */
 void Formula::removeWorkCla(Cla_p cal) {
     this->workClaSet->RemoveClause(cal); //暂时没有删除谓词链表
+}
+
+void Formula::AddUnitPredLst(Clause* unitCla) {
+    assert(unitCla->isUnit());
+    Literal* lit = unitCla->literals;
+    if (unitCla->IsUnitPos()) {
+        if (lit->EqnIsEquLit()) { //等词
+            if (!lit->IsOriented()) {
+                lit->EqnOrient();
+            }//确保左边项>右边项
+            //解决 a==b  b==c  ==> a==c
+            if (g_PostEqn[lit->lterm].find(lit->rterm) == g_PostEqn[lit->lterm].end()) {
+                g_PostEqn[lit->lterm].insert(lit->rterm);
+                if (g_PostEqn.find(lit->rterm) != g_PostEqn.end()) {
+                    g_PostEqn[lit->lterm].insert(g_PostEqn[lit->rterm].begin(), g_PostEqn[lit->rterm].end());
+                }
+            }
+            g_UnitPostPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
+        }
+        g_UnitPostPred[lit->lterm->fCode].push_back(lit);;
+    } else {
+        if (lit->EqnIsEquLit()) {
+            if (!lit->IsOriented()) {
+                lit->EqnOrient();
+            }
+            //确保左边项>右边项
+            //解决 a==b  b==c  ==> a==c
+            if (g_NegEqn[lit->lterm].find(lit->rterm) == g_NegEqn[lit->lterm].end()) {
+                g_NegEqn[lit->lterm].insert(lit->rterm);
+                if (g_NegEqn.find(lit->rterm) != g_NegEqn.end()) {
+                    g_NegEqn[lit->lterm].insert(g_NegEqn[lit->rterm].begin(), g_NegEqn[lit->rterm].end());
+                }
+            }
+            g_UnitNegPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
+        } else {
+            g_UnitNegPred[lit->lterm->fCode].push_back(lit);
+        }
+    }
 }
 //添加谓词符号到全局列表中
 //注意: 等词也加入pred列表.谓词符号为 0
@@ -937,6 +982,15 @@ void Formula::AddPredLst(Clause* cla) {
         }
         lit = lit->next;
     }
+}
+
+/*得到互补谓词候选文字集合*/
+vector<Literal*>* Formula::getPairUnitPredLst(Literal* lit) {
+    //debug    if (lit->EqnIsEquLit())        cout << "eqlit" << endl;
+    if (lit->IsPositive())
+        return (lit->EqnIsEquLit()) ? &g_UnitNegPred[0] : &g_UnitNegPred[lit->lterm->fCode];
+    else
+        return (lit->EqnIsEquLit()) ? &g_UnitPostPred[0] : &g_UnitPostPred[lit->lterm->fCode];
 }
 
 /*得到互补谓词候选文字集合*/
