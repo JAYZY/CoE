@@ -172,6 +172,7 @@ public:
     //读取.i文件生成最小路径文件.out
     void GenerateEmptyPath();
 
+      void GenrateEmptyPathNoRegex();
     void GetProblemInfo(string &strInfo) {
         strInfo = "% start to proof:" + this->tptpFileName;
         strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;

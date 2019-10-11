@@ -11,6 +11,7 @@
  * Created on 2017年12月13日, 下午1:50
  */
 #include "Global/IncDefine.h"
+#include "Global/GlobalFunc.h"
 #include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
 #include "Alg/Resolution.h"
@@ -21,23 +22,26 @@ using namespace std;
 #ifdef  TEST
 
 int main(int argc, char** argv) {
-    int size = 1000000000;
-    int olds = size / 3;
-    int *x;
-    x = new int[size];
-    double initial_time = cpuTime();
-    memset(x, 0, size * sizeof (int));
+    //    int size = 1000000000;
+    //    int olds = size / 3;
+    //    int *x;
+    //    x = new int[size];
+    //    double initial_time = cpuTime();
+    //    memset(x, 0, size * sizeof (int));
+    //
+    //    paseTime("allSet_", initial_time);
+    //
+    //
+    //    initial_time = cpuTime()    memset(x, 0, olds * sizeof (int));
+    //
+    //    paseTime("allSet_", initial_time);
+    //    DelArrayPtr(x);
 
-    paseTime("allSet_", initial_time);
 
-
-    initial_time = cpuTime()    memset(x, 0, olds * sizeof (int));
-
-    paseTime("allSet_", initial_time);
-    DelArrayPtr(x);
+     FileOp::GenrateEmptyPathNoRegex();
     return 0;
 }
-//
+
 #else
 
 int main(int argc, char** argv) {
@@ -56,7 +60,7 @@ int main(int argc, char** argv) {
     Env::IniScanner(nullptr, const_cast<char*> (Env::tptpFileName.c_str()), true, nullptr);
 
     //生成公式集\子句-----------------
-    Formula  fol  ;
+    Formula fol;
     fol.generateFormula(Env::getIn());
     PaseTime("GenFormula_");
 
@@ -80,13 +84,13 @@ int main(int argc, char** argv) {
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
         // if (res == RESULT::UNKNOWN) {
         res = resolution.BaseAlg(&fol); //使用记录路径的方式进行路径回退
-       // res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
+        // res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
         //}
     }
     string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";
     FileOp::getInstance()->outGlobalInfo(strRes);
     if (100 == (int) res) {
-        FileOp::getInstance()->GenerateEmptyPath();
+        FileOp::getInstance()->GenrateEmptyPathNoRegex();
     }
     //fol->printClas(stdout);
     //Env::getGTbank()->GTPrintAllTerm(stdout);

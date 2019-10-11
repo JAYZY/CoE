@@ -64,6 +64,7 @@ enum class CompareResult : uint8_t {
 
 enum class InfereType : uint16_t {
     NONE, //原始子句
+    BI,// BinerayInference
     UD,
     RN, //rename
     RD, //REDUCT 合一下拉

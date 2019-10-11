@@ -343,7 +343,7 @@ RESULT TriAlgExt::UnitClaReduce(Literal **actLit, Clause * actCla, vector<Litera
                         for (Literal* checkLitB = checkLitA->next; checkLitB; checkLitB = checkLitB->next) {
 
                             //检查是否恒真&相同
-                            if (checkLitA->equalsStuct(checkLitB)) {
+                            if (checkLitA->EqualsStuct(checkLitB)) {
                                 if (checkLitA->isSameProps(checkLitB)) { //相同文字，删除
                                     isHold = false;
                                     vDelActLit.push_back(checkLitA); //checkLitA->EqnDelProp(EqnProp::EPIsHold);                                    
@@ -776,7 +776,7 @@ void TriAlgExt::OutR(vector<Literal*>&vNewR, string & outStr) {
 ResRule TriAlgExt::CheckNewR(Literal* checkLit, vector<Literal*>& vNewR) {
     ResRule res = ResRule::RULEOK;
     for (auto&litR : vNewR) {
-        if (checkLit->equalsStuct(litR)) {
+        if (checkLit->EqualsStuct(litR)) {
             if (checkLit->isSameProps(litR)) {
                 //与已有的剩余文字相同，添加失败
                 res = ResRule::DelHoldLit;

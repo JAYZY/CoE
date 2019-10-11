@@ -55,11 +55,11 @@ typedef struct reduceLit {
 typedef struct RollBackPoint {
     Literal* litP; //对应的项 
 
-    uint16_t substSize; //变元替换位置
-    uint16_t delLitPos; //被删除文字的位置
+    uint16_t uSubstSize; //变元替换位置
+    uint16_t uVecLitsPos; //文字列表的位置 delLitPos
     uint16_t uTriPos; //主界线的位置
     //uint16_t uHoldPos; //剩余文字列表大小
-    uint matchPos; //匹配项的位置
+    uint uMatchPos; //匹配项的位置
 
 
     //vector<Literal*> vHoldLits; //该回退点被保留的文字
@@ -83,6 +83,9 @@ public:
     set<Cla_p> setUsedCla; //已经归结过的子句，不再比较；
 
     vector<Clause*> delUnitCla; //存储需要最后清理的单元子句副本
+
+    vector<Clause*> vSpecialCla; //存储特殊的子句
+
     Formula* fol;
 
     bool unitResolutionrReduct(Literal* *actLit, uint16_t&uPasHoldLitNum);
@@ -123,6 +126,7 @@ public:
         this->newClas.clear();
         this->newClas.reserve(8);
 
+        disposeRNUnitCla(delUnitCla);
         assert(this->delUnitCla.empty());
         this->delUnitCla.reserve(4);
 
@@ -131,11 +135,13 @@ public:
 
     //销毁三角形过程中所有生成的单元子句副本(有变元的)
 
-    inline void disposeRNUnitCla() {
-        for (Clause* cla : delUnitCla) {
+    inline void disposeRNUnitCla(vector<Clause*>&vDelUnitclas) {
+        if (vDelUnitclas.empty())
+            return;
+        for (Clause* cla : vDelUnitclas) {
             DelPtr(cla);
         }
-        delUnitCla.clear();
+        vDelUnitclas.clear();
     }
 
     inline uint32_t getRNum() {
@@ -157,6 +163,8 @@ public:
     //二元子句与单元子句生成新子句
     RESULT GenByBinaryCla(Clause* givenCla);
 
+    //给定两个子句，得到它们的二元归结式，其中第二个子句为单元子句
+    RESULT BinaryInference(Clause* claA, Clause* unitClaB);
     ResRule RuleCheck(Literal*actLit, Literal* candLit, Lit_p *leftLit, uint16_t& uLeftLitInd);
 
     /**
@@ -199,7 +207,7 @@ public:
 
     // <editor-fold defaultstate="collapsed" desc="输出相关">
 
-    inline void OutTriAndR(Clause * actCla, string info = "") {
+    inline void OutTriAndR(Clause * actCla, const string&info = "") {
         outTri();
         //=== 生成R输出信息
         outR(actCla, info);
@@ -236,9 +244,7 @@ public:
         unitCla->literals->matchLitPtr->GetLitInfoWithSelf(str);
         str += "\nR[" + to_string(unitCla->ident) + "]:";
         unitCla->literals->GetLitInfoWithParent(str);
-        //debug:
-        if(unitCla->ident==249)
-            cout<<endl;
+        //debug:        if (unitCla->ident == 249)            cout << endl;
         FileOp::getInstance()->outRun(str + "\n");
     }
     void printTri(FILE* out);
@@ -247,7 +253,7 @@ public:
 
     void outTri();
     void outTri(vector<ALit_p>& vTri, string&outStr);
-    void outR(Clause * actCla, string&info);
+    void outR(Clause * actCla, const string&info);
 
 
 

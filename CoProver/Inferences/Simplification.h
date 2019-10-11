@@ -29,6 +29,8 @@ public:
     
     static Clause* FactorOnce(Clause* cla);
 
+    static Clause* Factor(Clause* cla);
+    
     //检查子句 genCla是否有效,有任意替换r使得 g*r = c ?
     static bool ForwardSubsumption(Clause* genCla, TermIndexing* indexing);
     //检查单元子句(文字)是否有效,有任意替换r使得 g r =c?

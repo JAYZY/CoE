@@ -282,6 +282,7 @@ VarState Literal::getVarState() {
     return varState;
 }
 //不考虑变元绑定
+
 bool Literal::IsShareVar(Literal* litA) {
     if (this->claPtr != litA->claPtr)return false;
     if (this->varState == VarState::freeVar || litA->varState == VarState::freeVar || this->IsGround() || litA->IsGround()) {
@@ -630,14 +631,21 @@ void Literal::EqnFOFParse(Scanner* in, TermBank_p bank) {
 
 //检查两个文字 是否相同（包含了其中的变元替换）
 
-bool Literal::equalsStuct(Literal* lit) {
+bool Literal::EqualsStuct(Literal* lit) {
     if (this->lterm->equalStruct(lit->lterm) && this->rterm->equalStruct(lit->rterm))
         return true;
     //考虑等词情况
-    if (this->lterm->equalStruct(lit->rterm) && this->rterm->equalStruct(lit->lterm))
+    if (this->EqnIsEquLit() && this->lterm->equalStruct(lit->rterm) && this->rterm->equalStruct(lit->lterm))
         return true;
     return false;
-
+}
+//检查两个文字是否相同，在同一个子句中有共同项；
+bool Literal::EqnEqual(Literal* lit){
+    bool res=(this->lterm==lit->lterm)&&(this->rterm==lit->rterm);
+    if(!res){
+        res=(this->lterm==lit->rterm)&&(this->rterm==lit->lterm);
+    }
+    return res;
 }
 
 
@@ -851,4 +859,23 @@ void Literal::EqnListFree(Literal* lst) {
         lst = lst->next;
         DelPtr(handle);
     }
+}
+
+int Literal::EqnListRemoveDuplicates(Literal* lst) {
+    Literal** handle;
+    int removed = 0;
+
+    while (lst) {
+        handle = &(lst->next);
+        while (*handle) {
+            if ((*handle)->EqnEqual(lst)) {
+                EqnListDeleteElement(handle);
+                removed++;
+            } else {
+                handle = &((*handle)->next);
+            }
+        }
+        lst = lst->next;
+    }
+    return removed;
 }

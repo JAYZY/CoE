@@ -22,7 +22,7 @@ Clause::Clause()
     ident = ++Env::global_clause_counter;
     claTB = nullptr; // new TermBank(ident);
     infereType = InfereType::NONE;
-    uFirstURInd=0;
+    uFirstURInd = 0;
 }
 
 Clause::Clause(const Clause* orig) {
@@ -104,6 +104,27 @@ Clause::~Clause() {
 /*                  Member Function-[public]                           */
 
 /*---------------------------------------------------------------------*/
+void Clause::RecomputeLitCounts() {
+
+
+    posLitNo = 0;
+    negLitNo= 0;
+    int iLitPos = 0;
+    for (Literal* handle = this->literals; handle; handle = handle->next) {
+        handle->EqnSetProp(EqnProp::EPIsHold);
+        handle->claPtr = this; /*指定当前文字所在子句*/
+        handle->pos = ++iLitPos;
+        assert(iLitPos < UINT8_MAX);
+        if (handle->IsPositive()) {
+            ++posLitNo;
+        } else {
+            ++negLitNo;
+        }
+    }
+
+
+
+}
 
 /// 给一个没有绑定文字链的子句,绑定一个文字链 lit
 /// \param lit
@@ -122,6 +143,7 @@ void Clause::bindingLits(Literal* litLst) {
         litLst->EqnSetProp(EqnProp::EPIsHold);
         litLst->claPtr = this; /*指定当前文字所在子句*/
         litLst->pos = ++iLitPos;
+        assert(iLitPos < UINT8_MAX);
         next = litLst->next;
         if (litLst->IsPositive()) {
             posLitNo++;
@@ -637,6 +659,7 @@ Clause* Clause::RenameCopy(Literal* except) {
     Lit_p newlist = nullptr;
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
+    uint8_t iLitPos = 0;
     while (lit) {
         if (lit == except) {
             lit = lit->next;
@@ -648,11 +671,14 @@ Clause* Clause::RenameCopy(Literal* except) {
             ++newCla->negLitNo;
         }
         *insert = lit->RenameCopy(newCla);
-        newCla->weight = lit->StandardWeight(true);
+        (*insert)->SetHold();
+        (*insert)->claPtr = newCla;
+        (*insert)->pos = ++iLitPos;
+        assert(iLitPos < UINT8_MAX);
+        newCla->weight = (*insert)->StandardWeight(true);
         insert = &((*insert)->next);
         lit = lit->next;
     }
-
     *insert = nullptr;
     newCla->literals = newlist;
     return newCla;

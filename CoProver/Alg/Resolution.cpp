@@ -54,41 +54,23 @@ RESULT Resolution::BaseAlg(Formula* fol) {
     StrategyParam::isFullUC = true;
     double startTime = CPUTime();
     bool isCheckT = false;
-
-
-
-    Clause* selCla = nullptr;
+    set<Clause*> setDealedUnitCla; //已经 处理过得单元子句不再二元归结（只做一次自己和自己归结）
+    Clause* selCla = *itSelCla;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
-        
-        //单元子句排序
-       // fol->unitClasSort();
-       
-        //if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
         //构建三角形               
         ++iterNum;
-        if ((*itSelCla)->isDel()) {//|| (isBinaryCla&&(*itSelCla)->LitsNumber()<3)) {
-            ++itSelCla;
-            if (itSelCla == fol->getWorkClas()->end())
-                itSelCla = fol->getWorkClas()->begin();
+        //单元子句排序         // fol->unitClasSort();        //可满足判定  if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
 
-            continue;
-        }
-        //debug if(iterNum==354)                    printf("Debug:");
-        //定义起步子句
-        if (selCla == nullptr)
-            selCla = *itSelCla;
+        assert(selCla);
         res = triAlg.GenreateTriLastHope(selCla);
-        selCla = nullptr;
-
         /*判定不可满足*/
         if (res == RESULT::UNSAT) {
             assert(triAlg.vNewR.empty());
             fprintf(stdout, "Start From Clause %u,proof found!\n", (*itSelCla)->ident);
-            //triAlg.outNewClaInfo(nullptr, InfereType::SCS);
             return RESULT::UNSAT;
         }
         // ======  子句起步没有构建任何三角形 ======
-        if (res == RESULT::NOMGU) {
+        if (RESULT::NOMGU == res) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 // fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
@@ -96,102 +78,129 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     cout << "UNKNOWN" << endl;
                     return RESULT::UNKNOWN;
                 }
-
-                //修改文字个数限制
-                StrategyParam::MaxLitNumOfR;
-                ++StrategyParam::MaxLitNumOfNewCla;
-                if (StrategyParam::MaxLitNumOfNewCla > fol->uMaxLitNum + 1) {
+                //修改文字个数限制--只修改 ,新子句中文字的个数，R延拓的个数不增加
+                if (++StrategyParam::MaxLitNumOfNewCla > fol->uMaxLitNum) {
                     //StrategyParam::MaxLitNumOfR = 1;
-                    StrategyParam::MaxLitNumOfNewCla = 1;
-
+                    StrategyParam::MaxLitNumOfNewCla = StrategyParam::MaxLitNumOfR;
                 }
-                itSelCla = fol->getNextStartClause();
-
                 FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::MaxLitNumOfR) + "\n");
                 notStartClaSet.clear();
-            }
-
-            //fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
-            (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
-            if ((++itSelCla) == fol->getWorkClas()->end())
-                itSelCla = fol->getWorkClas()->begin();
-            triAlg.subst->Clear();
-            triAlg.disposeRNUnitCla();
-            continue;
-        }
-        //记录三角形构建次数
-        //++iterNum;
-
-        for (Clause* newCla : triAlg.newClas) {//对生成的新子句进行处理,A.backword subsump B.等词处理
-            //若为单元子句,检查是否有其他单元子句 合一
-            triAlg.OutNewClaInfo(newCla);
-            if (newCla->isUnit() && (fol->isUnsat(newCla))) {
-                return RESULT::UNSAT;
-            }
-
-            //=== 若新子句为单元子句则做BS冗余检查,workset子句集中的子句是否为冗余子句
-            {
-                //            if (newCla->isUnit()) {
-                //                set<Clause*>outDelClas;
-                //                newCla->ClauseTSTPPrint(stdout, true, true);
-                //                cout << endl;
-                //                if (Simplification::BackWardSubsumption(newCla, fol->allTermIndex, outDelClas)) {
-                //                    /*
-                //                     * 对冗余子句进行处理  若删除一个子句, 1,删除文字,2.全局索引需要删除 3.其他索引需要删除
-                //                     * 因此删除子句比较麻烦, 处理思路, 给子句做标注, 然后放到子句集末尾,.....
-                //                     */
-                //                    string newClaId = to_string(newCla->ident);
-                //                    for (Clause* delCla : outDelClas) {
-                //                        // fol->removeWorkCla(delCla);
-                //                        delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
-                //                        string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
-                //                        FileOp::getInstance()->outLog(strLog);
-                //
-                //                    }
-                //                }
-                //            }
-                //            if (newCla->LitsNumber() > StrategyParam::MaxLitNumOfNewCla) {
-                //                DelPtr(newCla);
-                //                continue;
-                //            }
-            }
-
-            //=== 修改新子句权重-------------
-            int pri = 0;
-
-            if (newCla->isGoal()) {
-                newCla->priority = 100;
-                //selCla = newCla;
+                itSelCla = fol->getNextStartClause();
             } else {
-                Literal* tmpLit = newCla->literals;
-                for (; tmpLit; tmpLit = tmpLit->next) {
-                    pri += tmpLit->parentLitPtr->claPtr->priority;
-                }
-                /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
-                //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
-                newCla->priority = pri / (int) (newCla->LitsNumber());
+                //fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
+                (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
+
+                if ((++itSelCla) == fol->getWorkClas()->end())
+                    itSelCla = fol->getWorkClas()->begin();
+                selCla = *itSelCla;
             }
-            fol->insertNewCla(newCla);
+            continue;
+        }// ======  △构建成功 ======
+        else if (RESULT::SUCCES == res) {
 
-            //输出新子句到文件 .i
-            // triAlg.outNewClaInfo(newCla, InfereType::SCS);
+            triAlg.subst->Clear();
+            // for (Clause* newCla : triAlg.newClas) {//对生成的新子句进行处理,A.backword subsump B.等词处理
+            uint32_t uNewClaSize = triAlg.newClas.size();
+            for (int i = 0; i < triAlg.newClas.size(); i++) {
+
+                Clause* newCla = triAlg.newClas[i];
+                if (newCla->ident >= 16765)
+                    cout << "debug" << endl;
+                triAlg.OutNewClaInfo(newCla);
+
+                //--- 若为单元子句,A. 检查是否有其他单元子句合一（UNSAT) B.用该单元子句与自己本身的子句进行二元归结，得到特殊子句优先使用 
+                if (newCla->isUnit()) {
+                    if (fol->isUnsat(newCla)) {
+                        return RESULT::UNSAT;
+                    }
+                    if (i < uNewClaSize) {
+                        Clause* claSelfDeduct = newCla->literals->parentLitPtr->claPtr;
+                        // if (setDealedUnitCla.find(claSelfDeduct) == setDealedUnitCla.end()) {
+
+                        RESULT ResBI = triAlg.BinaryInference(claSelfDeduct, newCla);
+                        if (RESULT::UNSAT == ResBI) {
+                            return RESULT::UNSAT;
+                        }
+                    } 
+//                    else {
+//                        setDealedUnitCla.insert(newCla);
+//                    }
+
+                    //}
+                    //切记，若单元子句与父子句进行归结（自归结） 结果为NOMGU,表明自归结失败不能再做尝试。
+                }
+
+                //=== 若新子句为单元子句则做BS冗余检查,workset子句集中的子句是否为冗余子句
+                {
+                    //            if (newCla->isUnit()) {
+                    //                set<Clause*>outDelClas;
+                    //                newCla->ClauseTSTPPrint(stdout, true, true);
+                    //                cout << endl;
+                    //                if (Simplification::BackWardSubsumption(newCla, fol->allTermIndex, outDelClas)) {
+                    //                    /*
+                    //                     * 对冗余子句进行处理  若删除一个子句, 1,删除文字,2.全局索引需要删除 3.其他索引需要删除
+                    //                     * 因此删除子句比较麻烦, 处理思路, 给子句做标注, 然后放到子句集末尾,.....
+                    //                     */
+                    //                    string newClaId = to_string(newCla->ident);
+                    //                    for (Clause* delCla : outDelClas) {
+                    //                        // fol->removeWorkCla(delCla);
+                    //                        delCla->ClauseSetProp(ClauseProp::CPDeleteClause); //设置被删除子句
+                    //                        string strLog = "[BS]C" + to_string(delCla->ident) + " removed by C" + newClaId + "\n";
+                    //                        FileOp::getInstance()->outLog(strLog);
+                    //
+                    //                    }
+                    //                }
+                    //            }
+                    //            if (newCla->LitsNumber() > StrategyParam::MaxLitNumOfNewCla) {
+                    //                DelPtr(newCla);
+                    //                continue;
+                    //            }
+                }
+
+                //=== 修改新子句权重-------------
+                int pri = 0;
+
+                if (newCla->isGoal()) {
+                    newCla->priority = 100;
+                    //selCla = newCla;
+                } else {
+                    for (Literal* tmpLit = newCla->literals; tmpLit; tmpLit = tmpLit->next) {
+                        pri += tmpLit->parentLitPtr->claPtr->priority;
+                    }
+                    /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
+                    //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
+                    newCla->priority = pri / (int) (newCla->LitsNumber());
+                }
+                fol->insertNewCla(newCla);
+            }
         }
-
         //改变参与归结的子句优先级,减1;  ---  理由:参与归结的子句 本质上是由 文字决定的,因此不需要改变参与子句的优先级,只需要改变起步子句的优先级即可
         //        for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
         //            --cla->priority;
         //        });
         //只修改起步子句的优先级
         --(*itSelCla)->priority;
-        if (selCla == nullptr) {
-            if ((++itSelCla) == fol->getWorkClas()->end()) {
-                 itSelCla = fol->getWorkClas()->begin();
-                //itSelCla = fol->getNextStartClause();
+
+        //--- 选择起步子句 --- 
+        //先从特殊子句集开始
+        if (!triAlg.vSpecialCla.empty()) {
+            selCla = triAlg.vSpecialCla.back();
+            triAlg.vSpecialCla.pop_back();
+        } else {
+            ++itSelCla;
+            if (itSelCla == fol->getWorkClas()->end())
+                itSelCla = fol->getWorkClas()->begin();
+            selCla = *itSelCla;
+            while (selCla->isDel()) {
+                ++itSelCla;
+                if (itSelCla == fol->getWorkClas()->end())
+                    itSelCla = fol->getWorkClas()->begin();
+                selCla = *itSelCla;
             }
         }
-        triAlg.subst->Clear();
-        triAlg.disposeRNUnitCla(); //删除所有重命名的单元子句
     }
+
+
     return RESULT::UNKNOWN;
 }
 
@@ -206,7 +215,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 /// \param fol
 /// \return 
 
-RESULT Resolution::BaseExtendAlg(Formula *fol) {
+RESULT Resolution::BaseExtendAlg(Formula * fol) {
     //排序目标子句--文字由多到少.
     list<Clause*>* lsWorkClas = fol->getWorkClas();
     RESULT res = RESULT::UNKNOWN;
@@ -238,7 +247,7 @@ RESULT Resolution::BaseExtendAlg(Formula *fol) {
 /// \param fol
 /// \return 
 
-RESULT Resolution::BaseAlgByOnlyBinaryCla(Formula* fol) {
+RESULT Resolution::BaseAlgByOnlyBinaryCla(Formula * fol) {
 
     //排序目标子句--文字由多到少.
     list<Clause*>* lsWorkClas = fol->getWorkClas();

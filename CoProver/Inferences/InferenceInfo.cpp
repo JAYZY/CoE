@@ -14,6 +14,7 @@
 #include "InferenceInfo.h"
 string InferenceInfo::TOInferTypeNames[] = {
     "NONE",
+    "BI",  //Bineray Inference
     "UD",   //unit reduce 单元子句约减
     "RN",   //rename
     "RD",   //reduce 合一下拉

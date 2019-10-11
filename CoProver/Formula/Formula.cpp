@@ -292,23 +292,26 @@ void Formula::generateFormula(Scanner* in) {
                         clause->ClauseParse(in);
                         //debug                        clause->GetClaTB()->TBPrintBankInOrder(stdout);
                         origalClaSet->InsertCla(clause);
-                        //                      printf("number of clause:%u\n", Env::global_clause_counter);
-                        //
-                        //                      cout << "exIndexSize:" << clause->GetClaTB()->extIndex.size() << endl;
-                        //                      cout << "inCount:" << clause->GetClaTB()->inCount << endl;
-                        //
-                        //                      //插入原始子句集
-                        //                      if (Env::global_clause_counter % 1000 == 0) {
-                        //                          printf("number of clause:%u\n", Env::global_clause_counter);
-                        //                          printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
-                        //                          printf("number of extIndex:%ld\n", Env::getGTbank()->extIndex.size());
-                        //                          printf("number of Sig:%ld\n", Env::getSig()->fInfo.size());
-                        //                             
-                        //                       // Env::getGTbank()->GTPrintAllTerm(stdout);
-                        //                          Env::PrintRusage(stdout);
-                        //                          printf("\n");
-                        //
-                        //                       }
+
+                        /*
+                        printf("number of clause:%u\n", Env::global_clause_counter);
+
+                        cout << "exIndexSize:" << clause->GetClaTB()->extIndex.size() << endl;
+                        cout << "inCount:" << clause->GetClaTB()->inCount << endl;
+
+                        //插入原始子句集
+                        if (Env::global_clause_counter % 1000 == 0) {
+                            printf("number of clause:%u\n", Env::global_clause_counter);
+                            printf("number of GTBankSize:%lu\n", Env::getGTbank()->inCount);
+                            printf("number of extIndex:%ld\n", Env::getGTbank()->extIndex.size());
+                            printf("number of Sig:%ld\n", Env::getSig()->fInfo.size());
+
+                            // Env::getGTbank()->GTPrintAllTerm(stdout);
+                            Env::PrintRusage(stdout);
+                            printf("\n");
+
+                        }
+                        */
                     }
                 }
             }
@@ -351,23 +354,27 @@ RESULT Formula::preProcess() {
             continue;
         }
 
-        //------ 检查子句是否为前归入冗余 ------
-        TermIndexing* indexing = ((*claIt)->LitsNumber() == 1) ? this->unitClaIndex : this->allTermIndex;
-        if (Simplification::ForwardSubsumption((*claIt), indexing)) {
-            ++uFSNum;
-            //fprintf(stdout, "C%ud is deled \n", (*claIt)->ident);
-            (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
-            (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
-            continue;
-        }
+       
         //------ 对子句进行factor rule 约减 ------
-        Clause* factorCla = Simplification::FactorOnce((*claIt));
+
+        Clause* factorCla = Simplification::Factor((*claIt));
 
         if (factorCla) {
             ++uFactorNum;
         } else {
             factorCla = (*claIt);
         }
+        
+         //------ 检查子句是否为前归入冗余 ------
+        TermIndexing* indexing = (factorCla->LitsNumber() == 1) ? this->unitClaIndex : this->allTermIndex;
+        if (Simplification::ForwardSubsumption(factorCla, indexing)) {
+            ++uFSNum;
+            //fprintf(stdout, "C%ud is deled \n", (*claIt)->ident);
+            factorCla->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
+            factorCla->priority = INT_MIN; //修改优先级为最小值 排序永远最后
+            continue;
+        }
+        
         this->uMaxLitNum = MAX(this->uMaxLitNum, factorCla->LitsNumber());
         //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
@@ -920,7 +927,8 @@ void Formula::AddUnitPredLst(Clause* unitCla) {
             }
             g_UnitPostPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
         }
-        g_UnitPostPred[lit->lterm->fCode].push_back(lit);;
+        g_UnitPostPred[lit->lterm->fCode].push_back(lit);
+        ;
     } else {
         if (lit->EqnIsEquLit()) {
             if (!lit->IsOriented()) {

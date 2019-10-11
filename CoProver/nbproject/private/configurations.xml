@@ -13,6 +13,8 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_init_file" value=""/>
@@ -26,19 +28,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/LCL687+1.005</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/LCL678+1.005.p
-</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/LCL678+1.005.p </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+2.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/KRS180+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2018/Convert/CNF_FNE/KRS187+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWV437+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR026+2.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL658+1.010.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR0115+11.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL658+1.010.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommand>
         <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -58,6 +59,8 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_source_dirs" value="."/>
@@ -70,15 +73,15 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR026+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR116+18.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SYN353+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS187+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS180+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+2.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWV437+1.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR026+2.P</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"     /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL658+1.010.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR026+2.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWV437+1.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommand>

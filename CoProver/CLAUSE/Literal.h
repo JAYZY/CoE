@@ -169,6 +169,14 @@ public:
         return EqnQueryProp(EqnProp::EPIsHold);
     }
 
+    inline void SetHold() {
+        EqnSetProp(EqnProp::EPIsHold);
+    }
+
+    inline void SetNoHold() {
+        EqnDelProp(EqnProp::EPIsHold);
+    }
+
     inline bool EqnIsEquLit() {
         return EqnQueryProp(EqnProp::EPIsEquLiteral);
     }
@@ -803,49 +811,23 @@ public:
 
     }
 
-    /***************************************************************************** 
-     * 将文字element 插入到文字pos的后面。Insert the element at the position defined by pos.
-     ****************************************************************************/
-    inline void EqnListInsertElement(Literal** pos, Literal * element) {
-        element->next = *pos;
-        *pos = element;
-    }
 
-    /***************************************************************************** 
-     * Delete the given element from the list.
-     ***************************************************************************/
-    inline void EqnListDeleteElement(Literal** element) {
-        Literal* handle = nullptr;
-        handle = EqnListExtractElement(element);
-        //释放文字对象，考虑需要重新把子句文字列表连接上
-        DelPtr(handle);
-        //EqnFree(handle);
-    }
-
-    /*****************************************************************************
-     * 返回文字列表中的文字。Take the given element out of the list and return a pointer to it. 
-     ****************************************************************************/
-    inline Literal * EqnListExtractElement(Literal** element) {
-        Literal* handle = *element;
-        assert(handle);
-        *element = handle->next;
-        handle->next = nullptr;
-        return handle;
-    }
 
     /// 得到文字的输出字符串，文字位置信息+文字内容字符串
     /// \param sOut
-    inline void GetLitInfoWithSelf(string&sOut,DerefType deref = DerefType::DEREF_ALWAYS) {
+
+    inline void GetLitInfoWithSelf(string&sOut, DerefType deref = DerefType::DEREF_ALWAYS) {
         this->getLitInfo(sOut);
-        this->getStrOfEqnTSTP(sOut,deref);
-     
+        this->getStrOfEqnTSTP(sOut, deref);
+
     }
-      /// 得到文字的输出字符串，父文字位置信息+文字内容字符串
+    /// 得到文字的输出字符串，父文字位置信息+文字内容字符串
     /// \param sOut
-    inline void GetLitInfoWithParent(string&sOut,DerefType deref = DerefType::DEREF_ALWAYS) {
+
+    inline void GetLitInfoWithParent(string&sOut, DerefType deref = DerefType::DEREF_ALWAYS) {
         this->getParentLitInfo(sOut);
-        this->getStrOfEqnTSTP(sOut,deref);
-        
+        this->getStrOfEqnTSTP(sOut, deref);
+
     }
     // </editor-fold>
 
@@ -992,22 +974,23 @@ public:
 
     void EqnFOFParse(Scanner* in, TermBank_p bank);
 
-    bool equalsStuct(Literal * lit);
-    
+    bool EqualsStuct(Literal * lit);
+    bool EqnEqual(Literal* lit);
     /// 检查文字的函数嵌套是否超过限制 包括了变元绑定
     /// \return  true -- 符合限制  false -- 检验没有通过
-    inline bool CheckDepthLimit(){
-        bool res=true;
-        int iDepth=lterm->CheckTermDepthLimit();
-        if(iDepth>-1){
-            if(this->EqnIsEquLit()){
-                iDepth=rterm->CheckTermDepthLimit();
-                if(-1==iDepth){
-                    res=false;
+
+    inline bool CheckDepthLimit() {
+        bool res = true;
+        int iDepth = lterm->CheckTermDepthLimit();
+        if (iDepth>-1) {
+            if (this->EqnIsEquLit()) {
+                iDepth = rterm->CheckTermDepthLimit();
+                if (-1 == iDepth) {
+                    res = false;
                 }
             }
-        }else{
-            res=false;
+        } else {
+            res = false;
         }
         return res;
     }
@@ -1015,12 +998,45 @@ public:
     CompareResult Compare(Literal * lit);
 
     /*---------------------------------------------------------------------*/
-    /*                          Static Function                            */
+    /*                         Eqn List 相关操作 Static Function                            */
     /*---------------------------------------------------------------------*/
+    // <editor-fold defaultstate="collapsed" desc="Eqn List 相关操作">
+
     //
     static void EqnListFree(Literal * lst);
+    //删除相同文字列表
+    static int EqnListRemoveDuplicates(Literal *lst);
 
+    /***************************************************************************** 
+     * 将文字element 插入到文字pos的后面。Insert the element at the position defined by pos.
+     ****************************************************************************/
+    inline static void EqnListInsertElement(Literal** pos, Literal * element) {
+        element->next = *pos;
+        *pos = element;
+    }
 
+    /***************************************************************************** 
+     * Delete the given element from the list.
+     ***************************************************************************/
+    inline static void EqnListDeleteElement(Literal** element) {
+        Literal* handle = nullptr;
+        handle = EqnListExtractElement(element);
+        //释放文字对象，考虑需要重新把子句文字列表连接上
+        DelPtr(handle);
+        //EqnFree(handle);
+    }
+
+    /*****************************************************************************
+     * 返回文字列表中的文字。Take the given element out of the list and return a pointer to it. 
+     ****************************************************************************/
+    inline static Literal * EqnListExtractElement(Literal** element) {
+        Literal* handle = *element;
+        assert(handle);
+        *element = handle->next;
+        handle->next = nullptr;
+        return handle;
+    }
+    // </editor-fold>
 };
 typedef Literal *Lit_p;
 #endif /* LITERAL_H */

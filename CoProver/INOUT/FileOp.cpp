@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include "HEURISTICS/StrategyParam.h"
 #include "CLAUSE/Clause.h"
+#include "Global/GlobalFunc.h"
 #include<regex>
 using namespace std;
 
@@ -58,10 +59,10 @@ void FileOp::CloseAll() {
         fclose(fLog);
     if (fUNSAT)
         fclose(fUNSAT);
-    if(fTri)
+    if (fTri)
         fclose(fTri);
-    
-    
+
+
 }
 
 /**
@@ -107,12 +108,12 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         return false;
     }
 
-    sFileName=tmpStr+".tri";
+    sFileName = tmpStr + ".tri";
     if ((fTri = fopen(sFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".tri");
         return false;
     }
-    
+
     if (fGlobalInfo)
         fclose(fGlobalInfo);
     sFileName = workDir + "proofRes.g";
@@ -282,7 +283,95 @@ void FileOp::GenerateEmptyPath() {
             }
         }
         string resPoof = "\n%------ Proof Process ------\n";
-        GetProblemInfo(resPoof);        
+        GetProblemInfo(resPoof);
+        for (auto id : outClaID) {
+            resPoof += allFOL[id][0] + "\n";
+        }
+        char sRusage[10000];
+        Env::PrintRusage(sRusage);
+        resPoof += sRusage;
+        fout << resPoof;
+        //outInfo(resPoof);
+        cout << resPoof;
+
+
+    } else { // 没有该文件
+        cout << "no such file" << endl;
+    }
+
+    fin.clear();
+    fin.close();
+}
+
+/**
+ * 读取.i文件生成最小路径文件.out 不用正则表达式方法 兼容低版本 g++
+ */
+void FileOp::GenrateEmptyPathNoRegex() {
+    //    string str1 = "/home/zj/Desktop/output/CSR115+11/CSR115+11.i";
+    //    string str2 = "/home/zj/Desktop/output/CSR115+11/CSR115+11.tmp";
+    ifstream fin(fInfoFileName, ios::in);
+    ofstream fout(fUnsatFileName, ios::out); //输出
+//    ifstream fin(str1, ios::in);
+//    ofstream fout(str2, ios::out); //输出
+    map<int, vector<string> > allFOL;
+    std::string line;
+
+    //    regex patternClaNo("c\\d+,", regex::icase);
+    //    regex patternUseNo("c\\d+", regex::icase);
+    bool newCla = false;
+
+    if (fin) {// 有该文件
+        while (getline(fin, line)) {
+            if (line == "") //空行
+                continue;
+            if ('#' == line[0]) {//注释语句
+                int x = line.find("New Clauses");
+                if (x != string::npos)
+                    newCla = true;
+
+                continue;
+            }
+            //提取子句编号
+            int iClaId = 0, iSubClaId = 0;
+            int iPos = FindClaId(line, &iClaId);
+            if (iPos>-1) {
+                allFOL[iClaId].push_back(line); //存储子句内容
+                if (newCla) { //若为新子句，提取新子句
+                    iPos = line.find("inference");
+                    assert(iPos>-1);
+
+                    while (iPos < line.size()) {
+                        iSubClaId = 0;
+                        iPos = FindClaId(line, &iSubClaId, iPos);
+                        if (iSubClaId != 0) {
+                            allFOL[iClaId].push_back(to_string(iSubClaId));
+                        }
+                    }
+                    if (line.find("$false") != string::npos) {
+                        allFOL[0].push_back(to_string(iClaId));
+                    }
+                }
+            }
+        }
+
+        //输出最短路径
+        set<int>outClaID;
+        int lastClaId = stoi(allFOL[0][0]);
+        outClaID.insert(lastClaId);
+        vector<string> st = allFOL[lastClaId];
+        swap(st[0], st[st.size() - 1]);
+        st.pop_back();
+
+        while (!st.empty()) {
+            int iClaId = stoi(st.back());
+            outClaID.insert(iClaId);
+            st.pop_back();
+            for (int i = 1; i < allFOL[iClaId].size(); ++i) {//说明不是原始子句
+                st.push_back(allFOL[iClaId][i]);
+            }
+        }
+        string resPoof = "\n%------ Proof Process ------\n";
+        GetProblemInfo(resPoof);
         for (auto id : outClaID) {
             resPoof += allFOL[id][0] + "\n";
         }

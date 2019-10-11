@@ -13,6 +13,7 @@
 #include "Unify.h"
 #include "CLAUSE/LiteralCompare.h"
 #include "INOUT/FileOp.h"
+#include "InferenceInfo.h"
 //map<TermCell*, int> Simplification::termcmp;
 
 Simplification::Simplification() {
@@ -28,7 +29,7 @@ bool Simplification::isTautology(Clause* cla) {
 
     for (Literal* litA = cla->literals; litA; litA = litA->next) {
         for (Literal* litB = litA->next; litB; litB = litB->next) {
-            if (litA->isComplementProps(litB) && litA->equalsStuct(litB)) {
+            if (litA->isComplementProps(litB) && litA->EqualsStuct(litB)) {
                 return true;
             }
         }
@@ -635,28 +636,58 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
 
 Clause* Simplification::FactorOnce(Clause* cla) {
     bool res = false;
+
     Unify unify;
-    Subst subSt;
+    Subst factorSubSt;
     Clause* newCla = nullptr;
     for (Lit_p litA = cla->literals; litA; litA = litA->next) {
         res = false;
         for (Lit_p litB = litA->next; litB; litB = litB->next) {
 
-            if (litA->isSameProps(litB) && unify.literalMgu(litA, litB, &subSt)) {
-                
-                
+            if (!litA->isSameProps(litB))
+                continue;
+            if (unify.literalMgu(litA, litB, &factorSubSt)) {
+
                 //约减成功
                 newCla = cla->RenameCopy(litB);
-                subSt.SubstBacktrack();
-                //检查包含冗余
-                if(cla->ident==1257)
-                    cout<<"DEbug";
+
+                //删除相同文字                
+                int iRemoveNum = Literal::EqnListRemoveDuplicates(newCla->literals);
+                newCla->RecomputeLitCounts();
+                
+                FileOp::getInstance()->outLog("cla_" + to_string(cla->ident) + " remove same literals:" + to_string(iRemoveNum) + "\n");
+
+                string sOut = "";
+                //输出 .r
+                for (Literal*tmpLit = cla->literals; tmpLit; tmpLit = tmpLit->next) {
+                    tmpLit->GetLitInfoWithSelf(sOut);
+                    sOut += "\n";
+                }
+                sOut += "R[" + to_string(newCla->ident) + "]";
+                Literal*tmpLit = newCla->literals;
+                tmpLit->GetLitInfoWithParent(sOut);
+                tmpLit = tmpLit->next;
+                for (; tmpLit; tmpLit = tmpLit->next) {
+                    sOut += "+";
+                    tmpLit->GetLitInfoWithParent(sOut);
+                }
+                factorSubSt.SubstBacktrack();
+                //检查包含冗余                if(cla->ident==1257)                    cout<<"DEbug";
                 if (ClauseSubsumeClause(cla, newCla)) {
                     res = true;
                     //添加推理类型
                     newCla->infereType = InfereType::FACTOR;
                     newCla->parentIds.insert(cla->ident);
                     FileOp::getInstance()->outLog("[S_FAT]:Factor C" + to_string(newCla->ident) + " From C" + to_string(cla->ident) + "\n");
+
+                    //输出 .r  
+                    FileOp::getInstance()->outRun(sOut);
+                    //输出 .i
+                    sOut = "";
+                    newCla->getStrOfClause(sOut, false);
+                    sOut += ",inference(" + InferenceInfo::getStrInfoType(newCla->infereType) + ",[status(thm)],[c" + to_string(cla->ident) + "]) ).\n";
+                    FileOp::getInstance()->outInfo(sOut);
+
 
                     //暂时不删除原始子句 -- 由调用来控制是否删除
                     //DelPtr(cla);
@@ -669,13 +700,36 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                     --Env::global_clause_counter;
                 }
 
-            }
+
+            } else
+                factorSubSt.SubstBacktrack();
             assert(false == res);
-           
+
 
         }
         if (res)
             break;
     }
     return newCla;
+}
+
+Clause* Simplification::Factor(Clause* cla) {
+
+    Clause* rtnCla = nullptr;
+    //debug        if (cla->ident == 10575)        cout << endl;
+
+    //CondensationAttempts++;
+    if ((cla->negLitNo > 1) || (cla->posLitNo > 1)) {
+        // clause->weight = ClauseStandardWeight(clause);
+
+        while (cla = FactorOnce(cla)) {
+            rtnCla = cla;
+        }
+        //        if (res) {
+        //            CondensationSuccesses++;
+        //            DocClauseModificationDefault(clause, inf_condense, NULL);
+        //            ClausePushDerivation(clause, DCCondense, NULL, NULL);
+        //        }
+    }
+    return rtnCla;
 }

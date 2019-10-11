@@ -201,10 +201,10 @@ public:
         assert(literals);
         if (1 == this->LitsNumber())
             return;
-        Literal* p ,*q;
-        q= this->literals;
+        Literal* p, *q;
+        q = this->literals;
         this->literals = literals->next;
-        p=this->literals;
+        p = this->literals;
         while (p->next) {
             p = p->next;
         }
@@ -283,6 +283,14 @@ public:
         return posLitNo == 0;
     }
 
+    inline void RemoveDuplicates() {
+        if (this->LitsNumber() > 1) {
+            if (Literal::EqnListRemoveDuplicates(this->literals) > 0) {
+                this->RecomputeLitCounts();
+            }
+        }
+    }
+
     inline void SetAllLitsHold() {
         Literal* litPtr = this->literals;
         while (litPtr) {
@@ -291,6 +299,8 @@ public:
             litPtr = litPtr->next;
         }
     }
+
+
     //modify ClauseProperties to int
 
     inline void ClauseDelProp(ClauseProp prop) {
@@ -323,15 +333,16 @@ public:
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
+    void RecomputeLitCounts();
     //重新绑定文字列表,并重新计算
-    void bindingLits(Literal* lit);
+    void bindingLits(Literal * lit);
     void bindingAndRecopyLits(const vector<Literal*>&vNewR);
 
 
     void ClausePrint(FILE* out, bool fullterms);
     void getStrOfClause(string&outStr, bool complete = true);
 
-    void ClausePrintTPTPFormat(FILE* out);
+    void ClausePrintTPTPFormat(FILE * out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
 
@@ -344,7 +355,7 @@ public:
 
     // void ClauseNormalizeVars(VarBank_p fresh_vars);
     //得到一个,给定一个freevar变元列表上的rename拷贝(更名所有的变元项)
-    Clause* RenameCopy(Literal* except);
+    Clause * RenameCopy(Literal * except);
 
 
     //设置文字的变元共享状态
@@ -352,13 +363,13 @@ public:
 
     uint16_t calcMaxFuncLayer() const;
 
-    Literal* GetFirstHoldLit()const;
-    Literal* FindMaxLit();
+    Literal * GetFirstHoldLit()const;
+    Literal * FindMaxLit();
 
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
 
-    template<typename FunObj, typename T>
-    Literal* FileMaxLit(FunObj cmp_fun, T* index) {
+    template<typename FunObj, typename T >
+    Literal * FileMaxLit(FunObj cmp_fun, T * index) {
 
         Lit_p handle = this->literals;
         Lit_p maxLit = handle;
@@ -386,11 +397,11 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    bool operator<(Clause* cla)const {
+    bool operator<(Clause * cla)const {
         return (posLitNo + negLitNo) < cla->LitsNumber();
     }
 
-    bool operator<(Clause& cla)const {
+    bool operator<(Clause & cla)const {
         return (posLitNo + negLitNo) < cla.LitsNumber();
     }
 
