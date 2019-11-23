@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "HEURISTICS/StrategyParam.h"
 using namespace std;
 
 enum class OutType {
@@ -52,13 +53,14 @@ private:
 
 
     FILE* fInfo; //.i 文件,包括原始子句集,采用策略,以及新增加子句
-    string fInfoFileName; //.i文件完整路径
-    string fUnsatFileName;
+    string sInfoFileName; //.i文件完整路径
+    string sUnsatFileName;
+    string sTPTP; //.tp文件的完整路径
     FILE* fRun; //.r 文件,记录整个演绎过程.
     FILE* fLog; //.log 文件,记录演绎过程中的 删除信息日志信息
     FILE* fUNSAT; //.unsat 文件， 记录得到empty路径
     FILE* fTri; //.tri文件，完整的△输出-- 用于内部测试用
-    
+    FILE* fCombine; //.t文件，输出TPTP格式内容，与其它ATP进行组合证明
 
     FILE* fGlobalInfo; //.g 文件,全局信息输出
     string outName; //输出名称
@@ -110,7 +112,7 @@ public:
     /*
      ** 写入 info 文件
      */
-   
+
     inline void outInfo(const string&msg) {
         fwrite(msg.c_str(), 1, msg.length(), fInfo);
         fflush(fInfo);
@@ -125,15 +127,30 @@ public:
         fwrite(msg.c_str(), 1, msg.length(), fRun);
         fflush(fRun);
     }
-    inline void outTriExt(const string&msg){
-            fwrite(msg.c_str(), 1, msg.length(), fTri);
+
+    inline void outTriExt(const string&msg) {
+        fwrite(msg.c_str(), 1, msg.length(), fTri);
         fflush(fRun);
     }
-    inline FILE* GetfRun() {
+
+    inline void OutTPTP(const string&msg) {
+        if(!StrategyParam::isOutTPTP)
+            return;
+        if (fCombine == nullptr) {
+            if ((fCombine = fopen(sTPTP.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
+                Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
+                return ;
+            }
+        }
+        fwrite(msg.c_str(), 1, msg.length(), fCombine);
+
+    }
+
+    inline FILE * GetfRun() {
         return fRun;
     }
 
-    inline void outGlobalInfo(const string&msg) {
+    inline void outGlobalInfo(const string & msg) {
         fwrite(msg.c_str(), 1, msg.length(), fGlobalInfo);
         fflush(fGlobalInfo);
     }
@@ -157,11 +174,11 @@ public:
      * @param dirPath
      * @return 
      */
-    int mkMultiDir(string& dirPath);
+    int mkMultiDir(string & dirPath);
     int rmDir(std::string dir_full_path);
 
     //获取带后缀的文件名
-    string getFileName(string &fileFullName);
+    string getFileName(string & fileFullName);
 
     //获取不带扩展名的文件名
     string getFileNameNoExt(string fileFullName);
@@ -172,8 +189,9 @@ public:
     //读取.i文件生成最小路径文件.out
     void GenerateEmptyPath();
 
-      void GenrateEmptyPathNoRegex();
-    void GetProblemInfo(string &strInfo) {
+    void GenrateEmptyPathNoRegex();
+
+    void GetProblemInfo(string & strInfo) {
         strInfo = "% start to proof:" + this->tptpFileName;
         strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;
         strInfo += "\n% Proof found!\n% SZS status Theorem for " + this->tptpFileName;
@@ -186,7 +204,7 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    static FILE* InputOpen(const char* name, bool fail) {
+    static FILE * InputOpen(const char* name, bool fail) {
         FILE* in;
         if (name && strcmp(name, "-") != 0) {
             Out::Err("Trying file ", name);
@@ -229,7 +247,7 @@ public:
     }
 
     /* 提取目录地址串 Given a path name, return the directory portion */
-    inline static const char* FileNameDirName(const string& name) {
+    inline static const char* FileNameDirName(const string & name) {
         assert(!name.empty());
         return (name.substr(0, name.find_last_of('/'))).c_str();
 
@@ -238,22 +256,22 @@ public:
     /// \param fileFullName
     /// \param baseName
 
-    inline static string FileNameBaseName(const string& fileFullName) {
+    inline static string FileNameBaseName(const string & fileFullName) {
         assert(!fileFullName.empty());
         int pos = fileFullName.find_last_of('/');
         return fileFullName.substr(pos + 1);
 
     }
 
-//    string static GetProgramDir() {
-//        char exeFullPath[1024]; // Full path
-//        string strPath = "";
-//
-//        GetModuleFileName(nullptr, exeFullPath, 1024);
-//        strPath = (string) exeFullPath; // Get full path of the file
-//        int pos = strPath.find_last_of('\\', strPath.length());
-//        return strPath.substr(0, pos); // Return the directory without the file name
-//    }
+    //    string static GetProgramDir() {
+    //        char exeFullPath[1024]; // Full path
+    //        string strPath = "";
+    //
+    //        GetModuleFileName(nullptr, exeFullPath, 1024);
+    //        strPath = (string) exeFullPath; // Get full path of the file
+    //        int pos = strPath.find_last_of('\\', strPath.length());
+    //        return strPath.substr(0, pos); // Return the directory without the file name
+    //    }
     // </editor-fold>
 
 

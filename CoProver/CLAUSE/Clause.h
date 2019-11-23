@@ -283,6 +283,14 @@ public:
         return posLitNo == 0;
     }
 
+    inline bool isOrial() {
+        return this->ClauseQueryProp(ClauseProp::CPInitial);
+    }
+
+    inline void SetOrigin() {
+        this->ClauseSetProp(ClauseProp::CPInitial);
+    }
+
     inline void RemoveDuplicates() {
         if (this->LitsNumber() > 1) {
             if (Literal::EqnListRemoveDuplicates(this->literals) > 0) {

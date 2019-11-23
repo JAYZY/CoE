@@ -28,7 +28,7 @@
 #include<sys/wait.h>
 #include "LIB/Out.h"
 
-//#define NDEBUG
+#define NDEBUG
 
 #include <cassert>
 using namespace std;
@@ -87,6 +87,7 @@ enum class ResRule : uint8_t {
 };
 
 
+
 /*---------------------------------------------------------------------*/
 /*                       【全局返回类型】相关枚举                      */
 /*---------------------------------------------------------------------*/
@@ -95,7 +96,7 @@ enum class ResRule : uint8_t {
 //-101 文件格式错误
 
 enum class RESULT {
-    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,MoreLit,MoreFuncLayer,
+    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102,MoreLit,MoreFuncLayer,Factor,
     ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, OUT_OF_MEMORY = 204, CPU_LIMIT_ERROR, SYS_ERROR, UnknownFile,
 
     NOMGU/*没有合一*/, SUCCES, NOLits/*没有文字*/, RollBack, FAIL

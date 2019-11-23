@@ -61,7 +61,8 @@ void FileOp::CloseAll() {
         fclose(fUNSAT);
     if (fTri)
         fclose(fTri);
-
+    if(fCombine)
+        fclose(fCombine);
 
 }
 
@@ -90,9 +91,11 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
 
     string tmpStr = outDir + tptpFileNameNoExt;
     cnfFileName = tmpStr + ".cnf";
-    fInfoFileName = tmpStr + ".i";
-    fUnsatFileName = tmpStr + ".unsat";
-    if ((fInfo = fopen(fInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
+    sInfoFileName = tmpStr + ".i";
+    sUnsatFileName = tmpStr + ".unsat";
+    sTPTP=tmpStr+".tp";
+    fCombine=nullptr;
+    if ((fInfo = fopen(sInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
         return false;
     }
@@ -219,8 +222,8 @@ string FileOp::getFileNameNoExt(string fileFullName) {
  * 读取.i文件生成最小路径文件.out
  */
 void FileOp::GenerateEmptyPath() {
-    ifstream fin(fInfoFileName, ios::in);
-    ofstream fout(fUnsatFileName, ios::out); //输出
+    ifstream fin(sInfoFileName, ios::in);
+    ofstream fout(sUnsatFileName, ios::out); //输出
     map<int, vector<string> > allFOL;
     std::string line;
 
@@ -309,8 +312,8 @@ void FileOp::GenerateEmptyPath() {
 void FileOp::GenrateEmptyPathNoRegex() {
     //    string str1 = "/home/zj/Desktop/output/CSR115+11/CSR115+11.i";
     //    string str2 = "/home/zj/Desktop/output/CSR115+11/CSR115+11.tmp";
-    ifstream fin(fInfoFileName, ios::in);
-    ofstream fout(fUnsatFileName, ios::out); //输出
+    ifstream fin(sInfoFileName, ios::in);
+    ofstream fout(sUnsatFileName, ios::out); //输出
 //    ifstream fin(str1, ios::in);
 //    ofstream fout(str2, ios::out); //输出
     map<int, vector<string> > allFOL;

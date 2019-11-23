@@ -26,11 +26,20 @@ public:
 
     //检查子句是否为恒真
     static bool isTautology(Clause* cla);
-    
+    // <editor-fold defaultstate="collapsed" desc="Factor Rule Check">
     static Clause* FactorOnce(Clause* cla);
 
     static Clause* Factor(Clause* cla);
     
+    static Clause* FactorOnce(Clause* actCla, vector<Literal*>vR);
+    // </editor-fold>
+
+
+
+
+
+
+
     //检查子句 genCla是否有效,有任意替换r使得 g*r = c ?
     static bool ForwardSubsumption(Clause* genCla, TermIndexing* indexing);
     //检查单元子句(文字)是否有效,有任意替换r使得 g r =c?

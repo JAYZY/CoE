@@ -266,8 +266,8 @@ public:
     inline int CheckTermDepthLimit() {
         uint16_t maxdepth = 0, ldepth;
         for (int i = 0; i < arity; ++i) {
-             TermCell* term = TermCell::TermDerefAlways(args[i]);
-            ldepth = term->IsGround() ? term->uMaxFuncLayer : ldepth = term->CheckTermDepthLimit();
+            TermCell* term = TermCell::TermDerefAlways(args[i]);
+            ldepth = term->IsGround() ? term->uMaxFuncLayer : term->CheckTermDepthLimit();
             if (-1 == ldepth)
                 return -1;
             if (maxdepth < ldepth) {
@@ -278,6 +278,21 @@ public:
         }
         return maxdepth + 1;
     }
+
+    //得到项的函数嵌套层
+
+    inline long GetMaxFuncDepth() {
+        uint16_t maxdepth = 0, ldepth;
+        if (this->IsGround())return this->uMaxFuncLayer;
+        this->uMaxFuncLayer = 0;
+        for (int i = 0; i < arity; ++i) {
+            TermCell* term = TermCell::TermDerefAlways(args[i]);
+            ldepth =term->GetMaxFuncDepth();
+            this->uMaxFuncLayer = MAX(this->uMaxFuncLayer, ldepth);
+        }
+        return ++this->uMaxFuncLayer;
+    }
+    
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
     inline TermCell** TermArgListCopy() {
@@ -335,7 +350,6 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-
 
 
     /* 变元项输出 */

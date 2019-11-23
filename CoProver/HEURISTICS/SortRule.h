@@ -13,20 +13,26 @@
 
 class SortRule {
 public:
+    static int iActLitFuncDep;
 
     SortRule(void) {
     };
 
     ~SortRule(void) {
     };
-   
+
     static inline bool LitCmp(Literal* litA, Literal* litB) {
 
         //对子句中的文字进行排序
-        /*1. 优先使用次数少的文字;2,优先使用稳定低的文字 3.优先使用负文字; */
-//        if (litA->usedCount != litB->usedCount)
-//            return litA->usedCount < litB->usedCount; //优先使用次数少的文字
-        long weight = litA->StandardWeight() - litB->StandardWeight(); //稳定度由低到高
+        /*1. 优先使用次数少的文字;2,优先使用稳定低的文字 3.优先使用正文字; */
+        //        if (litA->usedCount != litB->usedCount)
+        //            return litA->usedCount < litB->usedCount; //优先使用次数少的文字
+        long weight = 0;
+
+        weight = StrategyParam::Weight_Sort == SORT_STRATEGY::ASC ? litA->StandardWeight() - litB->StandardWeight()
+                : litB->StandardWeight() - litA->StandardWeight(); //稳定度由低到高
+
+
         if (0 == weight) {
             if (litA->IsNegative() && litB->IsPositive())
                 return true;
@@ -44,8 +50,14 @@ public:
 
         int32_t litNumDiff = litB->claPtr->LitsNumber() - litA->claPtr->LitsNumber();
         if (litNumDiff == 0) {
-            return (StrategyParam::SEL_POSLIT_STEADY == POSLIT_STEADY::NumDesc) ? litB->StandardWeight() > litA->StandardWeight() //由高到低
-                    : litA->StandardWeight() < litB->StandardWeight(); //由低到高 -- KOB 反应 文字的复杂程度
+
+            if (iActLitFuncDep>-1) {
+                assert(iActLitFuncDep>-1); //
+                return  (litA->StandardWeight() - iActLitFuncDep) < (litB->StandardWeight() - iActLitFuncDep);
+            } else
+
+                return (StrategyParam::Weight_Sort == SORT_STRATEGY::ASC) ? litB->StandardWeight() > litA->StandardWeight() //由高到低
+                : litA->StandardWeight() < litB->StandardWeight(); //由低到高 -- KOB 反应 文字的复杂程度
         }
         return litNumDiff > 0;
 
@@ -58,14 +70,14 @@ public:
     /************************************************************************/
     static bool ClaCmp(const Clause*pc1, const Clause * pc2);
 
-     /// 单元子句比较
+    /// 单元子句比较
     /// \param litA
     /// \param litB
     /// \return 
 
     static inline bool UnitClaCmp(const Clause* pc1, const Clause* pc2) {
 
-        return LitCmp(pc1->literals,pc2->literals);
+        return LitCmp(pc1->literals, pc2->literals);
     }
 
     //优先级比较

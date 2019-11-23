@@ -805,8 +805,8 @@ public:
     }
 
     inline uint16_t TermDepth() {
-
-        uint16_t termDepth = MAX(lterm->TermDepth(), rterm->TermDepth());
+        
+        uint16_t termDepth = MAX(lterm->GetMaxFuncDepth(),rterm->GetMaxFuncDepth());//MAX(lterm->TermDepth(), rterm->TermDepth());
         return (this->EqnIsEquLit()) ? termDepth + 1 : termDepth;
 
     }
@@ -976,9 +976,21 @@ public:
 
     bool EqualsStuct(Literal * lit);
     bool EqnEqual(Literal* lit);
+    /// 得到文字的最大函数嵌套层不管是否是变元
+    /// \return 
+    inline long GetMaxFuncDepth(){
+        if(this->EqnIsEquLit()){
+            return MAX(this->lterm->GetMaxFuncDepth(),this->rterm->GetMaxFuncDepth())+1;
+        }
+        return  MAX(this->lterm->GetMaxFuncDepth(),this->rterm->GetMaxFuncDepth());
+    }
+    
+    inline long GetMaxVarDepth(){ 
+        
+    }
     /// 检查文字的函数嵌套是否超过限制 包括了变元绑定
     /// \return  true -- 符合限制  false -- 检验没有通过
-
+    
     inline bool CheckDepthLimit() {
         bool res = true;
         int iDepth = lterm->CheckTermDepthLimit();

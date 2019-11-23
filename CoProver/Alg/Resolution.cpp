@@ -55,8 +55,18 @@ RESULT Resolution::BaseAlg(Formula* fol) {
     double startTime = CPUTime();
     bool isCheckT = false;
     set<Clause*> setDealedUnitCla; //已经 处理过得单元子句不再二元归结（只做一次自己和自己归结）
-    Clause* selCla = *itSelCla;
+
+    StrategyParam::IS_RollBackGoalPath = false;
+    int iGoalInd = 0;
+
+
+    Clause* selCla = *itSelCla; //fol->goalClaset[iGoalInd]; //
+    bool isGoal = false;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
+        if (!StrategyParam::IS_RollBackGoalPath && CPUTime() - startTime > 30) { //30秒
+            StrategyParam::IS_RollBackGoalPath = true;
+            cout<<"Set IS_RollBackGoalPath=true"<<endl;
+        }
         //构建三角形               
         ++iterNum;
         //单元子句排序         // fol->unitClasSort();        //可满足判定  if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
@@ -104,8 +114,8 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             for (int i = 0; i < triAlg.newClas.size(); i++) {
 
                 Clause* newCla = triAlg.newClas[i];
-                if (newCla->ident >= 16765)
-                    cout << "debug" << endl;
+                //                if (newCla->ident >= 16765)
+                //                    cout << "debug" << endl;
                 triAlg.OutNewClaInfo(newCla);
 
                 //--- 若为单元子句,A. 检查是否有其他单元子句合一（UNSAT) B.用该单元子句与自己本身的子句进行二元归结，得到特殊子句优先使用 
@@ -113,18 +123,18 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     if (fol->isUnsat(newCla)) {
                         return RESULT::UNSAT;
                     }
-                    if (i < uNewClaSize) {
-                        Clause* claSelfDeduct = newCla->literals->parentLitPtr->claPtr;
-                        // if (setDealedUnitCla.find(claSelfDeduct) == setDealedUnitCla.end()) {
-
-                        RESULT ResBI = triAlg.BinaryInference(claSelfDeduct, newCla);
-                        if (RESULT::UNSAT == ResBI) {
-                            return RESULT::UNSAT;
-                        }
-                    } 
-//                    else {
-//                        setDealedUnitCla.insert(newCla);
-//                    }
+                    //                    if (i < uNewClaSize) {
+                    //                        Clause* claSelfDeduct = newCla->literals->parentLitPtr->claPtr;
+                    //                        // if (setDealedUnitCla.find(claSelfDeduct) == setDealedUnitCla.end()) {
+                    //
+                    //                        RESULT ResBI = triAlg.BinaryInference(claSelfDeduct, newCla);
+                    //                        if (RESULT::UNSAT == ResBI) {
+                    //                            return RESULT::UNSAT;
+                    //                        }
+                    //                    }
+                    //                    else {
+                    //                        setDealedUnitCla.insert(newCla);
+                    //                    }
 
                     //}
                     //切记，若单元子句与父子句进行归结（自归结） 结果为NOMGU,表明自归结失败不能再做尝试。
@@ -179,14 +189,22 @@ RESULT Resolution::BaseAlg(Formula* fol) {
         //            --cla->priority;
         //        });
         //只修改起步子句的优先级
-        --(*itSelCla)->priority;
+
 
         //--- 选择起步子句 --- 
         //先从特殊子句集开始
         if (!triAlg.vSpecialCla.empty()) {
             selCla = triAlg.vSpecialCla.back();
             triAlg.vSpecialCla.pop_back();
+        } else if (isGoal) {
+            ++iGoalInd;
+            if (iGoalInd >= fol->goalClaset.size()) {
+                isGoal = false;
+                selCla = *itSelCla;
+            } else
+                selCla = fol->goalClaset[iGoalInd]; //
         } else {
+            --(*itSelCla)->priority;
             ++itSelCla;
             if (itSelCla == fol->getWorkClas()->end())
                 itSelCla = fol->getWorkClas()->begin();

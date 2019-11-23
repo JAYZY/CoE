@@ -636,7 +636,6 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
 
 Clause* Simplification::FactorOnce(Clause* cla) {
     bool res = false;
-
     Unify unify;
     Subst factorSubSt;
     Clause* newCla = nullptr;
@@ -651,11 +650,6 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                 //约减成功
                 newCla = cla->RenameCopy(litB);
 
-                //删除相同文字                
-                int iRemoveNum = Literal::EqnListRemoveDuplicates(newCla->literals);
-                newCla->RecomputeLitCounts();
-                
-                FileOp::getInstance()->outLog("cla_" + to_string(cla->ident) + " remove same literals:" + to_string(iRemoveNum) + "\n");
 
                 string sOut = "";
                 //输出 .r
@@ -674,6 +668,13 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                 factorSubSt.SubstBacktrack();
                 //检查包含冗余                if(cla->ident==1257)                    cout<<"DEbug";
                 if (ClauseSubsumeClause(cla, newCla)) {
+                    
+                    //删除相同文字                
+                    int iRemoveNum = Literal::EqnListRemoveDuplicates(newCla->literals);
+                    newCla->RecomputeLitCounts();
+                    if (iRemoveNum > 0)
+                        FileOp::getInstance()->outLog("cla_" + to_string(cla->ident) + " remove same literals:" + to_string(iRemoveNum) + "\n");
+
                     res = true;
                     //添加推理类型
                     newCla->infereType = InfereType::FACTOR;
@@ -685,9 +686,12 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                     //输出 .i
                     sOut = "";
                     newCla->getStrOfClause(sOut, false);
+                    //输出 .tp
+                    //FileOp::getInstance()->OutTPTP(sOut+" ).\n");
                     sOut += ",inference(" + InferenceInfo::getStrInfoType(newCla->infereType) + ",[status(thm)],[c" + to_string(cla->ident) + "]) ).\n";
                     FileOp::getInstance()->outInfo(sOut);
-
+                    
+                    
 
                     //暂时不删除原始子句 -- 由调用来控制是否删除
                     //DelPtr(cla);
@@ -732,4 +736,25 @@ Clause* Simplification::Factor(Clause* cla) {
         //        }
     }
     return rtnCla;
+}
+
+Clause* Simplification::FactorOnce(Clause* actCla, vector<Literal*> vR) {
+    bool res = false;
+    Unify unify;
+    Subst factorSubSt;
+    Clause* newCla = nullptr;
+    for (Literal* givenLitP = actCla->literals; givenLitP; givenLitP = givenLitP->next) {
+        if (!givenLitP->IsHold())continue;
+        res = false;
+        for (Literal*litR : vR) {
+            if ((!givenLitP->isSameProps(litR)) || (!givenLitP->EqnIsEquLit() && givenLitP->lterm->fCode != litR->lterm->fCode))
+                continue;
+            if (unify.literalMgu(givenLitP, litR, &factorSubSt)) {
+                //约减成功
+                // newCla = cla->RenameCopy(litR);
+            }
+        }
+    }
+    return newCla;
+
 }

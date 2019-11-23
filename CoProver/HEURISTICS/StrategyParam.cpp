@@ -36,20 +36,25 @@ bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
 bool StrategyParam::IS_ALitEqualR = false;
 bool StrategyParam::IS_ALitNoEqual = false;
-bool StrategyParam::ISFactor=true;
+bool StrategyParam::ISFactor = true;
+bool StrategyParam::IS_RollBackGoalPath=false;
 
-
-ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight;//Num_Weight_Prio;
+ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //Num_Weight_Prio;
 POSLIT_STEADY StrategyParam::SEL_POSLIT_STEADY = POSLIT_STEADY::NumDesc;
+SORT_STRATEGY StrategyParam::Weight_Sort=SORT_STRATEGY::DESC;
+
+
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;
 int32_t StrategyParam::IterCount_LIMIT = INT_MAX;
 
 
-uint32_t StrategyParam::MaxLitNumOfR = 5;
-uint32_t StrategyParam::HoldLits_NUM_LIMIT = 5; //归结过程中剩余文字最大文字数限制
+uint32_t StrategyParam::MaxLitNumOfR = 5; //R 的最大文字数限制 △完成后，产生的新子句文字数限制
+uint32_t StrategyParam::MaxLitsNumOfTriNewCla = 1; //△过程中生成新最大文字数限制
 uint32_t StrategyParam::R_MAX_FUNCLAYER = 3;
-uint32_t StrategyParam::MaxLitNumOfNewCla=1;
+uint32_t StrategyParam::MaxLitNumOfNewCla = 1; //完成△中，新子句加入到子句集的文字数限制
 
 
-bool StrategyParam::isFullUC=true;
- 
+
+bool StrategyParam::isFullUC = true;
+bool StrategyParam::isOutTPTP=false;
+

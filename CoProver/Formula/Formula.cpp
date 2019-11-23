@@ -311,7 +311,7 @@ void Formula::generateFormula(Scanner* in) {
                             printf("\n");
 
                         }
-                        */
+                         */
                     }
                 }
             }
@@ -354,18 +354,20 @@ RESULT Formula::preProcess() {
             continue;
         }
 
-       
+
         //------ 对子句进行factor rule 约减 ------
 
         Clause* factorCla = Simplification::Factor((*claIt));
 
         if (factorCla) {
+            (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
+            (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             ++uFactorNum;
         } else {
             factorCla = (*claIt);
         }
-        
-         //------ 检查子句是否为前归入冗余 ------
+
+        //------ 检查子句是否为前归入冗余 ------
         TermIndexing* indexing = (factorCla->LitsNumber() == 1) ? this->unitClaIndex : this->allTermIndex;
         if (Simplification::ForwardSubsumption(factorCla, indexing)) {
             ++uFSNum;
@@ -374,10 +376,11 @@ RESULT Formula::preProcess() {
             factorCla->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
         }
-        
+
         this->uMaxLitNum = MAX(this->uMaxLitNum, factorCla->LitsNumber());
         //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
+        factorCla->SetOrigin();
         insertNewCla(factorCla);
 
         //若为单元子句,检查是否有其他单元子句 合一
@@ -388,8 +391,8 @@ RESULT Formula::preProcess() {
 
 
     StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
-    StrategyParam::HoldLits_NUM_LIMIT = 2;
-    StrategyParam::MaxLitNumOfNewCla = 6; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::MaxLitsNumOfTriNewCla = 1;
+    StrategyParam::MaxLitNumOfNewCla = 3; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
     StrategyParam::R_MAX_FUNCLAYER = 6;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
@@ -899,6 +902,12 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
         this->AddPredLst(cla);
         //添加到处理后的子句集中
         this->workClaSet->InsertCla(cla);
+    }
+    //输出 .tp
+    if (StrategyParam::isOutTPTP) {
+        string sCla = "";
+        cla->getStrOfClause(sCla);
+        FileOp::getInstance()->OutTPTP(sCla);
     }
 }
 

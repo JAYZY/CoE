@@ -17,6 +17,7 @@
 #include "Inferences/Unify.h"
 #include "Global/IncDefine.h"
 #include "Formula/Formula.h"
+#include "TriAlg.h"
 using namespace std;
 
 class TriAlgExt {
@@ -33,9 +34,9 @@ private:
     vector<Clause*> vNewClas; //存储新的子句集
     vector<Clause*> delUnitCla; //存储需要最后清理的单元子句副本
 
-   // set<Cla_p> setUsedCla; //使用过的子句
-    vector<Clause*> vUsedClas;//使用过的子句
-    map<Clause*, vector<Literal*> > mClaReduceLit; //存储所有参与子句的下拉文字--用于构建主界线输出
+    // set<Cla_p> setUsedCla; //使用过的子句
+    vector<Clause*> vUsedClas; //使用过的子句
+    map<Clause*, vector<Literal*> > mClaHoldLits; //记录所有参与归结子句的剩余文字
 
     inline void DestroyRNUnitCla();
 public:
@@ -46,12 +47,26 @@ public:
     /// \param 
     /// \return 
     RESULT ExtendTri();
+    
+    RESULT ExtendTriByFull();
 
     /// 单元子句下拉
     /// \param actCla
     /// \param vNewR
     /// \return 
     RESULT UnitClaReduce(Literal **actLit, Clause * actCla, vector<Literal*> &vNewR);
+
+    /// 单元子句约减 -- 充分下拉
+    /// \param actLit
+    /// \param ind
+    /// \return 
+    RESULT UnitClaReduceByFullPath(Clause * actCla);
+
+    bool UCTriRed(Literal *actLit, vector<Literal*>&newR, vector<Literal*>& vDelActLit, vector<RBPoint_p>&vRollBackPoint/*记录回退点*/, uint32_t&uInd);
+    bool MainTriRed(Literal *actLit, vector<Literal*>&vDelActLit, vector<Literal*>&newR);
+
+
+
 
     /// 主界线下拉约减
     /// \param actCla
@@ -64,7 +79,7 @@ public:
     /// 主界线下拉后的规则检查
     /// \return 
 
-    ResRule RuleCheck(Literal* alitPtr , vector<Literal*>& vNewR); //, uint8_t* vDelLits
+    ResRule RuleCheck(Literal* alitPtr, vector<Literal*>& vNewR); //, uint8_t* vDelLits
 
     //添加到新子句集中
     bool Add2NewClas(Clause* newClaA, InfereType infereType);
@@ -81,13 +96,32 @@ public:
     /// \param outStr
     /// \param newCla
     /// \return RuleOk; TAUTOLOGY；MoreLit
-    ResRule CheckAndFindUsed(Clause * actCla, vector<Literal*>&vNewR );
+    ResRule CheckAndFindUsed(Clause * actCla, vector<Literal*>&vNewR);
 
     void OutTriAndR(vector<Literal*>&vNewR);
     void OutTri(string & sOutStr);
     void OutR(vector<Literal*>&vNewR, string & outStr);
 
+
+
+    ResRule CheckUnitRule(Literal* actLitPtr, vector<Literal*>&vDelActLit, vector<Literal*> &vNewR);
     ResRule CheckNewR(Literal* checkLit, vector<Literal*>&vNewR);
+
+
+    //重命名单元子句输出
+
+    inline void OutRNUnitCla(Clause* unitCla) {
+        //输出到.r文件
+        string str = "\n";
+        unitCla->literals->matchLitPtr->GetLitInfoWithSelf(str);
+        str += "\nR[" + to_string(unitCla->ident) + "]:";
+        unitCla->literals->GetLitInfoWithParent(str);
+        FileOp::getInstance()->outRun(str + "\n");
+    }
+
+
+
+
     /// 输出新子句信息到 .info 文件
     /// \param newCla
     /// \param infereType

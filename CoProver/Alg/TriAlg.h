@@ -54,7 +54,6 @@ typedef struct reduceLit {
  */
 typedef struct RollBackPoint {
     Literal* litP; //对应的项 
-
     uint16_t uSubstSize; //变元替换位置
     uint16_t uVecLitsPos; //文字列表的位置 delLitPos
     uint16_t uTriPos; //主界线的位置
@@ -176,6 +175,14 @@ public:
      * @return 
      */
     ResRule RuleCheckOri(Literal*actLit, Literal* candLit, vector<Literal*>&vPasHoldLits, bool isVarChg);
+    /**
+     * 主界线下拉的规则检查--- 主要实现合一下拉
+     * @param actLit
+     * @param candLit
+     * @param vPasHoldLits
+     * @return 
+     */
+    ResRule RuleCheckByMgu(Literal*actLit, Literal* candLit, vector<Literal*>&vPasHoldLits);
 
     //单元子句约减后的规则检查
     ResRule RuleCheckUnitReduct(Clause*actCla, Literal* *arrayHoldLits, vector<Literal*>&vDelLit);
@@ -188,6 +195,14 @@ public:
     /// \param vHoldLits
     /// \return 
     RESULT MainTriReduce(Literal **actLit, Literal** pasLit, vector<uint32_t>&vRecodeBackPoint, vector<Literal*>&vPasHoldLits, uint32_t pasLitInd = 0);
+
+    /// 主界线下拉 约减， 注意，充分下拉 所有的文字
+    /// \param actLit           主动文字
+    /// \param pasLit           延拓文字
+    /// \param vRecodeBackPoint 回退点集
+    /// \param vPasHoldLits     被动子句中剩余文字集合
+    /// \param pasLitInd        回退时--查找延拓文字的起始下标
+    /// \return 
 
     //生成一个新的子句时,遍历主界线对剩余文字进行合一下拉
     RESULT TriMguReduct();
@@ -218,7 +233,7 @@ public:
     /// \param vecLit
     /// \return 
 
-    inline Literal* CheckDepthLimit(vector<Lit_p> vecLit) {
+    inline Literal* CheckDepthLimit(vector<Lit_p>&vecLit) {
         assert(!vecLit.empty());
         Lit_p rtnLit = nullptr;
         for (Literal* vecLit : vecLit) {
@@ -228,6 +243,26 @@ public:
             }
             rtnLit = vecLit;
             break;
+        }
+        return rtnLit;
+    }
+    //选择下一个主动文字--规则 A。尽可能选择负文字，B 不能函数层超过限制
+
+    inline Literal* SelActLit(vector<Lit_p>&vecLit) {
+        assert(!vecLit.empty());
+        Lit_p rtnLit = nullptr;
+        for (Literal* vecLit : vecLit) {
+            //检查项的嵌套深度
+            if (!vecLit->CheckDepthLimit()) {
+                continue;
+            }
+            if (vecLit->IsNegative()) {
+                rtnLit = vecLit;
+                break;
+            }
+            if (nullptr == rtnLit)
+                rtnLit = vecLit;
+
         }
         return rtnLit;
     }

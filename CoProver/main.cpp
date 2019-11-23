@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
 int main(int argc, char** argv) {
 
-
+      StrategyParam::isOutTPTP=true;
     bool isCNF = true;
     //命令行解析
     Env::tptpFileName = argv[1];
@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
         Resolution resolution;
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
         // if (res == RESULT::UNKNOWN) {
-        res = resolution.BaseAlg(&fol); //使用记录路径的方式进行路径回退
-        // res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
+         res = resolution.BaseAlg(&fol); //使用记录路径的方式进行路径回退
+       // res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
         //}
     }
     string strRes = ((100 == (int) res) ? "UNSAT # " : "UNKNOWN # ") + to_string(Env::GetTotalTime()) + " S";

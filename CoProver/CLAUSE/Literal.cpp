@@ -640,10 +640,11 @@ bool Literal::EqualsStuct(Literal* lit) {
     return false;
 }
 //检查两个文字是否相同，在同一个子句中有共同项；
-bool Literal::EqnEqual(Literal* lit){
-    bool res=(this->lterm==lit->lterm)&&(this->rterm==lit->rterm);
-    if(!res){
-        res=(this->lterm==lit->rterm)&&(this->rterm==lit->lterm);
+
+bool Literal::EqnEqual(Literal* lit) {
+    bool res = (this->lterm == lit->lterm)&&(this->rterm == lit->rterm);
+    if (!res) {
+        res = (this->lterm == lit->rterm)&&(this->rterm == lit->lterm);
     }
     return res;
 }
@@ -868,7 +869,8 @@ int Literal::EqnListRemoveDuplicates(Literal* lst) {
     while (lst) {
         handle = &(lst->next);
         while (*handle) {
-            if ((*handle)->EqnEqual(lst)) {
+
+            if ((*handle)->isSameProps(lst)&&(*handle)->EqnEqual(lst)) {
                 EqnListDeleteElement(handle);
                 removed++;
             } else {
