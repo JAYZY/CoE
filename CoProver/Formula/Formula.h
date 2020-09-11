@@ -141,6 +141,8 @@ public:
         //对单元子句集合进行排序 
         sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
         sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
+         // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
+        // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
     }
 
 
@@ -158,7 +160,7 @@ public:
     //读取公式
     void generateFormula(Scanner * in);
     //公式预处理
-    RESULT preProcess();
+    RESULT preProcess(vector<Clause*>&factorClas);
 
     // <editor-fold defaultstate="collapsed" desc="归入冗余判断">
 
@@ -174,7 +176,7 @@ public:
     // </editor-fold>
 
     //检查单元子句是否存在互补合一 -- unsat
-    bool isUnsat(Clause* unitCal);
+    bool isUnsat(Clause* unitCal,bool isOutTip=false);
 
     //插入新子句到
     void insertNewCla(Cla_p cla, bool isEquAxiom = false);
@@ -198,6 +200,8 @@ public:
 
     //根据策略，得到下一次演绎起步子句
     list<Clause*>::iterator getNextStartClause();
+     vector<Clause*>::iterator getNextGoalClause();
+    
 };
 
 #endif /* FORMULA_H */

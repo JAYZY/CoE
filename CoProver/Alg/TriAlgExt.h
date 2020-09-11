@@ -36,10 +36,11 @@ private:
 
     // set<Cla_p> setUsedCla; //使用过的子句
     vector<Clause*> vUsedClas; //使用过的子句
-    map<Clause*, vector<Literal*> > mClaHoldLits; //记录所有参与归结子句的剩余文字
+    map<Clause*, vector<Literal*> > mClaHoldLits; //记录所有参与归结子句的剩余文字 存储子句的 C+部分
 
     inline void DestroyRNUnitCla();
 public:
+    
     // <editor-fold defaultstate="collapsed" desc="扩展△算法">
 
     /// 扩展△核心算法
@@ -47,7 +48,9 @@ public:
     /// \param 
     /// \return 
     RESULT ExtendTri();
-    
+
+    /// 新的扩展方式--一个文字先完成单元，再完成主界线；尽可能充分
+    /// \return 
     RESULT ExtendTriByFull();
 
     /// 单元子句下拉
@@ -56,25 +59,27 @@ public:
     /// \return 
     RESULT UnitClaReduce(Literal **actLit, Clause * actCla, vector<Literal*> &vNewR);
 
-    /// 单元子句约减 -- 充分下拉
+    /// 对子句进行一次完整的约减 --1.单元，2.主界线 尽可能充分下拉
     /// \param actLit
     /// \param ind
     /// \return 
-    RESULT UnitClaReduceByFullPath(Clause * actCla);
+    RESULT DeduceOnceByFullPath(Clause * actCla);
 
     bool UCTriRed(Literal *actLit, vector<Literal*>&newR, vector<Literal*>& vDelActLit, vector<RBPoint_p>&vRollBackPoint/*记录回退点*/, uint32_t&uInd);
     bool MainTriRed(Literal *actLit, vector<Literal*>&vDelActLit, vector<Literal*>&newR);
-
-
-
 
     /// 主界线下拉约减
     /// \param actCla
     /// \param vHoldLits
     /// \return 
     RESULT MainTriReduce(Literal **actLit, Clause* actCla, vector<Literal*> &vNewR);
-    bool function(vector<Literal*>& vHoldLits, vector<Literal*>& vNewR, set<Literal*>& vDelLits, Literal* alitPtr, bool& res);
 
+    /// 对产生的新子句进行 factor rule 处理。
+    /// 1. 规则成功，删除newCla ,并检查约减后的子句是否可以添加到新子句集中； 2.检查是否可以将新子句添加到新子句集中
+    /// \param newCla
+    /// \param vNewR
+    /// \return 
+    bool Factor2NewCla(Clause* newCla, vector<Literal*>& vNewR);
 
     /// 主界线下拉后的规则检查
     /// \return 
@@ -83,6 +88,8 @@ public:
 
     //添加到新子句集中
     bool Add2NewClas(Clause* newClaA, InfereType infereType);
+ 
+
 
     // </editor-fold>
 

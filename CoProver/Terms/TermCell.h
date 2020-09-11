@@ -264,19 +264,30 @@ public:
     /// \return >0 -- 函数嵌套层数 -1 -- 不符合限制
 
     inline int CheckTermDepthLimit() {
-        uint16_t maxdepth = 0, ldepth;
-        for (int i = 0; i < arity; ++i) {
-            TermCell* term = TermCell::TermDerefAlways(args[i]);
-            ldepth = term->IsGround() ? term->uMaxFuncLayer : term->CheckTermDepthLimit();
-            if (-1 == ldepth)
+        uint16_t maxdepth = 0, ldepth = 0;
+        //debug
+        if (this->arity == 0) {
+            maxdepth = 0;
+        } else if (this->IsGround()) {
+            maxdepth = this->uMaxFuncLayer;
+            if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
                 return -1;
-            if (maxdepth < ldepth) {
-                maxdepth = ldepth;
-                if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
+        } else {
+            maxdepth = 0;
+            for (int i = 0; i < arity; ++i) {
+                TermCell* term = TermCell::TermDerefAlways(args[i]);
+                ldepth = term->IsGround() ? term->uMaxFuncLayer : term->CheckTermDepthLimit();
+                if (-1 == ldepth)
                     return -1;
+                if (maxdepth < ldepth) {
+                    maxdepth = ldepth;
+                    if (maxdepth + 1 > StrategyParam::R_MAX_FUNCLAYER)
+                        return -1;
+                }
             }
+            ++maxdepth;
         }
-        return maxdepth + 1;
+        return maxdepth;
     }
 
     //得到项的函数嵌套层
@@ -287,12 +298,11 @@ public:
         this->uMaxFuncLayer = 0;
         for (int i = 0; i < arity; ++i) {
             TermCell* term = TermCell::TermDerefAlways(args[i]);
-            ldepth =term->GetMaxFuncDepth();
+            ldepth = term->GetMaxFuncDepth();
             this->uMaxFuncLayer = MAX(this->uMaxFuncLayer, ldepth);
         }
         return ++this->uMaxFuncLayer;
     }
-    
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
     inline TermCell** TermArgListCopy() {

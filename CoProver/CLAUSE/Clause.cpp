@@ -9,6 +9,7 @@
 #include "Indexing/TermIndexing.h"
 #include "HEURISTICS/SortRule.h"
 #include "Inferences/InferenceInfo.h"
+#include "LIB/Out.h"
 using namespace std;
 /*---------------------------------------------------------------------*/
 /*                    Constructed Function                             */
@@ -108,7 +109,7 @@ void Clause::RecomputeLitCounts() {
 
 
     posLitNo = 0;
-    negLitNo= 0;
+    negLitNo = 0;
     int iLitPos = 0;
     for (Literal* handle = this->literals; handle; handle = handle->next) {
         handle->EqnSetProp(EqnProp::EPIsHold);
@@ -242,9 +243,9 @@ void Clause::ClausePrint(FILE* out, bool fullterms) {
     }
 #endif
 
-    if (Options::OutputFormat == IOFormat::TPTPFormat) {
+    if (Env::parseFormat == IOFormat::TPTPFormat) {
         ClausePrintTPTPFormat(out);
-    } else if (Options::OutputFormat == IOFormat::TSTPFormat) {
+    } else if (Env::parseFormat == IOFormat::TSTPFormat) {
         //cout<<"ident="<<ident<<endl;
         ClauseTSTPPrint(out, fullterms, true);
     } else
@@ -255,7 +256,7 @@ void Clause::ClausePrint(FILE* out, bool fullterms) {
 }
 
 void Clause::getStrOfClause(string&outStr, bool complete) {
-    if (Options::OutputFormat != IOFormat::TSTPFormat) {
+    if (Env::parseFormat != IOFormat::TSTPFormat) {
         Out::Error("File Formate is Error!", ErrorCodes::FILE_ERROR);
     }
     string type_name = "plain";
@@ -646,7 +647,8 @@ void Clause::ClauseParse(Scanner* in) {
     //Clause * handle = new Clause(concl);
     this->ClauseSetTPTPType(type);
     this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
-
+    ClauseStandardWeight();//计算子句的权重
+    
     //为了节约内存，若为基项则删除ClaTB
     if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) {
         this->ClearClaTB();
@@ -690,9 +692,10 @@ Clause* Clause::RenameCopy(Literal* except) {
  */
 void Clause::SetEqnListVarState() {
     Lit_p lit = this->Lits();
+    const int MaxVarNum=2000;
     //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
-    Lit_p arrVarLit[500]; //假设变元项最多不超出500
-    memset(arrVarLit, 0, 500);
+    Lit_p arrVarLit[MaxVarNum]; //假设变元项最多不超出MaxVarNum  
+    memset(arrVarLit, 0, MaxVarNum*sizeof(Lit_p));
 
     for (; lit; lit = lit->next) {
         if (lit->IsGround()) {
@@ -706,7 +709,7 @@ void Clause::SetEqnListVarState() {
 
         while (!vecT.empty()) {
             TermCell* t = vecT.back();
-            assert(-t->fCode < 500);
+            assert(-t->fCode < MaxVarNum);
             vecT.pop_back();
             if (t->IsVar()) {
                 Lit_p firstLit = arrVarLit[-t->fCode];
@@ -730,7 +733,7 @@ void Clause::SetEqnListVarState() {
             vecT.push_back(lit->rterm);
             while (!vecT.empty()) {
                 TermCell* t = vecT.back();
-                assert(-t->fCode < 500);
+                assert(-t->fCode < MaxVarNum);
                 vecT.pop_back();
                 if (t->IsVar()) {
                     Lit_p firstLit = arrVarLit[-t->fCode];
@@ -817,4 +820,12 @@ Literal* Clause::GetFirstHoldLit()const {
         }
     }
     return nullptr;
+}
+
+void Clause::GetVecHoldLit(vector<Literal*>& vHoldLits)const {
+    for (Literal* lit = literals; lit; lit = lit->next) {
+        if (lit->IsHold()) {
+            vHoldLits.push_back(lit);
+        }
+    }
 }

@@ -152,7 +152,7 @@ public:
     RESULT GenreateTriLastHope(Clause* givenCla);
     RESULT GenreateTriLastHopeOld(Clause* givenCla);
 
-
+    RESULT GenTriByMix(Clause* givenCla);
 
     /// 添加新子句到新子句集
     /// \param newClaA 需要添加的新子句

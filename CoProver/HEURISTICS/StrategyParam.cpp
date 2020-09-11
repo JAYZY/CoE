@@ -22,6 +22,9 @@ StrategyParam::StrategyParam(const StrategyParam& orig) {
 StrategyParam::~StrategyParam() {
 }
 
+// <editor-fold defaultstate="collapsed" desc="IO相关">
+InFormat StrategyParam::IFormat=InFormat::CNF;
+// </editor-fold>
 
 
 uint8_t StrategyParam::CLA_NOMGU_WIGHT = 3; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)

@@ -12,6 +12,7 @@
  */
 
 #include "FormulaSet.h"
+#include "LIB/Out.h"
 const float TFORMULA_GC_LIMIT = 1.5f;
 
 FormulaSet::FormulaSet() {

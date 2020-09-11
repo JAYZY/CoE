@@ -288,9 +288,10 @@ bool Literal::IsShareVar(Literal* litA) {
     if (this->varState == VarState::freeVar || litA->varState == VarState::freeVar || this->IsGround() || litA->IsGround()) {
         return false;
     }
+     const int MaxVarNum=2000;
     //map<TermCell*, Literal*>mapVar2Lit;
-    char arrVarLit[500]; //假设变元项最多不超出500
-    memset(arrVarLit, 0, 500);
+    char arrVarLit[MaxVarNum]; //假设变元项最多不超出500
+    memset(arrVarLit, 0, MaxVarNum);
 
     vector<TermCell*> vecT;
     vecT.reserve(32);
@@ -302,7 +303,7 @@ bool Literal::IsShareVar(Literal* litA) {
 
     while (!vecT.empty()) {
         TermCell* t = vecT.back();
-        assert((-t->fCode) < 500);
+        assert((-t->fCode) < MaxVarNum);
         vecT.pop_back();
         if (t->IsVar()) {
             arrVarLit[-t->fCode] = 1;
@@ -324,7 +325,7 @@ bool Literal::IsShareVar(Literal* litA) {
     while (!vecT.empty()) {
 
         TermCell* t = vecT.back();
-        assert((-t->fCode) < 500);
+        assert((-t->fCode) < MaxVarNum);
         vecT.pop_back();
         if (t->IsVar()) {
             char firstLit = arrVarLit[-t->fCode];

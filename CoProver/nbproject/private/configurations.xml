@@ -13,6 +13,8 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_init_file" value=""/>
@@ -26,18 +28,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR0115+11.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS190+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+2.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/BOO109+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL658+1.010.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL688+1.010.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2017/Convert/CNF_FNE/LCL668+1.010.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2019/Convert/CNF_FNE/LCL668+1.010.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/CSR062+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/SYO640+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/SYN000+1.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/AGT001+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/SYN000+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.8/LCL682+1.015.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/RNG095+2.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/tptp/Rating0.1/SWW317+1.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2019/FEQ/SWW317+1.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2019/FNE/CSR060+2.p  -f=fof</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2019/Convert/CNF_FNE/LCL668+1.010.p</runcommand>
+        <runcommand>"${OUTPUT_PATH}"  /home/zj/Documents/Problems/2019/FNE/CSR060+2.p  -f=fof</runcommand>
         <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -69,19 +71,19 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR026+2.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/SWV437+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+2.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR115+11.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS187+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/KRS190+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/BOO109+1.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2017/Convert/CNF_FNE/CSR029+3.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2019/Convert/CNF_FNE/LCL668+1.010.p</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2019/Convert/CNF_FNE/LCL656+1.015.p</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.5/LCL656+1.015.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.5/ALG223+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.1/AGT016+2.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.2/AGT016+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.8/LCL664+1.015.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.8/SWB066+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.8/LCL682+1.015.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.8/RNG095+2.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.1/AGT001+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.1/RNG095+2.p -f=fof</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"    /home/zj/Documents/Problems/2019/Convert/CNF_FNE/LCL656+1.015.p</runcommand>
-        <rundir></rundir>
+        <runcommand>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/tptp/Rating0.1/RNG095+2.p -f=fof</runcommand>
+        <rundir>/home/zj/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>

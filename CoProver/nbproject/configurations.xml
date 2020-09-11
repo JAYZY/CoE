@@ -42,6 +42,8 @@
       <itemPath>Global/GlobalFunc.h</itemPath>
       <itemPath>Global/IncDefine.cpp</itemPath>
       <itemPath>Global/IncDefine.h</itemPath>
+      <itemPath>Global/ProgInfo.cpp</itemPath>
+      <itemPath>Global/ProgInfo.h</itemPath>
       <itemPath>Global/SysDate.cpp</itemPath>
       <itemPath>Global/SysDate.h</itemPath>
     </logicalFolder>
@@ -400,6 +402,10 @@
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Global/ProgInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/ProgInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Global/SysDate.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/SysDate.h" ex="false" tool="3" flavor2="0">
@@ -550,6 +556,10 @@
             <pElem>.</pElem>
           </linkerDynSerch>
           <linkerCopySharedLibs>true</linkerCopySharedLibs>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+            <linkerOptionItem>-static</linkerOptionItem>
+          </linkerLibItems>
         </linkerTool>
       </compileType>
       <item path="Alg/Resolution.cpp" ex="false" tool="1" flavor2="0">
@@ -611,6 +621,10 @@
       <item path="Global/IncDefine.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Global/IncDefine.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Global/ProgInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Global/ProgInfo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Global/SysDate.cpp" ex="false" tool="1" flavor2="0">
       </item>

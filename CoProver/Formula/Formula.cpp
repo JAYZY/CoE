@@ -285,7 +285,7 @@ void Formula::generateFormula(Scanner* in) {
                     Out::Error("暂时不识别include 文件的读取", ErrorCodes::INPUT_SEMANTIC_ERROR);
                 } else {
                     if (in->TestInpId("input_formula|fof")) {
-                        Out::Error("现在暂时不能识别 FOF公式集!\n请先用响应工具进行转换;", ErrorCodes::INPUT_SEMANTIC_ERROR);
+                        Out::Error("现在暂时不能识别 FOF公式集!\n请先用工具进行转换;", ErrorCodes::INPUT_SEMANTIC_ERROR);
                     } else {
                         assert(in->TestInpId("input_clause|cnf"));
                         Clause* clause = new Clause();
@@ -328,7 +328,7 @@ void Formula::generateFormula(Scanner* in) {
  * A. 恒真子句  P+ ~P   或  a=a
  * B. 假文字删除  a~=a 
 /*---------------------------------------------------------------------*/
-RESULT Formula::preProcess() {
+RESULT Formula::preProcess(vector<Clause*>&factorClas) {
     /*Statistics--    */
     uint16_t uFSNum = 0; //向前归入冗余子句个数
     uint16_t uTautologyNum = 0; //恒真子句个数
@@ -358,11 +358,13 @@ RESULT Formula::preProcess() {
         //------ 对子句进行factor rule 约减 ------
 
         Clause* factorCla = Simplification::Factor((*claIt));
-
+        bool isFactor = false;
         if (factorCla) {
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
             (*claIt)->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             ++uFactorNum;
+            isFactor = true;
+
         } else {
             factorCla = (*claIt);
         }
@@ -376,23 +378,27 @@ RESULT Formula::preProcess() {
             factorCla->priority = INT_MIN; //修改优先级为最小值 排序永远最后
             continue;
         }
-
+        if (isFactor) {
+            factorClas.push_back(factorCla);
+        }
+        //debug        if (factorCla->ident == 729)            cout << "Debug" << endl;
         this->uMaxLitNum = MAX(this->uMaxLitNum, factorCla->LitsNumber());
         //  this->uMaxFuncLayer=MAX(this->uMaxFuncLayer,(*claIt)->)
         //插入到索引中    1.单元子句索引    2.全局索引
         factorCla->SetOrigin();
-        insertNewCla(factorCla);
 
+        insertNewCla(factorCla);
+        //debug 输出预处理后子句 : string oriCla;         factorCla->getStrOfClause(oriCla);         FileOp::getInstance()->outInfo(oriCla);
         //若为单元子句,检查是否有其他单元子句 合一
-        if (factorCla->isUnit()&&(isUnsat(factorCla))) {
+        if (factorCla->isUnit()&&(isUnsat(factorCla, true))) {
             return RESULT::UNSAT;
         }
     }
 
 
-    StrategyParam::MaxLitNumOfR = 1; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
-    StrategyParam::MaxLitsNumOfTriNewCla = 1;
-    StrategyParam::MaxLitNumOfNewCla = 3; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
+    StrategyParam::MaxLitNumOfR = 3; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
+    StrategyParam::MaxLitsNumOfTriNewCla = 2;
+    StrategyParam::MaxLitNumOfNewCla = 2; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
     StrategyParam::R_MAX_FUNCLAYER = 6;
     //输出子句集预处理的信息---------------------------------------------------
     PaseTime("Preprocess_", startTime);
@@ -408,7 +414,7 @@ RESULT Formula::preProcess() {
 
 //检查单元子句是否存在互补合一 -- unsat
 
-bool Formula::isUnsat(Clause* unitCla) {
+bool Formula::isUnsat(Clause* unitCla, bool isOutTip) {
     assert(unitCla->isUnit());
     Lit_p checkLit = unitCla->literals;
     if (!checkLit->EqnIsEquLit()) {
@@ -432,6 +438,9 @@ bool Formula::isUnsat(Clause* unitCla) {
                 parentCla = "c" + to_string(unitCla->ident);
                 parentCla += ",c" + to_string(candCla->ident);
                 strCla += ",inference( BR,[status(thm)],[" + parentCla + "]) ).\n";
+                if (isOutTip) {
+                    FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
+                }
                 FileOp::getInstance()->outInfo(strCla);
 
                 subst->Clear();
@@ -757,10 +766,10 @@ bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
         Lit_p selConLit = arrayHoldLits[i];
         //debug          cout << "unit 选择文字:C" << selConLit->claPtr->ident << endl;   selConLit->EqnTSTPPrint(stdout, true);        cout << endl;
 
-        //=== 如果是等词则且非单元子句则不参与索引树操作
-        if (selConLit->EqnIsEquLit() && arraySize > 1) {
-            continue;
-        }
+        //=== 如果是等词则且非单元子句则不参与索引树操作  ?????
+        //        if (selConLit->EqnIsEquLit() && arraySize > 1) {
+        //            continue;
+        //        }
 
         //=== 从索引树上获取,候选节点(项)
         TermIndNode* termIndNode = indexing->Subsumption(selConLit, SubsumpType::Forword);
@@ -777,7 +786,7 @@ bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
             //------ 遍历候选文字集合.查找满足向前归入的文字
             for (int ind = 0; ind < candVarLits->size(); ++ind) {
                 candVarCla = candVarLits->at(ind)->claPtr; //候选子句                                               
-                if (candVarCla == selConLit->claPtr || candVarCla == pasCla || (setUsedCla && setUsedCla->find(candVarCla) != setUsedCla->end())) { //找到查询子句中的文字.包括自己
+                if (candVarCla == selConLit->claPtr || candVarCla == pasCla) {//|| (!candVarCla->isUnit() && setUsedCla && setUsedCla->find(candVarCla) != setUsedCla->end())) { //找到查询子句中的文字.包括自己
                     continue;
                 }
 
@@ -852,42 +861,56 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     //插入到索引中    1.单元子句索引    2.全局索引
     Literal * lit = cla->Lits();
 
-    //添加到单元子句列表中
-    if (cla->IsUnitPos()) {
-        this->unitClaIndex->Insert(lit);
-        this->vPosUnitClas.push_back(cla);
-    }
-    if (cla->isUnitNeg()) {
-        this->unitClaIndex->Insert(lit);
-        this->vNegUnitClas.push_back(cla);
-    }
+
     uint32_t posLitNum = 0;
+    //将每个文字-添加到总索引中
     while (lit) {
-        if (!isEquAxiom && lit->EqnIsEquLit()) {
-            ++(this->uEquLitNum);
+        //对等词进行排序
+        if (!lit->IsOriented()) {
+            lit->EqnOrient();
         }
-        if (!isEquAxiom && lit->IsPositive()) {
-            ++posLitNum;
+        //
+        if (!isEquAxiom) {
+            if (lit->EqnIsEquLit()) {
+                ++(this->uEquLitNum);
+            }
+            if (lit->IsPositive()) {
+                ++posLitNum;
+            }
         }
+        //添加到总索引中
         allTermIndex->Insert(lit);
         lit = lit->next;
     }
+
+    //添加到单元子句列表中
+    if (cla->isUnit()) {
+        if (cla->IsUnitPos()) {
+            this->vPosUnitClas.push_back(cla);
+        } else {
+            assert(cla->isUnitNeg());
+            this->vNegUnitClas.push_back(cla);
+        }
+        this->unitClaIndex->Insert(cla->literals);
+    }
+
     if (isEquAxiom) {//如果是等词公理则不做处理，只加入等词公理集合，不加入workClaSet
 
         vEqulityAxiom.push_back(cla);
         if (cla->isUnit()) {
-            this->AddUnitPredLst(cla);
-        } else {
-            assert(cla->LitsNumber() > 1);
-            this->AddPredLst(cla);
+            this->AddUnitPredLst(cla); //加入单元文字索引FP0
         }
-
+        else {
+            // assert(cla->LitsNumber() > 1);
+            this->AddPredLst(cla); //策略1. 单元子句不加入FP0 
+        }
         return;
     }
+
     if (posLitNum > 1) {
         ++(this->uNonHornClaNum);
     } else if (posLitNum == 0) {//目标子句
-        cla->priority = 100;
+        cla->priority = 100; //优先使用
         this->addGoalClas(cla);
         //添加目标子句
         // this->workClaSet->InsertCla(cla);
@@ -902,9 +925,11 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
         this->AddPredLst(cla);
         //添加到处理后的子句集中
         this->workClaSet->InsertCla(cla);
+
     }
     //输出 .tp
     if (StrategyParam::isOutTPTP) {
+
         string sCla = "";
         cla->getStrOfClause(sCla);
         FileOp::getInstance()->OutTPTP(sCla);
@@ -916,6 +941,7 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
  * @param cal
  */
 void Formula::removeWorkCla(Cla_p cal) {
+
     this->workClaSet->RemoveClause(cal); //暂时没有删除谓词链表
 }
 
@@ -953,6 +979,7 @@ void Formula::AddUnitPredLst(Clause* unitCla) {
             }
             g_UnitNegPred[0].push_back(lit); //将等词 f(x)=a 当做 E(f(x),a) 存储到谓词列表中 注意令E的fCode=0;
         } else {
+
             g_UnitNegPred[lit->lterm->fCode].push_back(lit);
         }
     }
@@ -963,8 +990,10 @@ void Formula::AddUnitPredLst(Clause* unitCla) {
 void Formula::AddPredLst(Clause* cla) {
     Literal* lit = cla->Lits();
     while (lit) {
+
         if (lit->IsPositive()) {//正文字
             if (lit->EqnIsEquLit()) {
+                //對等词进行排序
                 if (!lit->IsOriented()) {
                     lit->EqnOrient();
                 }//确保左边项>右边项
@@ -1023,13 +1052,19 @@ vector<Literal*>* Formula::getPredLst(Literal* lit) {
     assert(!lit->EqnIsEquLit()); //不能是等词文字
     if (lit->IsPositive())
         return &g_PostPred[lit->lterm->fCode];
+
     else
         return &g_NegPred[lit->lterm->fCode];
 }
 
 list<Clause*>::iterator Formula::getNextStartClause() {
+
     return min_element(this->workClaSet->getClaSet()->begin(), this->workClaSet->getClaSet()->end(), SortRule::ClaCmp);
 
+}
+
+vector<Clause*>::iterator Formula::getNextGoalClause() {
+    return min_element(this->goalClaset.begin(), this->goalClaset.end(), SortRule::ClaCmp);
 }
 
 void Formula::printOrigalClasInfo(FILE* out) {

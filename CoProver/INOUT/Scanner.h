@@ -26,7 +26,12 @@ enum class FuncSymbType : uint8_t {
     FSIdentObject /* String "in double quotes" */
 };
 //字符串数字类型
-
+enum class IOFormat {
+    LOPFormat = 0,
+    TPTPFormat = 2,
+    TSTPFormat,
+    AutoFormat,
+};
 enum class StrNumType {
     SNNoNumber,
     SNInteger,

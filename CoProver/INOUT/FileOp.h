@@ -10,6 +10,7 @@
 #ifndef FILEOP_H
 #define FILEOP_H
 #include "Global/IncDefine.h" 
+#include "LIB/Out.h"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -134,12 +135,12 @@ public:
     }
 
     inline void OutTPTP(const string&msg) {
-        if(!StrategyParam::isOutTPTP)
+        if (!StrategyParam::isOutTPTP)
             return;
         if (fCombine == nullptr) {
             if ((fCombine = fopen(sTPTP.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
                 Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
-                return ;
+                return;
             }
         }
         fwrite(msg.c_str(), 1, msg.length(), fCombine);
@@ -160,7 +161,9 @@ public:
         OutFile->flush();
     }
 
-
+    inline void ClearOutDir() {
+        RmDir(outDir);
+    }
 public:
     /* 关闭所有文件 */
     void CloseAll();
@@ -175,7 +178,8 @@ public:
      * @return 
      */
     int mkMultiDir(string & dirPath);
-    int rmDir(std::string dir_full_path);
+    //递归删除指定文件和文件夹
+    int RmDir(std::string dir_full_path);
 
     //获取带后缀的文件名
     string getFileName(string & fileFullName);
@@ -192,7 +196,7 @@ public:
     void GenrateEmptyPathNoRegex();
 
     void GetProblemInfo(string & strInfo) {
-        strInfo = "% start to proof:" + this->tptpFileName;
+        strInfo += "% start to proof:" + this->tptpFileName;
         strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;
         strInfo += "\n% Proof found!\n% SZS status Theorem for " + this->tptpFileName;
         strInfo += "\n% SZS output start Proof\n";
@@ -247,9 +251,10 @@ public:
     }
 
     /* 提取目录地址串 Given a path name, return the directory portion */
-    inline static const char* FileNameDirName(const string & name) {
+    inline static string FileNameDirName(const string & name) {
         assert(!name.empty());
-        return (name.substr(0, name.find_last_of('/'))).c_str();
+        int pos = name.find_last_of('/');
+        return name.substr(0, pos);
 
     }
     /// 提取文件的基本名称,不包括后缀名

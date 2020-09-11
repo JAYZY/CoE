@@ -12,7 +12,7 @@
  */
 
 #include "WFormula.h"
-
+#include "LIB/Out.h"
 WFormula::WFormula() {
     this->properties = WFormulaProp::WPIgnoreProps;
     this->ident = 0;

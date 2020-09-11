@@ -35,7 +35,7 @@ public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-   // TermCellStore();
+    // TermCellStore();
     TermCellStore(int hashSize);
     TermCellStore(const TermCellStore& orig);
     virtual ~TermCellStore();
@@ -62,8 +62,40 @@ public:
 
     /* 得到term的hash编码 */
     inline FunCode TermCellHash(TermCell* term) {
+//        return (((term)->arity == 0) ? arity0hash(term) : (((term)->arity == 1) ? arity1hash(term) :
+//                aritynhash(term)))&TERM_STORE_HASH_MASK;
         return (((term)->arity == 0) ? arity0hash(term) : (((term)->arity == 1) ? arity1hash(term) :
-                aritynhash(term)))&TERM_STORE_HASH_MASK;
+                aritynhash(term)))%TERM_STORE_HASH_SIZE;//  TERM_STORE_HASH_MASK;
+    }
+
+    inline FunCode BKDRHash(const TermCell* termPtr) {
+        //UINT32 seed=31;
+        FunCode hash = 15 * termPtr->fCode;
+
+        for (int i = 0; i < termPtr->arity; ++i) {
+            hash = (hash * 15 + BKDRHash(termPtr->args[i])); //转换为正数;
+        }
+        return hash & LONG_MAX;
+    }
+
+    inline FunCode BKDRHash1(const TermCell* termPtr) {
+        //UINT32 seed=31;
+        FunCode hash = 131 + termPtr->fCode;
+        //hash = hash * 131 + (intptr_t) (termPtr->args[0])>>3;
+        //hash = hash * 131 + (intptr_t) (termPtr->args[1])>>4; // /*& 0x7FFFFFFF*/); //转换为正数;
+
+        return hash & LONG_MAX;
+    }
+
+    inline FunCode BKDRHash2(const TermCell* term) {
+        //UINT32 seed=31;
+
+        long hash = 15 * term->fCode;
+        for (int i = 0; i < term->arity; ++i) {
+            hash = hash * 15 + ((intptr_t) (term->args[i])>>(3 + i)); // /*& 0x7FFFFFFF*/); //转换为正数;           
+        }
+        return hash & LONG_MAX/*& 0x7FFFFFFF*/;
+
     }
 
     inline long TermCellStoreNodes() {

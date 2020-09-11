@@ -44,8 +44,9 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
     map<Clause*, int16_t> claWight;
     //程序结束条件1、得到归结结论；2、用户设置的时间限制，3、内存限制。
-    list<Clause*>::iterator itSelCla = fol->getNextStartClause(); // fol->getWorkClas()->begin();
-
+    //策略改进,正文字子句优先级高 
+    //  vector<Clause*>::iterator itSelCla = fol->getNextGoalClause();  //fol->getWorkClas()->begin();
+    list<Clause*>::iterator itSelCla = fol->getNextStartClause(); //
     uint32_t iterNum = 0;
     //不能作为起步子句集合--A.单元子句,B等词公理不能作为起步子句
     set<Clause*> notStartClaSet;
@@ -58,19 +59,18 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
     StrategyParam::IS_RollBackGoalPath = false;
     int iGoalInd = 0;
-
-
-    Clause* selCla = *itSelCla; //fol->goalClaset[iGoalInd]; //
     bool isGoal = false;
     while (StrategyParam::IterCount_LIMIT > iterNum) {
-        if (!StrategyParam::IS_RollBackGoalPath && CPUTime() - startTime > 30) { //30秒
+
+        if (!StrategyParam::IS_RollBackGoalPath && CPUTime() - startTime > 36) { //30秒
             StrategyParam::IS_RollBackGoalPath = true;
-            cout<<"Set IS_RollBackGoalPath=true"<<endl;
+            cout << "Set IS_RollBackGoalPath=true" << endl;
         }
+        Clause* selCla = *itSelCla; //fol->goalClaset[iGoalInd]; //
         //构建三角形               
         ++iterNum;
         //单元子句排序         // fol->unitClasSort();        //可满足判定  if (fol->getWorkClas()->size() < 2) {  return RESULT::SAT;   }
-
+        //debug        if(iterNum==20950)            cout<<"iterNum:"<<iterNum<<endl;
         assert(selCla);
         res = triAlg.GenreateTriLastHope(selCla);
         /*判定不可满足*/
@@ -84,7 +84,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             notStartClaSet.insert(*itSelCla);
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 // fprintf(stdout, "Find start clause failed\n"); // 所有子句起步均找不到符合限制的合一路径，可能限制太严格，也可能为SAT！
-                if (++modifyLitNumCount > 100) {
+                if (++modifyLitNumCount > 10000) {
                     cout << "UNKNOWN" << endl;
                     return RESULT::UNKNOWN;
                 }
@@ -96,12 +96,15 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                 FileOp::getInstance()->outLog("修改R_MAX_LITNUM限制:" + to_string(StrategyParam::MaxLitNumOfR) + "\n");
                 notStartClaSet.clear();
                 itSelCla = fol->getNextStartClause();
+               // itSelCla = fol->getNextGoalClause();
             } else {
                 //fprintf(stdout, "Clause %u,constructing Contradiction failed\n", (*itSelCla)->ident);
-                (*itSelCla)->priority -= StrategyParam::CLA_NOMGU_WIGHT;
+                (*itSelCla)->priority -= 1; //StrategyParam::CLA_NOMGU_WIGHT;
 
                 if ((++itSelCla) == fol->getWorkClas()->end())
                     itSelCla = fol->getWorkClas()->begin();
+                /*if ((++itSelCla) == fol->goalClaset.end())
+                    itSelCla = fol->goalClaset.begin();*/
                 selCla = *itSelCla;
             }
             continue;
@@ -114,8 +117,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
             for (int i = 0; i < triAlg.newClas.size(); i++) {
 
                 Clause* newCla = triAlg.newClas[i];
-                //                if (newCla->ident >= 16765)
-                //                    cout << "debug" << endl;
+                //debug if (newCla->ident >= 16765) cout << "debug" << endl;
                 triAlg.OutNewClaInfo(newCla);
 
                 //--- 若为单元子句,A. 检查是否有其他单元子句合一（UNSAT) B.用该单元子句与自己本身的子句进行二元归结，得到特殊子句优先使用 
@@ -123,20 +125,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     if (fol->isUnsat(newCla)) {
                         return RESULT::UNSAT;
                     }
-                    //                    if (i < uNewClaSize) {
-                    //                        Clause* claSelfDeduct = newCla->literals->parentLitPtr->claPtr;
-                    //                        // if (setDealedUnitCla.find(claSelfDeduct) == setDealedUnitCla.end()) {
-                    //
-                    //                        RESULT ResBI = triAlg.BinaryInference(claSelfDeduct, newCla);
-                    //                        if (RESULT::UNSAT == ResBI) {
-                    //                            return RESULT::UNSAT;
-                    //                        }
-                    //                    }
-                    //                    else {
-                    //                        setDealedUnitCla.insert(newCla);
-                    //                    }
 
-                    //}
                     //切记，若单元子句与父子句进行归结（自归结） 结果为NOMGU,表明自归结失败不能再做尝试。
                 }
 
@@ -169,7 +158,6 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
                 //=== 修改新子句权重-------------
                 int pri = 0;
-
                 if (newCla->isGoal()) {
                     newCla->priority = 100;
                     //selCla = newCla;
@@ -182,8 +170,10 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     newCla->priority = pri / (int) (newCla->LitsNumber());
                 }
                 fol->insertNewCla(newCla);
+
             }
         }
+        //修改起步子句优先级
         //改变参与归结的子句优先级,减1;  ---  理由:参与归结的子句 本质上是由 文字决定的,因此不需要改变参与子句的优先级,只需要改变起步子句的优先级即可
         //        for_each(triAlg.setUsedCla.begin(), triAlg.setUsedCla.end(), [](Clause * cla) {
         //            --cla->priority;
@@ -192,30 +182,40 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
 
         //--- 选择起步子句 --- 
+        --(selCla->priority);
+        //itSelCla = fol->getNextGoalClause();
+        itSelCla=fol->getNextStartClause();
+        //        do{            
+        //            if (( getNextGoalClause) == fol->getWorkClas()->end())
+        //                itSelCla = fol->getWorkClas()->begin();
+        //            selCla = *itSelCla;
+        //        }while (selCla->isDel()) ;
+
         //先从特殊子句集开始
-        if (!triAlg.vSpecialCla.empty()) {
-            selCla = triAlg.vSpecialCla.back();
-            triAlg.vSpecialCla.pop_back();
-        } else if (isGoal) {
-            ++iGoalInd;
-            if (iGoalInd >= fol->goalClaset.size()) {
-                isGoal = false;
-                selCla = *itSelCla;
-            } else
-                selCla = fol->goalClaset[iGoalInd]; //
-        } else {
-            --(*itSelCla)->priority;
-            ++itSelCla;
-            if (itSelCla == fol->getWorkClas()->end())
-                itSelCla = fol->getWorkClas()->begin();
-            selCla = *itSelCla;
-            while (selCla->isDel()) {
-                ++itSelCla;
-                if (itSelCla == fol->getWorkClas()->end())
-                    itSelCla = fol->getWorkClas()->begin();
-                selCla = *itSelCla;
-            }
-        }
+
+        //        if (!triAlg.vSpecialCla.empty()) {
+        //            selCla = triAlg.vSpecialCla.back();
+        //            triAlg.vSpecialCla.pop_back();
+        //        } else if (isGoal) {
+        //            ++iGoalInd;
+        //            if (iGoalInd >= fol->goalClaset.size()) {
+        //                isGoal = false;
+        //                selCla = *itSelCla;
+        //            } else
+        //                selCla = fol->goalClaset[iGoalInd]; //
+        //        } else {
+        //            --(*itSelCla)->priority;
+        //            ++itSelCla;
+        //            if (itSelCla == fol->getWorkClas()->end())
+        //                itSelCla = fol->getWorkClas()->begin();
+        //            selCla = *itSelCla;
+        //            while (selCla->isDel()) {
+        //                ++itSelCla;
+        //                if (itSelCla == fol->getWorkClas()->end())
+        //                    itSelCla = fol->getWorkClas()->begin();
+        //                selCla = *itSelCla;
+        //            }
+        //        }
     }
 
 
@@ -241,18 +241,19 @@ RESULT Resolution::BaseExtendAlg(Formula * fol) {
     int iter = 0;
     while (true) {
         string soutInfo = "------扩展△次数:" + to_string(++iter) + "非单元集大小:" + to_string(fol->getWorkClas()->size()) + "------\n";
-        //  cout<<soutInfo<<endl;
+        FileOp::getInstance()->outRun(soutInfo);
+        //cout << soutInfo << endl;
         FileOp::getInstance()->outTriExt(soutInfo);
         //非单元子句排序
         fol->getWorkClas()->sort(SortRule::ClaCmp);
         //单元子句排序
         fol->unitClasSort();
-        // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
-        // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
+
 
         //std::sort(lsWorkClas->begin(), lsWorkClas->end(), SortRule::ClaCmp);
-
         res = triAlgExt.ExtendTri();
+
+        // res = triAlgExt.ExtendTriByFull();
         if (RESULT::UNSAT == res) {
             break;
         }

@@ -25,8 +25,8 @@ public:
 
         //对子句中的文字进行排序
         /*1. 优先使用次数少的文字;2,优先使用稳定低的文字 3.优先使用正文字; */
-        //        if (litA->usedCount != litB->usedCount)
-        //            return litA->usedCount < litB->usedCount; //优先使用次数少的文字
+             if (litA->usedCount != litB->usedCount)
+                   return litA->usedCount < litB->usedCount; //优先使用次数少的文字
         long weight = 0;
 
         weight = StrategyParam::Weight_Sort == SORT_STRATEGY::ASC ? litA->StandardWeight() - litB->StandardWeight()

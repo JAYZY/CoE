@@ -14,6 +14,7 @@
 #ifndef STREAMCELL_H
 #define STREAMCELL_H
 #include "Global/IncDefine.h"
+
 using namespace std;
 extern const StreamType StreamTypeFile;
 class StreamCell {

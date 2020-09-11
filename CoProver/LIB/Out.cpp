@@ -12,8 +12,7 @@
  */
 
 #include "Out.h"
-
-
+ 
 
 char* ErrStr=nullptr;
 /* Saving errno from the system call originating it */
@@ -23,11 +22,11 @@ __attribute__ ((noreturn))
 void Out::SysError(const char* message, ErrorCodes ret, ...) {
     va_list ap;
     va_start(ap, ret);
-    fprintf(stderr, "%s: ", Options::ProgName.c_str());
+    fprintf(stderr, "%s: ", ProgInfo::ProgName.c_str());
     vfprintf(stderr, message, ap);
     fprintf(stderr, "\n");
     errno = TmpErrno;
-    perror(Options::ProgName.c_str());
+    perror(ProgInfo::ProgName.c_str());
     va_end(ap);
     exit((int)ret);
 }
@@ -36,7 +35,7 @@ void Out::Warning(const char* message, ...)
    va_list ap;
    va_start(ap, message);
 
-   fprintf(stderr, "%s: Warning: ", Options::ProgName.c_str());
+   fprintf(stderr, "%s: Warning: ", ProgInfo::ProgName.c_str());
    vfprintf(stderr, message, ap);
    fprintf(stderr, "\n");
 
@@ -47,11 +46,11 @@ void Out::SysWarning(const char* message, ...)
    va_list ap;
    va_start(ap, message);
 
-   fprintf(stderr, "%s: Warning: ", Options::ProgName.c_str());
+   fprintf(stderr, "%s: Warning: ", ProgInfo::ProgName.c_str());
    vfprintf(stderr, message, ap);
    fprintf(stderr, "\n");
    errno = TmpErrno;
-   perror(Options::ProgName.c_str());
+   perror(ProgInfo::ProgName.c_str());
 
    va_end(ap);
 }

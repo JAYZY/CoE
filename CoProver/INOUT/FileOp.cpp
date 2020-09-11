@@ -34,7 +34,13 @@ map<string, FileOp*> FileOp::lsOut;
 FileOp::FileOp() {
     tptpFileNameNoExt = this->getFileNameNoExt(Env::tptpFileName);
     tptpFileName = this->getFileName(Env::tptpFileName);
-    setWorkDirAndCreateFile(homePath + "/Desktop/");
+#ifdef  DELOUT
+    string strWorkDir = Env::ExePath;
+#else
+    string strWorkDir=homePath + "/Desktop/";
+#endif
+
+    setWorkDirAndCreateFile(strWorkDir);
 
 }
 
@@ -51,18 +57,30 @@ FileOp::FileOp() {
 
 /* 关闭所有文件 */
 void FileOp::CloseAll() {
-    if (fInfo)
+    if (fInfo) {
         fclose(fInfo);
-    if (fRun)
+        fInfo = nullptr;
+    }
+    if (fRun) {
         fclose(fRun);
-    if (fLog)
+        fRun = nullptr;
+    }
+    if (fLog) {
         fclose(fLog);
-    if (fUNSAT)
+        fLog = nullptr;
+    }
+    if (fUNSAT) {
         fclose(fUNSAT);
-    if (fTri)
+        fUNSAT = nullptr;
+    }
+    if (fTri) {
         fclose(fTri);
-    if(fCombine)
+        fTri = nullptr;
+    }
+    if (fCombine) {
         fclose(fCombine);
+        fCombine = nullptr;
+    }
 
 }
 
@@ -93,8 +111,8 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
     cnfFileName = tmpStr + ".cnf";
     sInfoFileName = tmpStr + ".i";
     sUnsatFileName = tmpStr + ".unsat";
-    sTPTP=tmpStr+".tp";
-    fCombine=nullptr;
+    sTPTP = tmpStr + ".tp";
+    fCombine = nullptr;
     if ((fInfo = fopen(sInfoFileName.c_str(), "wb")) == nullptr) { //第一次以读的方式新建一个文件
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".info");
         return false;
@@ -117,8 +135,10 @@ bool FileOp::setWorkDirAndCreateFile(string strDir) {
         return false;
     }
 
-    if (fGlobalInfo)
+    if (fGlobalInfo) {
         fclose(fGlobalInfo);
+        fGlobalInfo = nullptr;
+    }
     sFileName = workDir + "proofRes.g";
     if ((fGlobalInfo = fopen(sFileName.c_str(), "ab")) == nullptr) { //第一次以追加的方式新建一个文件,并写入该判定文件的名称
         Out::SysError("Create file: %s  error", ErrorCodes::FILE_ERROR, ".g");
@@ -157,7 +177,7 @@ int FileOp::mkMultiDir(string& dirPath) {
 
 //recursively delete all the file in the directory.
 
-int FileOp::rmDir(string dirPath) {
+int FileOp::RmDir(string dirPath) {
     DIR* dirp = opendir(dirPath.c_str());
     if (!dirp) {
         return -1;
@@ -175,7 +195,7 @@ int FileOp::rmDir(string dirPath) {
             continue;
         }
         if (S_ISDIR(st.st_mode)) {
-            if (rmDir(sub_path) == -1) { // 如果是目录文件，递归删除
+            if (RmDir(sub_path) == -1) { // 如果是目录文件，递归删除
                 closedir(dirp);
                 return -1;
             }
@@ -314,8 +334,8 @@ void FileOp::GenrateEmptyPathNoRegex() {
     //    string str2 = "/home/zj/Desktop/output/CSR115+11/CSR115+11.tmp";
     ifstream fin(sInfoFileName, ios::in);
     ofstream fout(sUnsatFileName, ios::out); //输出
-//    ifstream fin(str1, ios::in);
-//    ofstream fout(str2, ios::out); //输出
+    //    ifstream fin(str1, ios::in);
+    //    ofstream fout(str2, ios::out); //输出
     map<int, vector<string> > allFOL;
     std::string line;
 
@@ -384,7 +404,7 @@ void FileOp::GenrateEmptyPathNoRegex() {
         fout << resPoof;
         //outInfo(resPoof);
         cout << resPoof;
-
+        cout << "% -------------------------------------------------\n";
 
     } else { // 没有该文件
         cout << "no such file" << endl;

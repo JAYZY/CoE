@@ -16,30 +16,9 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Doc/record.log</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/ClauseSet.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/main.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Inferences/Simplification.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Doc/问题记录</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Terms/TermCell.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Inferences/Simplification.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/INOUT/FileOp.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/INOUT/FileOp.cpp</file>
             <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/Formula.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/TriAlg.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Inferences/Unify.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Formula/ClauseSet.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Clause.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/SortRule.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/SortRule.h</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/CLAUSE/Literal.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.cpp</file>
-            <file>file:/home/zj/Documents/myProg/CoE/CoProver/HEURISTICS/StrategyParam.h</file>
+            <file>file:/home/zj/Documents/myProg/CoE/CoProver/Alg/Resolution.cpp</file>
         </group>
     </open-files>
 </project-private>

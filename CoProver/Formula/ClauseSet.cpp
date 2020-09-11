@@ -93,7 +93,7 @@ void ClauseSet::FreeAllClas() {
 void ClauseSet::RemoveClause(Clause* cla) {
    // cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
     this->claLst.remove(cla);
-    this->litNum-= cla->LitsNumber();
+     this->litNum-= cla->LitsNumber();
     --this->members;
     //DelPtr(cla);
 }

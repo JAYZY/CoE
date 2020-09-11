@@ -13,6 +13,7 @@
 
 #include "Ordering.h"
 #include "KBO.h"
+#include "LIB/Out.h"
 TermOrderType Ordering::type = TermOrderType::KBO;
 
 Ordering::Ordering() {

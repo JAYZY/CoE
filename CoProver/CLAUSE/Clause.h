@@ -373,7 +373,9 @@ public:
 
     Literal * GetFirstHoldLit()const;
     Literal * FindMaxLit();
-
+    void GetVecHoldLit(vector<Literal*>&vHoldLits)const;
+    
+    
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
 
     template<typename FunObj, typename T >

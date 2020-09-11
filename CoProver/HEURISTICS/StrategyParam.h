@@ -23,13 +23,15 @@ enum class POSLIT_STEADY : uint8_t {
 
 };
 //排序策略-- 由低到高，由高到低
-enum class SORT_STRATEGY{
-    ASC=1, //升序
+
+enum class SORT_STRATEGY {
+    ASC = 1, //升序
     DESC, //降序
     MINIV, //近似值
 };
 
 //主界线文字限
+
 enum class ALimit : uint8_t {
     NoLimit = 1, //无限制
     NoStructSameA, //不允许主界线文字 结构相同
@@ -37,6 +39,7 @@ enum class ALimit : uint8_t {
 };
 
 //子句选择策略
+
 enum class ClaSelStrategy : uint8_t {
     /*
      * 0, "NS(子句冗余次数最少>子句文字数>子句稳定度>主动归结次数最少)"
@@ -44,13 +47,22 @@ enum class ClaSelStrategy : uint8_t {
      */
     Num_Prio_Weight,
     Num_Weight_Prio,
-    
+
     Prio_Weight_Num,
     Prio_Num_Weight,
-    
+
     Weight_Num_Prio,
     Weight_Prio_Num,
-    
+
+    Num_Prio_Post_Weight,
+    Num_Prio_Weight_Post
+
+};
+
+/* 枚举型输入格式*/
+enum class InFormat {
+    FOF,
+    CNF
 };
 
 class StrategyParam {
@@ -62,27 +74,33 @@ public:
     /*                          Static  Param                              */
     /*---------------------------------------------------------------------*/
     //
+
+    // <editor-fold defaultstate="collapsed" desc="IO相关">
+    static InFormat IFormat;
+
+    // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="权重相关">
     static uint8_t CLA_NOMGU_WIGHT; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
     static uint8_t CLA_REDUNDANCY_WIGHT; //子句归结中发现冗余,改变的优先级 
     static uint8_t CLA_OVERLIMIT_WIGHT; //子句超过限制,改变的优先级
     static uint8_t LIT_REDUNDANCY_WIGHT; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
     static uint8_t LIT_OVERLIMIT_WIGHT; //文字超过限制,改变的优先级
-    
-    
-    
+
+
+
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="启发式策略">
     static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
     static POSLIT_STEADY SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
     static ALimit ALIT_LIMIT; //主界线文字限制
-    
-    static SORT_STRATEGY Weight_Sort;       //权重排序策略
+
+    static SORT_STRATEGY Weight_Sort; //权重排序策略
     //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
     static int32_t IterCount_LIMIT; //create triangle count limit
-    
-    
+
+
     /* 剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
      * 若子句Cj加入△后不满足该限制条件，则换一个Cj,若Ci找不到一个Cj满足该条件的Cj则回退一次。 
      */
@@ -93,10 +111,10 @@ public:
     static uint32_t MaxLitNumOfNewCla; //新子句最大的文字数限制（literals number of new clause limit. =0 noLimit）    
     // </editor-fold>
 
-   
-    static bool isOutTPTP;  //新子句是否输出TPTP 格式文件
-    static bool isFullUC;   //是否充分单元子句下拉
-    
+
+    static bool isOutTPTP; //新子句是否输出TPTP 格式文件
+    static bool isFullUC; //是否充分单元子句下拉
+
     //新的启发式策略
     // static INT32 SEL_STARTLit_STRATEGY; //起步文字选择策略
     // static INT32 SEL_STARTLIT_NUMLIT; //起步文字文字数策略
@@ -111,7 +129,7 @@ public:
     static bool IS_ALitNoEqual; //主界线文字相同
     static bool IS_ALitEqualR; //主界线文字与R文字相同
     static bool IS_RollBackGoalPath; //是否回退含有目标子句的路径
-    static bool ISFactor;//是否执行 因子规则 factor rule
+    static bool ISFactor; //是否执行 因子规则 factor rule
 
 
 

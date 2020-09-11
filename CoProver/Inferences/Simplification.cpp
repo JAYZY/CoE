@@ -568,25 +568,26 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
         while (ind < conLitsSize) {
             Literal* conEqn = arrayConLit[ind];
             isMatch = true;
-            //debug   cout << "varEqn ";            varEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug               cout << "varEqn ";            varEqn->EqnTSTPPrint(stdout, true);            cout << endl;
 
-            //debug    cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
+            //debug                cout << "conEqn ";            conEqn->EqnTSTPPrint(stdout, true);            cout << endl;
             if (!conEqn->isSameProps(varEqn) || conEqn->StandardWeight() < varEqn->StandardWeight()) //被归入文字的变元数 > 归入文字的变元数 
                 isMatch = false;
 
             uint32_t substPos = subst.Size();
             if (isMatch) {
+                
                 isMatch = false;
                 if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
                     isMatch = true;
                 }
-            }
-            if (!isMatch && varEqn->EqnIsEquLit()) {
-                //匹配失败
-                subst.SubstBacktrackToPos(substPos); //还原替换
-                /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
-                if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
-                    isMatch = true;
+                if (!isMatch && varEqn->EqnIsEquLit()) {
+                    //匹配失败
+                    subst.SubstBacktrackToPos(substPos); //还原替换
+                    /*如果为等词,检查如下情况   l1=E(a,b)  l2=E(b,a)  是否为包含关系? */
+                    if (unify.SubstComputeMatch(varEqn->rterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->lterm, conEqn->rterm, &subst)) {
+                        isMatch = true;
+                    }
                 }
             }
             //varEqn匹配成功!
@@ -668,7 +669,7 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                 factorSubSt.SubstBacktrack();
                 //检查包含冗余                if(cla->ident==1257)                    cout<<"DEbug";
                 if (ClauseSubsumeClause(cla, newCla)) {
-                    
+
                     //删除相同文字                
                     int iRemoveNum = Literal::EqnListRemoveDuplicates(newCla->literals);
                     newCla->RecomputeLitCounts();
@@ -690,8 +691,8 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                     //FileOp::getInstance()->OutTPTP(sOut+" ).\n");
                     sOut += ",inference(" + InferenceInfo::getStrInfoType(newCla->infereType) + ",[status(thm)],[c" + to_string(cla->ident) + "]) ).\n";
                     FileOp::getInstance()->outInfo(sOut);
-                    
-                    
+
+
 
                     //暂时不删除原始子句 -- 由调用来控制是否删除
                     //DelPtr(cla);

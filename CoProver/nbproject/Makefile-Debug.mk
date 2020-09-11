@@ -46,6 +46,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Formula/WFormula.o \
 	${OBJECTDIR}/Global/Environment.o \
 	${OBJECTDIR}/Global/IncDefine.o \
+	${OBJECTDIR}/Global/ProgInfo.o \
 	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
 	${OBJECTDIR}/HEURISTICS/SortRule.o \
@@ -155,6 +156,11 @@ ${OBJECTDIR}/Global/IncDefine.o: Global/IncDefine.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/IncDefine.o Global/IncDefine.cpp
+
+${OBJECTDIR}/Global/ProgInfo.o: Global/ProgInfo.cpp
+	${MKDIR} -p ${OBJECTDIR}/Global
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/ProgInfo.o Global/ProgInfo.cpp
 
 ${OBJECTDIR}/Global/SysDate.o: Global/SysDate.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global

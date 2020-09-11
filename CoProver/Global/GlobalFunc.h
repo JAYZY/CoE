@@ -26,6 +26,8 @@ inline void TrimStr(string& s) {
 
 }
 
+
+ 
 //查找子字符串
 
 inline int FindSubStr(string& str, const string& subStr) {
@@ -53,10 +55,10 @@ inline int FindSubStr(string& str, const string& subStr) {
 
 inline int FindSubStr(string& str, char subStr) {
     int pos = -1;
-    size_t strLen = str.size(), subStrLen = 1;
+    int strLen = str.size(), subStrLen = 1;
     if (strLen < subStrLen)
         return -1;
-    while (pos++<strLen) {
+    while (++pos<strLen) {
         if (str[pos] == subStr) {
             return pos;
         }
@@ -207,5 +209,4 @@ inline int CountBitOne(uint64_t value) {
 }
 
 // </editor-fold>
-
 

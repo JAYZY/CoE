@@ -46,6 +46,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Formula/WFormula.o \
 	${OBJECTDIR}/Global/Environment.o \
 	${OBJECTDIR}/Global/IncDefine.o \
+	${OBJECTDIR}/Global/ProgInfo.o \
 	${OBJECTDIR}/Global/SysDate.o \
 	${OBJECTDIR}/HEURISTICS/Options.o \
 	${OBJECTDIR}/HEURISTICS/SortRule.o \
@@ -91,7 +92,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-Wl,-rpath,'.'
+LDLIBSOPTIONS=-Wl,-rpath,'.' -ldl -static
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -155,6 +156,11 @@ ${OBJECTDIR}/Global/IncDefine.o: Global/IncDefine.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/IncDefine.o Global/IncDefine.cpp
+
+${OBJECTDIR}/Global/ProgInfo.o: Global/ProgInfo.cpp
+	${MKDIR} -p ${OBJECTDIR}/Global
+	${RM} "$@.d"
+	$(COMPILE.cc) -O3 -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Global/ProgInfo.o Global/ProgInfo.cpp
 
 ${OBJECTDIR}/Global/SysDate.o: Global/SysDate.cpp
 	${MKDIR} -p ${OBJECTDIR}/Global
