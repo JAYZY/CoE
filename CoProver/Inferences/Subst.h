@@ -95,10 +95,12 @@ public:
      * result: Changes subst */
     void SubstCompleteInstance(TermCell* term, TermCell* defaultBinding);
     
-    /*是否存在逆向替换.
-     * 算法思路,若最近添加的变元不为指定子句中的变元则相当于 改变了原有已经替换过的变元,形成逆向替换
-    */
-    bool isReverseSubst(int claId,int pos);
+  
+    /// 是否存在逆向替换. -- 错误  应该是检查所有变元绑定 有没有包含替换变元。代价太大。
+    /// 算法思路,若最近添加的变元不为指定子句中的变元则相当于 改变了原有已经替换过的变元,形成逆向替换
+    /// \param claId 合一的子句（变元所在子句） -- 注：变元项都是有子句编号的
+    /// \param pos 开始检查的位置
+    /// \return true -- 存在逆向替换     bool IsReverseReplace(int claId,int pos);
 
 };
 typedef Subst *Subst_p/*替换类 substitutions*/;

@@ -1266,14 +1266,14 @@ RESULT TriAlg::GenBaseTriByLearn(Clause* givenCla) {
 /// \return 
 
 RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
-
+    assert(StrategyParam::ISSplitUnitCalIndex == false); //谓词的添加不区分单元子句
     // <editor-fold defaultstate="collapsed" desc="初始化工作">
     iniVect();
-    RESULT resTri = RESULT::NOMGU;
+    // RESULT resTri= RESULT::NOMGU;
     RollBackType rbType = RollBackType::NONE; //回退类型 0 - 不回退 1- 单元回退 2- 主界线回退   
     //经过多次合一，构建三角形
     Lit_p actLitPtr = nullptr, pasLitPtr = nullptr; //主动/被动归结文字
-    bool isDeduct = false; //是否发生过归结
+    bool isDeductOk = false; //是否发生过归结
     //主界线　替换的回退点,每次成功一个配对 就记录一次 
     vector<uint32_t> vRecodeBackPoint;
 
@@ -1296,7 +1296,8 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
         if (actLitPtr == nullptr) break;
     }
     //--- 起步信息输出-==========================
-    string strOut = "\n# 起步子句C" + to_string(givenCla->ident);
+    string strOut = "\n# 起步子句 C" + to_string(givenCla->ident)+":";
+    //debug    if(givenCla->ident==27)        cout<<"debug"<<endl;
     //strOut += ((actLitPtr == nullptr) ? "-[无满足要求起步文字]:" : ("-" + to_string(actLit->uUnitMatchInd) + ":"));
     givenCla->getStrOfClause(strOut);
     FileOp::getInstance()->outRun(strOut);
@@ -1310,31 +1311,446 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
     this->setUsedCla.insert(actCla); //记录起步子句已经使用.  
     // </editor-fold>
 
-    RESULT res = RESULT::NOMGU;
+    Cla_p candCla = nullptr; //候选子句
+    int pasLitInd = 0;
+    RESULT resTri = RESULT::NOMGU;
     // <editor-fold defaultstate="collapsed" desc="# 对给定的givenCla中文字进行互补文字配对">
-    for (; actLitPtr; actLitPtr = actLitPtr->next) {
+    while (actLitPtr) {
         //得到互补候选文字
-        
+        //--- 获取候选被动文字 --- 
+        vector<Literal*>*vCandLit = fol->getPairPredLst(actLitPtr);
+        //--- 遍历候选被动文字子句顺序进行匹配查找 ---
+        isDeductOk = false;
+        bool isRN = false;
+        candCla = nullptr;
+        pasLitPtr = nullptr;
+        for (; pasLitInd < vCandLit->size(); ++pasLitInd) {
+            pasLitPtr = vCandLit->at(pasLitInd);
+            //单元子句需要拷贝
+            candCla = pasLitPtr->claPtr;
+            isRN = candCla->isUnit() && !candCla->isGroundCla(false);
+            /*单元子句拷贝-[重用] -- 对非基文字拷贝生成新的单元子句，放入临时单元子句列表,不加入子句集. 完成三角形后 该临时单元子句被删除.*/
+            if (isRN) {
+                candCla = new Clause();
+                pasLitPtr = pasLitPtr->RenameCopy(candCla, DerefType::DEREF_NEVER); //单元子句拷贝
+                pasLitPtr->matchLitPtr = vCandLit->at(pasLitInd);
+                candCla->SetCopyClaProp(); //设置为拷贝子句
+            }
+
+            /*同一子句中文字不进行比较;归结过的子句不在归结;文字条件限制*/
+            if (pasLitPtr->claPtr == actLitPtr->claPtr || setUsedCla.find(pasLitPtr->claPtr) != setUsedCla.end())
+                continue;
+            uint32_t backpoint = subst->Size();
+            isDeductOk = unify.literalMgu(actLitPtr, pasLitPtr, subst);
+            if (isDeductOk) {//合一
+                actLitPtr->SetNoHold();
+                //设置被动候选子句文字初始化 
+                pasLitPtr->claPtr->SetAllLitsHold();
+                pasLitPtr->SetNoHold();
+                //规则检查
+                bool isReverse = vALitTri.empty() ? false : actLitPtr->IsShareVar(vALitTri.back()->blit);
+                ResRule resRule = RuleCheckSimple(actLitPtr, pasLitPtr, isReverse);
+                if (resRule == ResRule::RULEOK) {
+                    //规则检查通过
+                    break; //跳出候选匹配
+                }
+            }
+
+            //合一失败
+            isDeductOk = false;
+            actLitPtr->SetHold();
+            pasLitPtr->SetHold();
+            if (isRN) {
+                DelPtr(candCla); //删除子句
+                DelPtr(pasLitPtr);
+                --Env::global_clause_counter;
+            }
+            subst->SubstBacktrackToPos(backpoint); //合一失败查找下一个            
+        }
+        if (isDeductOk) {
+            //====== 三角形构建成功,后续处理 ======  
+            resTri = RESULT::SUCCES;
+            //判断是否是单元子句
+            if (pasLitPtr->claPtr->isUnit()) {
+                if (isRN) {
+                    //记录下重命名的子句，后面统一输出
+                    candCla->bindingLits(pasLitPtr); //生成新单元子句                     
+                    //添加该单元子句副本到删除列表中,完成三角形后删除.
+                    delUnitCla.push_back(candCla);
+                }
+                SWAP(actLitPtr, pasLitPtr); //单元子句作为主动文字
+            } else {
+
+                //1.添加剩余文字集R -- 主动文字为单元子句则不需要添加R 
+                ActClaGenNewR(actLitPtr);
+                actCla = candCla; //非单元子句下次合一以被动子句开始
+                if (vNewR.size() > StrategyParam::MaxLitNumOfR) {
+                    //超出限制，演绎停止。
+                    resTri = RESULT::MoreLit;
+                }
+
+            }
+            //2.添加主界线文字            
+            vALitTri.push_back(new ALit{0, -1, actLitPtr, pasLitPtr});
+
+            //3.添加使用过的子句
+            this->setUsedCla.insert(actCla); //记录已经使用子句. 
+            //非单元子句需要确保newR中的文字没有超过继续演绎的文字数限制
+            if (resTri != RESULT::SUCCES) {
+                break;
+            }
+
+            //4.选择下一个起步文字
+            //子句中文字排序; 文字的使用次数，冗余次素，稳定度等；
+            actCla->SortLits();
+            actLitPtr = nullptr;
+            uint32_t pasLitHoldNum = 0;
+            for (Lit_p l = actCla->literals; l; l = l->next) {
+                //-确保文字函数嵌套层满足要求
+                if (l->IsNoHold())
+                    continue;
+                if (actLitPtr == nullptr && (l->GetMaxFuncDepth(false) <= StrategyParam::MaxFuncLayerOfR)) {
+                    actLitPtr = l;
+                }
+                ++pasLitHoldNum; //计算主动文字剩余文字数
+            }
+
+            //5.状态判断全部被下拉
+            if (nullptr == actLitPtr) {
+                if (vNewR.empty()) {
+                    resTri = RESULT::UNSAT;
+                } else {
+                    //全部都下拉了，退出
+                    resTri = RESULT::NOLits;
+                }
+                break;
+            }//6.演绎过程中的单元子句需要保留
+            else if (pasLitHoldNum == 1 && vNewR.empty()) {
+                Cla_p newCla = new Clause();
+                vNewR.push_back(actLitPtr);
+                newCla->bindingAndRecopyLits(vNewR);
+                string outInfo = Add2NewClas(newCla, InfereType::SCSA) ? "" : "FS";
+                this->OutTriAndR(nullptr, outInfo);
+                vNewR.pop_back();
+            }
+            //继续延拓  resTri = RESULT::SUCCES;
+
+        } else {
+            actLitPtr = actLitPtr->next;
+        }
+    }
+    //====== 演绎成功， ====== 
+    if (resTri != RESULT::NOMGU) {
+
+        //1.添加被动子句中的文字到剩余文字集R 
+        ActClaGenNewR(actCla->literals);
+        //2.--输出-- 演绎路径 | 输出重用的单元子句
+        string info = "";
+        switch (resTri) {
+            case RESULT::MoreLit:
+                info = "MoreLit"; //文字数过多
+                break;
+            case RESULT::NOLits:
+                info = "NOLits"; //全部下拉，没有延拓文字
+                break;
+        }
+        //输出主界线、R以及若有拷贝的单元子句输出拷贝的单元子句
+        this->OutTriRAndRNU(info);
+        //3.添加到新的子句集               
+        Clause * newCla = new Clause();
+        newCla->bindingAndRecopyLits(vNewR);
+        Add2NewClas(newCla, InfereType::SCS);
+
     }
 
 
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="内存清除">
 
+    while (!delUnitCla.empty()) {
+        Cla_p cla = delUnitCla.back();
+        DelPtr(cla); //删除重用的单元子句
+        delUnitCla.pop_back();
+    }
 
     // </editor-fold>
 
 
-    return RESULT::UNKNOWN;
+    return resTri;
 
 }
 
-RESULT TriAlg::OnceBaseTri(Clause * givenCla) {
-    /*算法:
-     * 1. 选择givenCla中的文字,先查找单元子句,再查找多元子句中的合一文字
+ResRule TriAlg::RuleCheckSimple(Literal*actLit, Literal* candLit, bool ExistReverseReplace) {
+    /*只做简单的规则检查
+     * 1.确保R不是恒真;
+     * 2.确保对角线不相同/互补
+     * 3.确保剩余R不是冗余
      */
+    uint16_t holdLitSize = 0; //剩余文字总个数
+    Literal * holdLits[actLit->claPtr->LitsNumber() + candLit->claPtr->LitsNumber() + vNewR.size() - 2]; //创建数组用来存储 数据 [注意优化]
 
+    char arryDelRInd[vNewR.size()]; //R中删除文字的编号
+    memset(arryDelRInd, 0, sizeof (arryDelRInd)); //全部初始化为0;   
+    vector<Literal*> vDelLit;
+    vDelLit.reserve(8);
+    ResRule res = ResRule::RULEOK;
+    //1.-- 检查主动文字是否与对角线互补/相同;
+    //2.-- [若有逆向替换]：检查(1).*主界线文字是否相同/互补;；(2).*主界线文字与前面R文字相同；(3).R中文字是否恒真
+    if (ExistReverseReplace) {
+        res = CheckTriLitsByReverse(actLit, vALitTri);
+        if (res != ResRule::RULEOK) {
+            return res;
+        }
+        //检查剩余文字R是否恒真
+        for (int i = 0; i < vNewR.size(); --i) {
+            Lit_p RLitA = vNewR[i];
+            for (int j = 0; j < i; ++j) {
+                Lit_p RLitB = vNewR[j];
+                if (RLitA->EqualsStuct(RLitB)) {
+                    if (RLitA->isComplementProps(RLitB)) {
+                        return ResRule::TAUTOLOGY; //恒真
+                    }
+                    arryDelRInd[i] = 1; //相同-删除
+                }
+            }
+            if (0 == arryDelRInd[i]) {
+                holdLits[holdLitSize++] = RLitA; //添加到剩余文字列表集中
+            }
+        }
+    } else {
+        res = CheckTriLits(actLit, vALitTri);
+        for (int i = 0; i < vNewR.size(); --i) {
+            holdLits[holdLitSize++] = vNewR[i];
+        }
+    }
+    if (res != ResRule::RULEOK)
+        return res;
+    //3.主动文字与R文字不能相同 / 允许相同互补
+    if (!StrategyParam::RuleALitsAllowEqualR && CheckRuleOfR(actLit, vNewR, false) == ResRule::ALitSameRLit) {
+        return ResRule::ALitSameRLit;
+    }
 
+    //4.--检查主动文字和被动文字中其它剩余文字是否与 R文字恒真;          
+    res = CheckRInvaild(actLit, vDelLit, holdLits, holdLitSize);
+    if (res != ResRule::RULEOK)
+        return res;
+    res = CheckRInvaild(candLit, vDelLit, holdLits, holdLitSize);
+    if (res != ResRule::RULEOK)
+        return res;
+    //5.-- 检查posCal剩余子句+ vNewR 是否是冗余的(FS:向前归入冗余/恒真)                
+    if (fol->HoldLitsIsRundacy(holdLits, holdLitSize, &setUsedCla, candLit->claPtr)) {
+        return ResRule::RSubsump; //子句冗余
+    }
+    //==========规则检查完毕===========
+    // 标注被删除的
+    for (int i = 0; i < vDelLit.size(); i++) {
+        vDelLit[i]->SetNoHold();
+    }
+    vector<Literal*>().swap(vDelLit);
+    //删除R中重复文字 从后往前删除 
+    for (int i = vNewR.size() - 1; i>-1; --i) {
+        if (1 == arryDelRInd[i]) {
+            vNewR.erase(vNewR.begin() + i);
+        }
+    }
+    //主动子句中文字主界线下拉
+    ReduceLitByALits(actLit, vALitTri);
+
+    return res;
 }
 
+// <editor-fold defaultstate="collapsed" desc="private Function">
+
+
+
+//--逆向替换存在，则检查(1). R文字是否恒真; B.*主界线文字是否相同/互补;；C.*主界线文字与前面R文字相同
+
+ResRule TriAlg::CheckTriLitsByReverse(Lit_p actLit, vector<ALit_p>&vAlits) {
+    ResRule res = ResRule::RULEOK;
+    if (StrategyParam::RuleALitsAllowEqual //允许主界线文字相同和互补
+            && StrategyParam::RuleALitsAllowEqualR) {//允许主界线文字与前面演绎产生的R相同
+        res = ResRule::RULEOK;
+
+    } else {
+        for (int i = vAlits.size() - 1; i > 0; --i) {
+            ALit_p litA = vAlits[i];
+            //检查主界线文字相互之间是否相等/互补
+            if (!StrategyParam::RuleALitsAllowEqual) {
+                //检查主动文字是否与主界线相同/互补  
+                if (actLit->EqualsStuct(litA->alit)) {
+                    return ResRule::ASameOrPairALit;
+                }
+                for (int j = i - 1; j > 0; --j) {
+                    ALit_p litB = vAlits[j];
+                    if (litA->alit->EqualsStuct(litB->alit)) {
+                        //same or pair
+                        return ResRule::ASameOrPairALit;
+                    }
+
+                }
+            }
+            //检查主界线文字与前面剩余文字是否相同 / [互补允许]
+            if (!StrategyParam::RuleALitsAllowEqualR
+                    && CheckRuleOfR(actLit, vNewR, true) == ResRule::ALitSameRLit) {
+
+                return ResRule::ALitSameRLit;
+            }
+        }
+    }
+    return res;
+}
+//--逆向替换no存在，则检查(1).检查主动文字是否与主界线相同/互补;；C.*检查主动文字是否与R相同/互补
+
+ResRule TriAlg::CheckTriLits(Lit_p actLit, vector<ALit_p>&vAlits) {
+    ResRule res = ResRule::RULEOK;
+    if (StrategyParam::RuleALitsAllowEqual //允许主界线文字相同和互补
+            && StrategyParam::RuleALitsAllowEqualR) {//允许主界线文字与前面演绎产生的R相同
+        res = ResRule::RULEOK;
+    } else {
+        for (int i = vAlits.size() - 1; i > 0; --i) {
+            ALit_p litA = vAlits[i];
+            //检查主动文字是否与主界线相同/互补
+            if (!StrategyParam::RuleALitsAllowEqual && actLit->EqualsStuct(litA->alit)) {
+                res = ResRule::ALitSameALits;
+
+                break;
+            }
+        }
+    }
+    return res;
+}
+
+/// 检查checkLit文字与R 中文字的互补/相等情况
+/// \param checkLit
+/// \param R
+/// \return   
+
+ResRule TriAlg::CheckRuleOfR(Lit_p checkLit, vector<Lit_p>&R, bool isTriLit) {
+    ResRule resRule = ResRule::RULEOK;
+    //----- 遍历R中的文字 ------// 
+    for (Literal* pLitR : R) {
+        if (isTriLit && checkLit->claPtr == pLitR->claPtr)
+            break;
+        if (checkLit->EqualsStuct(pLitR)) {
+            //互补
+            if (checkLit->isComplementProps(pLitR)) {
+                resRule = ResRule::TAUTOLOGY;
+            }//1.7 被动子句中其他文字,与R文字不能相同     [记录下来,统一删除].
+            else {
+
+                resRule = ResRule::ALitSameRLit;
+            }
+            break;
+        }
+    }
+    return resRule;
+}
+
+ResRule TriAlg::CheckRInvaild(Lit_p checkLit, vector<Lit_p>&vDelLit, Lit_p *holdLits, uint16_t & holdLitSize) {
+    Lit_p lit = checkLit->claPtr->literals;
+    while (lit) {
+        if (lit->IsHold() && lit != checkLit) {
+            bool ishold = true;
+            //检查函数层是否超过范围
+            if (!lit->CheckDepthLimit()) {
+                return ResRule::MoreFunclayer;
+            }
+            //检查是否与R恒真
+            int len = holdLitSize;
+
+            for (int i = 0; i < len; i++) {
+                Lit_p litr = holdLits[i];
+
+                if (lit->EqualsStuct(litr)) {
+                    if (lit->isComplementProps(litr))
+                        return ResRule::TAUTOLOGY;
+                    vDelLit.push_back(lit);
+                    ishold = false;
+                }
+            }
+            if (ishold) {
+
+                holdLits[holdLitSize++] = lit;
+            }
+        }
+        lit = lit->next;
+    }
+    return ResRule::RULEOK;
+}
+
+/// 检查是否下拉 -- 与主界线文字相同 
+/// \param vAlits
+/// \param checkLit
+/// \return 
+
+bool TriAlg::ReduceLitByALits(Lit_p checkLit, vector<ALit_p>&vAlits) {
+
+    if (checkLit->IsHold()) {
+        checkLit->matchLitPtr = nullptr;
+        /* 检查与对角线文字互补下拉,注意:不检查与actLit的合一互补情况,这个涉及factor内容 */
+        for (ALit_p elem : vAlits) {
+            Lit_p aLit = elem->alit;
+            if (checkLit->isComplementProps(aLit) && checkLit->EqualsStuct(aLit)) {
+                checkLit->SetNoHold();
+                checkLit->matchLitPtr = aLit;
+
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * == 处理主动归结子句,并将剩余文字添加子句到newR 中 
+ * 1.对newR进行下拉操作 注意相同合并操作已经在rule检查中完成；
+ *  1.1。检查是否与剩余文字所在子句之前的主界线文字互补 [ 下拉操作 ]
+ * 2.对主动子句剩余文字
+ *  2.1，检查是否与归结文字互补（恒真情况）-- 保守点    [ 换下一个被动归结文字 ]
+ *  2.2. 检查是否与归结文字相同                         [ 合并删除该剩余文字 ]
+ *  2.3. 检查是否与主界线文字互补                       [ 下拉操作 ] 
+ *  这种情况是 actLit 找到了posLIt 继续拓展了三角形的情况
+ * @param actLit  
+ * @return ResRule::ChgPasLit;  ResRule::RULEOK;
+ *---------------------------------------------------------------------*/
+ResRule TriAlg::ActClaGenNewR(Lit_p actLit) {
+    //1.主界线下拉
+
+    for (Lit_p l = actLit->claPtr->literals; l; l = l->next) {
+        if (l->IsNoHold())
+            continue;
+        bool res = ReduceLitByALits(l, vALitTri);
+        //2.添加到vNewR
+        if (!res) {
+
+            vNewR.push_back(l);
+        }
+
+    }
+}
+
+
+/// 检查剩余文字是否相同，并添加到剩余文字中 -- 合并
+/// \param holdLit
+/// \return 
+
+bool TriAlg::AddNewR(Lit_p holdLit) {
+    bool res = true;
+    for (int i = 0; i < vNewR.size(); ++i) {
+        if (holdLit->EqualsStuct(vNewR[i])) {
+            holdLit->SetNoHold();
+            res = false;
+            break;
+        }
+    }
+    if (res) {
+
+        vNewR.push_back(holdLit);
+    }
+    return res;
+}
+
+// </editor-fold>
 
 //redo the deductPath
 
@@ -1362,50 +1778,15 @@ RESULT TriAlg::ReDoDeduct(vector<ALit_p> path) {
             if (lit->IsHold())
                 continue;
             //文字被下拉
-            if (IsReduceByALit(path, lit)) {
-                lit->SetNoHold();
+            if (!ReduceLitByALits(lit, path)) {
+                //文字加入剩余文字
+
+                AddNewR(lit);
             }
-            //文字加入剩余文字
-            AddNewR(lit);
         }
     }
 }
 
-/// 检查是否与主界线文字相同 -- 下拉
-/// \param vAlits
-/// \param checkLit
-/// \return 
-
-bool TriAlg::IsReduceByALit(vector<ALit_p>&vAlits, Lit_p checkLit) {
-    bool res = false;
-    /* 检查与对角线文字互补下拉,注意:不检查与actLit的合一互补情况,这个涉及factor内容 */
-    for (ALit_p elem : vAlits) {
-
-        Lit_p aLit = elem->alit;
-        res = (checkLit->isComplementProps(aLit) && checkLit->EqualsStuct(aLit));
-        if (res || (checkLit->claPtr == elem->blit->claPtr))
-            break;
-    }
-    return res;
-}
-/// 检查剩余文字是否相同，并添加到剩余文字中 -- 合并
-/// \param holdLit
-/// \return 
-
-bool TriAlg::AddNewR(Lit_p holdLit) {
-    bool res = true;
-    for (int i = 0; i < vNewR.size(); ++i) {
-        if (holdLit->EqualsStuct(vNewR[i])) {
-            holdLit->SetNoHold();
-            res = false;
-            break;
-        }
-    }
-    if (res) {
-        vNewR.push_back(holdLit);
-    }
-    return res;
-}
 /// 规则检查
 /// \param actLit
 /// \param candLit
@@ -1910,7 +2291,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, vector<Literal*>&
         while (iALitInd > 0) {
             Lit_p aLitPtr = vALitTri[iALitInd]->alit;
             //------ 3.1 主界线(A)文字,相互之间不能相同/互补(说明当前的替换导致互补或相同)--[ 换被动文字 ]
-            if (StrategyParam::IS_ALitNoEqual) {
+            if (StrategyParam::RuleALitsAllowEqual) {
                 int iALitIndB = iALitInd - 1;
                 while (iALitIndB >-1) {
                     Lit_p aLitB = vALitTri[iALitIndB]->alit;
@@ -1948,7 +2329,7 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, vector<Literal*>&
                         break;
                     }
                     //3.2 与前面R中文字不能相同                [换被动文字]
-                    if ((StrategyParam::IS_ALitNoEqual)&&(aLitPtr->isSameProps(vNewR[iRIndA]))) {
+                    if ((StrategyParam::RuleALitsAllowEqual)&&(aLitPtr->isSameProps(vNewR[iRIndA]))) {
                         if (aLitPtr->EqualsStuct(vNewR[iRIndA])) {
                             ++Env::S_ASame2R_Num;
                             //输出全局信息
@@ -2005,80 +2386,6 @@ ResRule TriAlg::RuleCheckOri(Literal*actLit, Literal* candLit, vector<Literal*>&
         assert(holdLit[i]->claPtr = actCla);
         vNewR.push_back(holdLit[i]);
     }
-    return ResRule::RULEOK;
-}
-
-ResRule TriAlg::RuleCheckByMgu(Literal*actLit, Literal* candLit, vector< Literal* >&vPasHoldLits) {
-    /*规则检查 ，
-     ** 总的原则:  A主界线上文字不能相同或合一互补; B.主界线与前面剩余文字不能相同;C. 剩余文字R不能恒真;
-     * 
-     ** 算法说明: 主动文字找到被动文字（合一互补方式），A.检查被动子句中剩余文字是否可以被主界线文字下拉（合一下拉） B.检查被动文字(子句)选择是否合理; C.检查主动文字的选择是否合理;
-     ** 规则说明:由于是 充分合一下拉，因此主子句中的所有文字（包括主动文字）不可能与主界线文字互补[互补一定被下拉了]；---- 因此 不需要检查主界线文字的合一互补。
-     * 
-     ** 但是 主动子句的文字 可能与主界线文字相同 - [本质是中间的子句是多余的--可以允许也可以不允许]； 与R文字互补【本质上是恒真式--不允许;徐老师认为可以继续】；与R文字相同【徐老师确认不允许，直接换文字或停止演绎】
-     ** 
-     ** 被动文字：A 不需要检查与主界线文字的关系。 被动子句中剩余文字只需要检查是否是相同的【合并】，和互补的[恒真];
-     **  
-     *  合一是否会导致 主界线文字相同，（互补是不可能的了，相同--只要确保剩余文字个数无所谓）。
-     *  合一是否会导致 主界线文字与R文字互补【这个必须检查】，相同【徐老师确定不允许】
-     * 
-     *  MC-每次合一都可能产生  ONEC -- 只检查一次  NOC--不存在的情况  SOSO -- 不检查
-     *  主界线文字 互补（不可能存在）  相同 （徐的建议停止三角形，我的处理换被动文字，MC）
-     *  主界线文字与R相同（factor问题-停止演绎） R互补-不做判断
-     *  R文字 恒真 -- 换被动文字[ MC ];  相同 -- 最后统一处理; 
-     *  
-     ** 主动文字与主界线相同 | 被动文字与主界线文字互补 (ONEC)
-     ** 主动文字与剩余文字相同 --{NOC} 被动子句剩余文字的时候已经检查过了 | 与 R 互补 {SOSO}
-     *  
-     *  主动子句剩余文字相互之间  相同--- 合并，互补--恒真 {MC} --- 文字合一可能产生
-     * 
-     * 检查流程如下：
-     * 为了程序简单可以直接合并为一个子句，然后判断； 
-     ** 1. 检查 被动子句剩余文字 R1 + 主动子句剩余文字 R2 + 剩余文字 R 是否存在 因子合并情况。有：停止三角形； 
-     
-     ** 1. 检查 被动子句:     
-     ** 1. 对被动子句检查 
-     ** 1.1 被动文字,与主界线文字相同 | 主动文字与主界线文字互补    [不检查] -- 不可能发生
-     ** 1.2 被动文字,与主界线文字互补 | 主动文字与主界线文字相同    [换被动文字] 
-     ** 1.3 被动文字,与R文字互补 | 主动文字与R相同               [不检查] - 单文字不可能，两两归结不可能，前面的因子归结检查确保没有这种情况发生
-     ** 1.4 被动文字,与R文字相同 | 主动文字与R互补               [恒真-- 换被动文字] {最好加开关} ~P1(a)+R  P1(x)+~P1(a)  ==> 主动文字 P1(a)  剩余文字 ～P1(a) 
-     * 
-     ## 1.5 被动子句中其它文字,相互之间互补-恒真                  [换被动文字]
-     ## 1.6 被动子句中其它文字,与R文字互补                       [换被动文字]
-     ## 1.7 被动子句中其它文字,与主界线文字相同                   [换被动文字]
-    
-     ★★ 1.8 被动子句中其它文字与主界线文字互补                    [记录下拉,删除(下拉)] ---- 改为合一互补 
-     √√ 1.9 被动子句中其它文字,相互之间相同                      [记录下来,统一删除].    
-     √√ 1.10 被动子句中其它文字,与R文字相同                      [记录下来,统一删除].      
-        
-     ** 2. 对主动子句检查, 考虑替换后的影响
-     ** 2.1 主动文字与主界线文字相同                  {X 检查被动文字时候已经检查}            
-     ** 2.2 主动文字与主界线文字互补                  {X 不可能发生}            
-     ** 2.3 主动文字与R互补                         {X 检查被动文字时候已经检查}             
-     ** 2.4 主动文字与R相同                         {X 检查被动文字时候已经检查}             
-     
-     ## 2.5 主动子句中其它文字，相互之间互补- 恒真      [换主动文字] PS.只有发生逆向替换才重新检查
-     ## 2.6 主动子句中其它文字，与R文字互补- 恒真       [换主动文字] PS.只有发生逆向替换才重新检查
-       
-     ## 2.7 主动子句中其它文字，相互之间相同-合并       [记录下来,统一删除].PS.只有发生逆向替换才重新检查                                                        
-     ## 2.8 主动子句中其它文字，与R文字相同-合并       [记录下来,统一删除].PS.只有发生逆向替换才重新检查
-    
-     ## 2.9 主动子句中的其他文字与主界线文字互补    [x 合一互补后不可能] 
-     ## 2.10 主动子句中的其他文字与主界线文字相同    [换被动文字]  PS：替换导致的
-       
-     ** 3.对主界线(A)文字检查 PS.若没有合一替换发生,则不需要检查[优化]
-     ** 3.1 相互之间不能相同/互补                [换被动文字] PS:可以再考虑一下这个互补的问题.
-     ** 3.2 与前面R中文字不能相同                [换被动文字] 
-    
-     ** 4.对R文字检查 PS.若没有合一替换发生,则不需要检查[优化]
-     ** 4.1 R中的文字互补                        [换被动文字] 
-     ** 4.2 R中的文字相同                        [记录下来,统一删除].
-     ** 4.3 R中的文字与该子句中的主界线文字相同  [记录下来,统一删除].
-      
-     ** 5.检查主动子句剩余文字+被动子句剩余文字+R 是否是 forwardsubsume [换被动文字/子句] 
-     */
-
-
     return ResRule::RULEOK;
 }
 
@@ -2606,102 +2913,6 @@ RESULT TriAlg::TriMguReduct() {
     return res;
 }
 
-/*-----------------------------------------------------------------------
- * == 处理主动归结子句,并将剩余文字添加子句到newR 中 
- * 1.对newR进行下拉操作 注意相同合并操作已经在rule检查中完成；
- *  1.1。检查是否与剩余文字所在子句之前的主界线文字互补 [ 下拉操作 ]
- * 2.对主动子句剩余文字
- *  2.1，检查是否与归结文字互补（恒真情况）-- 保守点    [ 换下一个被动归结文字 ]
- *  2.2. 检查是否与归结文字相同                         [ 合并删除该剩余文字 ]
- *  2.3. 检查是否与主界线文字互补                       [ 下拉操作 ]
- * 
-/*---------------------------------------------------------------------*/
-
-/**
- *  这种情况是 actLit 找到了posLIt 继续拓展了三角形的情况
- * @param actLit  
- * @return ResRule::ChgPasLit;  ResRule::RULEOK;
- */
-ResRule TriAlg::actClaProcAddNewR(Lit_p actLit) {
-    //== 1.对newR进行下拉操作 注意A，只检查剩余文字所在子句之前的主界线，B相同合并操作已经在rule检查中完成；
-    size_t newRSize = vNewR.size();
-    vector<uint16_t> vDelLit;
-    vDelLit.reserve(newRSize);
-    Lit_p litR = nullptr;
-    for (uint16_t i = 0; i < newRSize; ++i) {
-        litR = vNewR[i];
-        for (ALit_p triLit : vALitTri) {
-            if (triLit->alit->claPtr == litR->claPtr) {
-                if (triLit->alit->EqualsStuct(litR)) {
-                    if (triLit->alit->isComplementProps(litR)) {//互补(恒真）
-                        return ResRule::ChgPasLit;
-                    }
-                    //相同则合并删除
-                    vDelLit.push_back(i);
-                }
-                break;
-            }
-            //2.3. 检查是否与主界线文字互补                       [ 下拉操作 ] 
-            if (triLit->alit->EqualsStuct(litR) && triLit->alit->isComplementProps(litR)) {
-                ++triLit->reduceNum; //记录下拉次数
-                vDelLit.push_back(i);
-            }
-        }
-    }
-    //== 2.对主动子句中的剩余文字添加到newR中
-    Lit_p litPtr = actLit->claPtr->literals;
-    int addNum = 0;
-    while (litPtr) {
-
-        if (litPtr == actLit) {
-            litPtr->EqnDelProp(EqnProp::EPIsHold);
-            litPtr = litPtr->next;
-            continue;
-        }
-        bool isHold = litPtr->EqnQueryProp(EqnProp::EPIsHold);
-        if (isHold) {
-            if (actLit->EqualsStuct(litPtr)) {
-                //2.1.与主动文字互补 [换下一个被动归结文字]；--同一子句两个文字互补 恒真
-                if (actLit->isComplementProps(litPtr)) {
-                    assert(actLit->claPtr == litPtr->claPtr);
-                    //还原vNewR
-                    for (int i = 0; i < addNum; i++) {
-                        vNewR.pop_back();
-                    }
-                    return ResRule::ChgPasLit;
-                }
-                // 2.2.与主动文字相同 [合并删除]；
-                assert(actLit->isSameProps(litPtr));
-                litPtr->EqnDelProp(EqnProp::EPIsHold);
-                litPtr = litPtr->next;
-                continue;
-            }
-            assert(isHold);
-            for (ALit_p triLit : vALitTri) {
-                Lit_p tmpLit = triLit->alit;
-                //2.3.与主界线剩余文字相同 [下拉]
-                if (litPtr->isComplementProps(tmpLit) && litPtr->EqualsStuct(tmpLit)) {
-                    litPtr->EqnDelProp(EqnProp::EPIsHold);
-                    ++triLit->reduceNum; //记录下拉次数
-                    isHold = false;
-                    break;
-                }
-            }
-        }
-        if (isHold) {
-            vNewR.push_back(litPtr);
-            ++addNum;
-        }
-        litPtr = litPtr->next;
-    }
-    /*如果检查通过,将vNewR中约减的文字删除 */
-    for (int i = vDelLit.size() - 1; i >-1; --i) {
-        vNewR.erase(vNewR.begin() + vDelLit[i]);
-    }
-    vector<uint16_t>().swap(vDelLit);
-
-    return ResRule::RULEOK;
-}
 
 /*-----------------------------------------------------------------------
  ** 对被动归结子句进行处理
@@ -3467,6 +3678,7 @@ RESULT TriAlg::UnitClasReductByFullPath(Lit_p *actLit, vector<uint32_t>&vRecodeB
             delUnitCla.pop_back();
         } else {
             //输出新子句到info文件
+
             outNewClaInfo(unitCla, InfereType::RN);
             //输出到.r文件
             OutRNUnitCla(unitCla);
@@ -4258,6 +4470,27 @@ void TriAlg::printTri(FILE * out) {
     fprintf(out, "\n");
 }
 
+void TriAlg::OutTriRAndRNU(const string & info) {
+    string outStr = "";
+    for (ALit_p elem : vALitTri) {
+        Lit_p actLit = elem->alit;
+        actLit->GetLitInfoWithSelf(outStr);
+        if (actLit->claPtr->isCopeyCla()) {//若为拷贝子句则输出到.r和.i文件中
+            //输出新子句到info文件
+
+            outNewClaInfo(actLit->claPtr, InfereType::RN);
+            //输出单元子句到.r 
+            OutRNUnitCla(actLit->claPtr);
+        }
+        outStr += "\n";
+        Lit_p pasLit = elem->blit;
+        pasLit->GetLitInfoWithSelf(outStr);
+        outStr += "\n";
+    }
+    FileOp::getInstance()->outRun(outStr);
+    outR(nullptr, info);
+}
+
 void TriAlg::outTri() {
 
     string outStr = "\n";
@@ -4286,10 +4519,6 @@ void TriAlg::outR(Clause * actCla, const string & info) {
         //string cnf(c_0_6,plain,    ( $false ),    inference(sr,[status(thm)],[c_0_4,c_0_5]),    [proof]).
         return;
     }
-    //输出R   
-    //debug:    
-    //    if (Env::global_clause_counter == 13541 || Env::global_clause_counter == 13542)
-    //        cout << "debug" << endl;
     outStr += "R[";
     outStr += (nullptr == actCla) ? to_string(Env::global_clause_counter + 1) + "]" : to_string(Env::global_clause_counter) + "]";
     Lit_p tmpLitptr = (nullptr == actCla) ? nullptr : actCla->literals;

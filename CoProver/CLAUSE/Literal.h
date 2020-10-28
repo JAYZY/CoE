@@ -60,12 +60,19 @@ class Clause;
 
 class Literal {
 public:
-    uint8_t usedCount; // 该文字在演绎中使用的次数;使用一次+1 若使用后发生冗余 则+5; 到达255 则翻转
-    uint8_t pos; //在子句中的位置 一个子句中最大文字数 < 2^8=256
-
     VarState varState; //文字中变元状态
+    uint16_t pos; //在子句中的位置 一个子句中最大文字数 < 2^16=65536
 
     uint16_t reduceTime; //在归结中消除其他文字的次数  < 2^16=65536
+
+    uint32_t aUsedCount; // 主动使用次数; 该文字在演绎中使用的次数
+    uint32_t pUsedCount; //被动使用次数
+    uint32_t uUnitMatchInd; //文字检查单元下拉的列表下标 ind
+
+    //模拟MCTS 搜索算法
+    float qulity; //节点价值  根据 延拓计算值   
+
+    //---------------
     EqnProp properties; /*prositive ,maximal,equational */
     TermCell* lterm; /*左文字*/
     TermCell* rterm; /*等号右边文字,若非等词,则为$True;*/
@@ -73,7 +80,9 @@ public:
     /*所在子句信息*/
     Clause* claPtr; //所在子句
     Literal* parentLitPtr; //父子句文字
-    Literal* matchLitPtr; //主界线上配对文字
+    Literal* matchLitPtr; //主界线上配对文字 注意 这里是 被动文字配对主动文字。
+
+
     //long weight;
     //float zjlitWight;
 
@@ -83,7 +92,7 @@ public:
     /*---------------------------------------------------------------------*/
     //
     Literal();
-    Literal(Scanner* in, Clause* cla);
+    Literal(Scanner* in, int litPos, Clause* cla);
     Literal(Term_p lt, Term_p rt, bool positive);
     Literal(const Literal& orig);
 
@@ -93,6 +102,7 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
+
     // <editor-fold defaultstate="collapsed" desc="Inline  Function">
 
     inline void EqnSetProp(EqnProp prop) {
@@ -116,9 +126,9 @@ public:
     }
 
     inline uint16_t MaxFuncLayer() {
-        assert(lterm->uMaxFuncLayer == lterm->TermDepth());
-        assert(rterm->uMaxFuncLayer == rterm->TermDepth());
-        return MAX(lterm->uMaxFuncLayer, rterm->uMaxFuncLayer) + 1;
+        assert(lterm->GetFuncLayer() == lterm->TermDepth());
+        assert(rterm->GetFuncLayer() == rterm->TermDepth());
+        return MAX(lterm->GetFuncLayer(), rterm->GetFuncLayer()) + 1;
 
     }
     //比较两个文字对某个属性的拥有情况一致.要么都有,要么都没有.
@@ -169,6 +179,10 @@ public:
         return EqnQueryProp(EqnProp::EPIsHold);
     }
 
+    inline bool IsNoHold() {
+        return !EqnQueryProp(EqnProp::EPIsHold);
+    }
+
     inline void SetHold() {
         EqnSetProp(EqnProp::EPIsHold);
     }
@@ -184,8 +198,8 @@ public:
     inline bool IsGround(bool isReCla = false) {
         //return this->lterm->TBTermIsGround() && (this->rterm->TBTermIsGround());
         if (isReCla)
-            return this->lterm->IsGround() && (this->rterm->IsGround());
-        return this->lterm->uVarCount + this->rterm->uVarCount == 0;
+            return (this->lterm->IsGround() && (this->rterm->IsGround()));
+        return (this->lterm->GetVarCount() + this->rterm->GetVarCount()) == 0;
     }
 
     inline bool IsPropFalse() {
@@ -797,16 +811,16 @@ public:
         return sumKinds; //返回不同变元个数(变元分组数)
     }
 
-    inline long StandardWeight(bool isReCla = true) {
+    inline uint32_t StandardWeight(bool isReCla = true) {
         if (isReCla)
-            return (lterm->TermStandardWeight() + rterm->TermStandardWeight());
+            return (lterm->ComputeTermStandardWeight() + rterm->ComputeTermStandardWeight());
         else
-            return lterm->weight + rterm->weight;
+            return lterm->GetTermWeight() + rterm->GetTermWeight();
     }
 
     inline uint16_t TermDepth() {
-        
-        uint16_t termDepth = MAX(lterm->GetMaxFuncDepth(),rterm->GetMaxFuncDepth());//MAX(lterm->TermDepth(), rterm->TermDepth());
+
+        uint16_t termDepth = MAX(lterm->ComputeMaxFuncDepth(), rterm->ComputeMaxFuncDepth()); //MAX(lterm->TermDepth(), rterm->TermDepth());
         return (this->EqnIsEquLit()) ? termDepth + 1 : termDepth;
 
     }
@@ -828,6 +842,23 @@ public:
         this->getParentLitInfo(sOut);
         this->getStrOfEqnTSTP(sOut, deref);
 
+    }
+
+    /// 计算 蒙特卡洛算法的 UCB(upper confidence bound)值
+    /// \return 
+
+    inline float GetUCB(int parentUseTimes) {
+        if (this->aUsedCount == 0) //若没有被使用过 则 值为无穷大
+            return INT_MAX * 1.0f;
+        float C =0.7071068f;// 1 / rsqrt(2) ; //常数,经验值为 2开方. 值越大越偏向广度搜索.越小偏向深度搜索.
+        this->qulity / this->aUsedCount + C * sqrt(2* log(parentUseTimes) / this->aUsedCount);
+    }
+    /// 更新节点质量 -- 需要回溯所有父文字的 质量
+
+    /// \param value
+
+    inline void UpdateQulity(float value) {
+        this->qulity += value;
     }
     // </editor-fold>
 
@@ -933,7 +964,12 @@ public:
     }
 
     VarState getVarState();
+    /// 与LitA文字是否有共享变元
+    /// \param litA
+    /// \return 
     bool IsShareVar(Literal* litA);
+    bool IsShareVarByCompute(Literal* litA); //旧方法
+
     TermBank_p getClaTermBank();
 
 
@@ -975,22 +1011,32 @@ public:
     void EqnFOFParse(Scanner* in, TermBank_p bank);
 
     bool EqualsStuct(Literal * lit);
-    bool EqnEqual(Literal* lit);
+    bool EqualInSameCla(Literal* lit);
     /// 得到文字的最大函数嵌套层不管是否是变元
     /// \return 
-    inline long GetMaxFuncDepth(){
-        if(this->EqnIsEquLit()){
-            return MAX(this->lterm->GetMaxFuncDepth(),this->rterm->GetMaxFuncDepth())+1;
+
+    inline uint16_t GetMaxFuncDepth(bool isReCompute = false) {
+        if (isReCompute) {
+            if (this->EqnIsEquLit()) {
+                return MAX(this->lterm->ComputeMaxFuncDepth(), this->rterm->ComputeMaxFuncDepth()) + 1;
+            }
+            return MAX(this->lterm->ComputeMaxFuncDepth(), this->rterm->ComputeMaxFuncDepth());
+        } else {
+            if (this->EqnIsEquLit()) {
+                return MAX(this->lterm->GetFuncLayer(), this->rterm->GetFuncLayer()) + 1;
+            }
+            return MAX(this->lterm->GetFuncLayer(), this->rterm->GetFuncLayer());
+
         }
-        return  MAX(this->lterm->GetMaxFuncDepth(),this->rterm->GetMaxFuncDepth());
+
     }
-    
-    inline long GetMaxVarDepth(){ 
-        
+
+    inline long GetMaxVarDepth() {
+        return MAX(lterm->GetMaxVarDepth(), rterm->GetMaxVarDepth());
     }
     /// 检查文字的函数嵌套是否超过限制 包括了变元绑定
     /// \return  true -- 符合限制  false -- 检验没有通过
-    
+
     inline bool CheckDepthLimit() {
         bool res = true;
         int iDepth = lterm->CheckTermDepthLimit();

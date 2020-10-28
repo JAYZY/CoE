@@ -56,12 +56,18 @@ TermCell* VarBank::Insert(FunCode fCode, uint16_t claId) {
         SetProp(var->properties, TermProp::TPIsShared); //给变元项－shared 属性
         vctFCodes.push_back(var);
 
+        //设置变元项属性
+        var->SetVarCount(1); //设置变元数=1
+        var->SetFuncLayer(0); //函数嵌套为0                
+        var->TermCellDelProp(TermProp::TPIsGround);
+        var->SetTermWeight(DEFAULT_VWEIGHT);
+        
         // if (litPos > 0)//记录变元项与文字位置的对应关系
         //   SetBitValue(this->mapVarToLitPos[-fcode], litPos);
-
-        assert(!QueryProp(var->properties, TermProp::TPIsGround)); //确保项不是常元项
-        return var;
     }
+    assert(!QueryProp(var->properties, TermProp::TPIsGround)); //确保项不是常元项
+    return var;
+
 }
 
 /*****************************************************************************

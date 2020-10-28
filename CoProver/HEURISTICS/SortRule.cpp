@@ -16,7 +16,7 @@ int SortRule::iActLitFuncDep = -1;
 bool SortRule::ClaCmp(const Clause* pc1, const Clause* pc2) {
 
     int prio = pc1->priority - pc2->priority; //优先级越大越好
-    int weightJ = pc1->weight - pc2->weight; //weight比较 - 越大越好 目前采用KBO序.后续可以用稳定度进行测试
+    int weightJ = pc1->claWeight - pc2->claWeight; //weight比较 - 越大越好 目前采用KBO序.后续可以用稳定度进行测试
     int litsNum = pc1->LitsNumber() - pc2->LitsNumber(); //文字数比较 - 由少到多
     int posLitsNum = pc1->posLitNo - pc2->posLitNo; //正文字越多越好
 

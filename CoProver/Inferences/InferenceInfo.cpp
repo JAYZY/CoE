@@ -12,14 +12,34 @@
  */
 
 #include "InferenceInfo.h"
+#include "CLAUSE/Literal.h"
+#include "Global/GlobalFunc.h"
+
+string DeductPath::print() {
+    string s = "#";
+//    startLit->getLitInfo(s);
+//    s += " -> ";
+//    endLit->getLitInfo(s);
+//    string strW = "";
+//    strW = Float2Str(edgeWeight,2);
+//    s += "(" + strW + ")";
+    return s;
+}
+
+
+
+
+
+
 string InferenceInfo::TOInferTypeNames[] = {
     "NONE",
-    "BI",  //Bineray Inference
-    "UD",   //unit reduce 单元子句约减
-    "RN",   //rename
-    "RD",   //reduce 合一下拉
+    "BI", //Bineray Inference
+    "UD", //unit reduce 单元子句约减
+    "RN", //rename
+    "RD", //reduce 合一下拉
     "FACTOR",
-    "SCS"   //矛盾体分离
+    "SCSA",
+    "SCS" //矛盾体分离
 };
 
 InferenceInfo::InferenceInfo() {

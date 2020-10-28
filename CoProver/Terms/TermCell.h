@@ -92,6 +92,7 @@ enum class TermProp : int32_t {
 
 
 class Clause;
+class Literal;
 class TermBank;
 class VarBank;
 
@@ -108,10 +109,20 @@ private:
     //            Clause* demod; /* NULL means subterm! */
     //        } rw_desc;
     //    } RewriteState;
+    //--- 项的统计信息 -----//
+    uint8_t uMaxVarDepth; //变元最大深度 -- 不超过256个
+    uint8_t uMaxFuncLayer; //函数嵌套层 
+    uint16_t uMaxVarId; //最大变元Id    -- 不超过65536
+    uint16_t uVarCount; //变元计数
+    uint16_t uTermWeight; /* 项的字符权重 */
 
 public:
     static bool TermPrintLists;
+
+    //-----------------//
     FunCode fCode; /* Top symbol of term */
+    FunCode hashIdx; //hash列表中存储的index(hash值) -- 这个可以删除
+
     TermProp properties; /* Like basic, lhs, top */
     uint32_t claId; //增加项所在子句编号,主要用于变元项的识别
     int arity; /* Redundant, but saves handing around the signature all the time */
@@ -119,24 +130,97 @@ public:
     TermCell* binding; /* For variable bindings,potentially for temporary a rewrites 
                     * - it might be possible to combine the previous two in a union. */
     long entryNo; /* 在TermBank中的下标 == TermBank.inCount; Counter for terms in a given termbank - needed for administration and external representation */
-    long weight; /* Weight of the term, if term is in term bank */
+
 
     //float zjweight;
     // RewriteState rw_data; /* See above */
     TermCell* lson; /* For storing shared term nodes in */
     TermCell* rson; /* a splay tree - see cte_termcellstore.[ch] */
 
-    uint16_t uVarCount; //变元计数
-    uint16_t uMaxFuncLayer; //函数嵌套层
-    uint8_t uMaxVarId; //最大变元Id -- 不超过256个
 
-    FunCode hashIdx; //hash列表中存储的index(hash值)
 
 private:
-    static TermCell* parse_cons_list(Scanner* in, TermBank* tb);
+    //static TermCell* parse_cons_list(Scanner* in, TermBank* tb);
     TermCell* term_check_consistency_rek(SplayTree<PTreeCell> &branch, DerefType deref);
     void print_cons_list(FILE* out, DerefType deref);
+    /* 删除函数项 */
+    void TermTopFree();
 public:
+
+    /*---------------------------属性--------------------------------------*/
+
+    // <editor-fold defaultstate="collapsed" desc="属性GET/SET">
+
+    /* 项中最大变元嵌套层:uMaxVarDepth */
+    inline uint8_t GetMaxVarDepth() {//最大变元Id -- 不超过256个
+        return this->uMaxVarDepth;
+    }
+
+    inline void SetMaxVarDepth(uint8_t varDepth) {
+        if (varDepth > UINT8_MAX - 1) {
+            // Out::Error("Error:项中最大变元嵌套层超过最大限制(2^8=255)!", ErrorCodes::SYNTAX_ERROR);
+        }
+        this->uMaxVarDepth = varDepth;
+    }
+
+    /* 项中最大函数嵌套层:uMaxFuncLayer */
+    inline uint8_t GetFuncLayer() {//最大变元Id -- 不超过256个
+        return this->uMaxFuncLayer;
+    }
+
+    inline void SetFuncLayer(uint8_t funcLayer) {
+        if (funcLayer > UINT8_MAX - 1) {
+            // Out::Error("Error:项中最大变元数超过最大限制(2^8=256)!", ErrorCodes::SYNTAX_ERROR);
+        }
+        this->uMaxFuncLayer = funcLayer;
+    }
+
+    /* 项中最大ID:uMaxVarId */
+    inline uint16_t GetMaxVarId() {//最大变元Id -- 不超过256个
+        return this->uMaxVarId;
+    }
+
+    inline void SetMaxVarId(uint16_t varId) {
+        if (varId > UINT16_MAX - 1) {
+            // Out::Error("Error:项中最大ID超过最大限制(2^16=65535)!", ErrorCodes::SYNTAX_ERROR);
+        }
+        this->uMaxVarId = varId;
+    }
+
+    /*项中最大变元数:uVarCount*/
+    inline uint16_t GetVarCount() {//最大变元Id -- 不超过256个
+        return this->uVarCount;
+    }
+
+    inline void SetVarCount(uint16_t varCount) {
+        if (varCount > UINT16_MAX - 1) {
+            // Out::Error("Error:项中最大变元数超过最大限制(2^16=65535)!", ErrorCodes::SYNTAX_ERROR);
+        }
+        this->uVarCount = varCount;
+    }
+
+    /*项的字符权重 */
+    inline uint16_t GetTermWeight() {// 不超过256个
+        return this->uTermWeight;
+    }
+
+    inline void SetTermWeight(uint16_t w) {
+        if (w > UINT16_MAX - 1) {
+            // Out::Error("Error:项的字符权重超过最大限制(2^16=65536)!", ErrorCodes::SYNTAX_ERROR);
+        }
+        this->uTermWeight = w;
+    }
+    inline void AddTermWeight(uint16_t w) {
+        
+//        if ((this->uTermWeight + w) > UINT16_MAX - 1) {
+//             Out::Error("Error:项的字符权重超过最大限制(2^16=65536)!", ErrorCodes::SYNTAX_ERROR);
+//        }
+        this->uTermWeight += w;
+    }
+
+    // </editor-fold>
+
+
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
@@ -149,40 +233,15 @@ public:
     // TermCell(TermCell& orig);
     virtual ~TermCell(); //代替 TermFree方法
 
-    static void TermFree(TermCell* junk) {
-        assert(junk);
-        if (!junk->IsVar()) {
-            assert(!junk->TermCellQueryProp((TermProp) ((int32_t) TermProp::TPIsShared)));
-            if (junk->arity) {
-                int i;
-
-                assert(junk->args);
-                for (i = 0; i < junk->arity; i++) {
-                    TermFree(junk->args[i]);
-                }
-            } else {
-                assert(!junk->args);
-            }
-            DelPtr(junk);
-        }
-    }
-
-    bool operator<(const TermCell* term)const //重载运算符
-    {
+    bool operator<(const TermCell* term)const { //重载运算符    
         return this->fCode - term->fCode;
-
     }
-    /* 删除函数项 */
-private:
-    void TermTopFree();
-public:
-
-
 
     /*---------------------------------------------------------------------*/
     /*                          inline Function                            */
     /*---------------------------------------------------------------------*/
     //
+    // <editor-fold defaultstate="collapsed" desc="inline 相关属性">
 
     inline void TermCellSetProp(TermProp prop) {
         SetProp(this->properties, prop);
@@ -212,9 +271,10 @@ public:
         FlipProp(properties, props);
     }
 
+    /*is variable?*/
     inline bool IsVar() {
         return fCode < 0;
-    } /*is variable?*/
+    }
 
     inline bool IsConst() {
         return (!(fCode < 0)) && (arity == 0);
@@ -240,82 +300,8 @@ public:
     //        return TermIsRewritten() ? 0 : rw_data.nf_date[i];
     //    }
 
-    long TermCollectPropVariables(SplayTree<PTreeCell> *tree, TermProp prop);
-
-    inline long TermStandardWeight() {
-        return this->IsGround() ? weight : TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
-    }
-
-    /* 重新计算项的变元嵌套深度 - the depth of a term. */
-    inline uint16_t TermDepth() {
-
-        if (0 == arity || this->IsVar())
-            return 0;
-        uint16_t maxdepth = 0, ldepth;
-        for (int i = 0; i < arity; ++i) {
-            ldepth = args[i]->TermDepth();
-            maxdepth = MAX(maxdepth, ldepth);
-        }
-        return maxdepth + 1;
-    }
-
-
-    /// 检查最大函数嵌套层限制. 包括了 变元绑定
-    /// \return >0 -- 函数嵌套层数 -1 -- 不符合限制
-
-    inline int CheckTermDepthLimit() {
-        uint16_t maxdepth = 0, ldepth = 0;
-        //debug
-        if (this->arity == 0) {
-            maxdepth = 0;
-        } else if (this->IsGround()) {
-            maxdepth = this->uMaxFuncLayer;
-            if (maxdepth > StrategyParam::R_MAX_FUNCLAYER)
-                return -1;
-        } else {
-            maxdepth = 0;
-            for (int i = 0; i < arity; ++i) {
-                TermCell* term = TermCell::TermDerefAlways(args[i]);
-                ldepth = term->IsGround() ? term->uMaxFuncLayer : term->CheckTermDepthLimit();
-                if (-1 == ldepth)
-                    return -1;
-                if (maxdepth < ldepth) {
-                    maxdepth = ldepth;
-                    if (maxdepth + 1 > StrategyParam::R_MAX_FUNCLAYER)
-                        return -1;
-                }
-            }
-            ++maxdepth;
-        }
-        return maxdepth;
-    }
-
-    //得到项的函数嵌套层
-
-    inline long GetMaxFuncDepth() {
-        uint16_t maxdepth = 0, ldepth;
-        if (this->IsGround())return this->uMaxFuncLayer;
-        this->uMaxFuncLayer = 0;
-        for (int i = 0; i < arity; ++i) {
-            TermCell* term = TermCell::TermDerefAlways(args[i]);
-            ldepth = term->GetMaxFuncDepth();
-            this->uMaxFuncLayer = MAX(this->uMaxFuncLayer, ldepth);
-        }
-        return ++this->uMaxFuncLayer;
-    }
-
-    /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
-    inline TermCell** TermArgListCopy() {
-        TermCell* *handle;
-        if (arity) {
-            handle = new TermCell*[arity];
-            for (int i = 0; i < arity; ++i) {
-                handle[i] = args[i];
-            }
-        } else {
-            handle = nullptr;
-        }
-        return handle;
+    inline long ComputeTermStandardWeight() {
+        return   ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
     }
 
     inline const char* getVarName(string &termName, string splitCh = "") {
@@ -341,25 +327,47 @@ public:
 
     /* 返回项是否为Ground项 */
     inline bool TBTermIsGround() {
-        return TermCellQueryProp(TermProp::TPIsGround);
+        bool flag = TermCellQueryProp(TermProp::TPIsGround);
+
+#ifndef NDEBUG
+        if (flag)
+             assert(0 == this->GetVarCount());
+#endif
+        return flag;
     }
     /* 检查项是否为基项 ground 不包括变元项 注:不检查　变元绑定情况 */
     bool IsGround();
 
     /* 返回项是否为TypeTerm 即权重==3 P(x)*/
     inline bool TBTermIsTypeTerm() {
-        return weight == (DEFAULT_VWEIGHT + DEFAULT_FWEIGHT);
+        return this->uTermWeight == (DEFAULT_VWEIGHT + DEFAULT_FWEIGHT);
     }
 
     /* 返回项是否为XTypeTerm,全部是变元项 P(x,x,...,x)*/
     inline bool TBTermIsXTypeTerm() {
-        return (arity > 0) && (weight == (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT));
+        return (arity > 0) && (this->uTermWeight == (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT));
     }
+
+    // </editor-fold>
 
 
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
+
+    /// 得到项的函数嵌套层
+    /// \return 
+    uint8_t ComputeMaxFuncDepth();
+    uint16_t TermDepth();
+    uint16_t CheckTermDepthLimit();
+
+    long ComputeTermWeight(long vweight, long fweight);
+    long TermFsumWeight(long vweight, long flimit, vector<long>&fweights, long default_fweight);
+    long TermNonLinearWeight(long vlweight, long vweight, long fweight);
+    long TermSymTypeWeight(long vweight, long fweight, long cweight, long pweight);
+    long TermCollectPropVariables(SplayTree<PTreeCell> *tree, TermProp prop);
+
+
 
 
     /* 变元项输出 */
@@ -370,7 +378,6 @@ public:
      */
     void getStrOfTerm(string&outStr, DerefType deref = DerefType::DEREF_ALWAYS);
     void PrintDerefAlways(FILE* out);
-
     void TermPrintArgList(FILE* out, int arity, DerefType deref);
     /**
      * 得到项的子项字符串
@@ -378,13 +385,22 @@ public:
     void getStrOfTermArgList(string&outStr, int arit, DerefType deref);
     void PrintTermSig(FILE* out);
 
+    /// 设置每个子项的属性
+    /// \param dt
+    /// \param prop
     void TermSetProp(DerefType dt, TermProp prop);
+    /// 查找子项中 是否存在匹配属性的子项
+    /// \param deref
+    /// \param prop
+    /// \return 
     bool TermSearchProp(DerefType deref, TermProp prop);
     void TermDelProp(DerefType deref, TermProp prop);
+    /// 给变元子项设置属性
+    /// \param deref
+    /// \param prop
     void TermVarSetProp(DerefType deref, TermProp prop);
     bool TermVarSearchProp(DerefType deref, TermProp prop);
     void TermVarDelProp(DerefType deref, TermProp prop);
-
 
 
 
@@ -402,9 +418,14 @@ public:
 
 
     FunCode TermFindMaxVarCode();
-    TermCell* TermEquivCellAlloc(TermBank* tb);
-    TermCell* RenameCopy(TermBank* tb, DerefType deref = DerefType::DEREF_ALWAYS);
-    TermCell* TermCopy(TermBank* tb, DerefType deref);
+
+    /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
+    TermCell** TermArgListCopy();
+    TermCell* TermEquivCellAlloc(TermBank* tb,Literal* litptr);
+    TermCell* RenameCopy(TermBank* tb, Literal* litptr, DerefType deref = DerefType::DEREF_ALWAYS);
+    
+    
+    TermCell* TermCopy(TermBank* tb,Literal* litptr, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);
 
@@ -417,18 +438,16 @@ public:
     bool TermIsSubtermDeref(TermCell* test, DerefType deref_super, DerefType deref_test);
 
 
-    long TermWeight(long vweight, long fweight);
-    long TermFsumWeight(long vweight, long flimit, vector<long>&fweights, long default_fweight);
-    long TermNonLinearWeight(long vlweight, long vweight, long fweight);
-    long TermSymTypeWeight(long vweight, long fweight, long cweight, long pweight);
+
+
     //zj:replace.cpp 中相关的方法
 
     /* 添加项term的重写项replace以及相关子句  */
     //void TermAddRWLink(TermCell* replace, Clause* demod, bool sos, RWResultType type);
     /* 删除项term的重写项replace以及相关子句 replace Delete rewrite link from term.  */
-    void TermDeleteRWLink();
+    //void TermDeleteRWLink();
     /* Return the last term in an existing rewrite link chain. */
-    TermCell* TermFollowRWChain();
+    //TermCell* TermFollowRWChain();
     long TBTermDelPropCount(TermProp prop);
     long TermCollectVariables(SplayTree<PTreeCell> *tree);
     long TermAddFunOcc(vector<int>*f_occur, vector<IntOrP>*res_stack);
@@ -442,7 +461,8 @@ public:
     /*                         Static Function                             */
     /*---------------------------------------------------------------------*/
 
-    /// 这个项相同比较,前提是所有项,均在一个 Termbank情况下;
+
+    /// 这个项相同比较,前提是所有项,均在一个 Termbank情况下;    
     // 因此采用了地址相同来判断    
     static bool TermStructEqual(TermCell* t1, TermCell* t2);
     static bool TermStructEqualNoDeref(TermCell* t1, TermCell* t2);
@@ -454,10 +474,14 @@ public:
     static int TermLexCompare(TermCell* t1, TermCell* t2);
     //临时方法 -------------
 
+    static void ComputeTermInfo(TermCell* t);
+
+    static void TermFree(TermCell* junk);
+
     /*创建一个constant term 如　ａ ,b */
     static TermCell* TermConstCellAlloc(long symbol) {
         TermCell* t = new TermCell();
-        t->weight = DEFAULT_FWEIGHT;
+        t->SetTermWeight(DEFAULT_FWEIGHT);
         t->fCode = symbol;
         return t;
     }
@@ -474,29 +498,6 @@ public:
         return res;
     }
 
-
-    static TermCell* TermTopCopy(TermCell* t);
-
-    /* 根据定义的类型－－决定term变元binding遍历的类型,返回项绑定的元素项 */
-    static inline TermCell* TermDeref(TermCell* term, DerefType deref) {
-        assert((term->IsVar()) || !(term->binding));
-        if (deref == DerefType::DEREF_ALWAYS) {
-            while (term->binding) {
-                term = term->binding;
-            }
-        } else {
-            int ideref = (int) deref;
-            while (ideref) {
-                if (!term->binding) {
-                    break;
-                }
-                term = term->binding;
-                --ideref;
-            }
-        }
-        return term;
-    }
-
     static inline TermCell* TermDerefAlways(TermCell* term) {
         assert((term->IsVar()) || !(term->binding));
         while (term->binding) {
@@ -505,10 +506,12 @@ public:
         return term;
 
     }
-
+    static TermCell* TermTopCopy(TermCell* t);
+    /* 根据定义的类型－－决定term变元binding遍历的类型,返回项绑定的元素项 */
+    static TermCell* TermDeref(TermCell* term, DerefType deref);
     static FuncSymbType TermParseOperator(Scanner* in, string&idStr);
-    static int TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb);
-    static TermCell* TermParse(Scanner* in, TermBank* tb);
+    //static int TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb);
+    //static TermCell* TermParse(Scanner* in, TermBank* tb);
 
 
     static FunCode TermSigInsert(Sigcell* sig, const string &name, int arity, bool special_id, FuncSymbType type);

@@ -22,12 +22,13 @@
 class Formula {
 private:
     //谓词索引------
-    map<int32_t, vector<Literal*>> g_PostPred; //正谓词
-    map<int32_t, vector<Literal*>> g_NegPred; //负谓词
+    map<int32_t, vector<Literal*>> g_NonUnitPostPred; //正谓词
+    map<int32_t, vector<Literal*>> g_NonUnitNegPred; //负谓词
 
     map<int32_t, vector<Literal*>> g_UnitPostPred; //正单元子句谓词
     map<int32_t, vector<Literal*>> g_UnitNegPred; //负单元子句谓词
 
+ 
 
     map<TermCell*, set<TermCell*>> g_PostEqn; //正等词列表 a=b a=c a=d;  //只有基项 才可以  
     map<TermCell*, set<TermCell*>> g_NegEqn; //负等词 a!=b a!=c
@@ -49,14 +50,15 @@ public:
     //公式集的相关信息
     uint32_t uEquLitNum; //等词个数
     uint32_t uNonHornClaNum; //非Horn子句个数
-    uint32_t uMaxLitNum; //最大文字个数
-    uint32_t uMaxFuncLayer; //最大函数嵌套层数
+    uint32_t uMaxLitNumOfCla; //最大文字个数
+    uint32_t uMaxFuncLayerOfCla; //最大函数嵌套层数
 
 
     TermIndexing* unitClaIndex; //正单元子句索引
     TermIndexing *allTermIndex; //Discrimation Indexing 主要用于forward subsume
 
-    vector<Clause*> goalClaset; //目标子句集--注意,包括单元子句,也包括其他子句
+    vector<Clause*> vHornClas; //horn子句
+    vector<Clause*> vgoalClas; //目标子句集--注意,包括单元子句,也包括其他子句
     vector<Clause*> vNegUnitClas; //负单元子句,只有一个 负文字
     vector<Clause*> vPosUnitClas; //正单元子句
 
@@ -77,8 +79,8 @@ public:
     inline void iniFolInfo() {
         this->uEquLitNum = 0; //等词个数
         this->uNonHornClaNum = 0; //非Horn子句个数
-        this->uMaxLitNum = 0; //最大文字个数
-        this->uMaxFuncLayer = 0; //最大函数嵌套层数
+        this->uMaxLitNumOfCla = 0; //最大文字个数
+        this->uMaxFuncLayerOfCla = 0; //最大函数嵌套层数
     }
 
     inline ClauseSet* getOrigalSet() {
@@ -103,7 +105,7 @@ public:
     }
 
     inline void addGoalClas(Clause* goalCla) {
-        goalClaset.push_back(goalCla);
+        vgoalClas.push_back(goalCla);
     }
 
     //    inline void ClauseSetInsert(Clause* cla) {
@@ -116,7 +118,7 @@ public:
         FILE* out = FileOp::getInstance()->getInfoFile();
         string sinfo = "#------ CNF Formula ------\n";
         FileOp::getInstance()->outInfo(sinfo);
-       
+
         origalClaSet->Print(out);
     }
 
@@ -141,7 +143,7 @@ public:
         //对单元子句集合进行排序 
         sort(vNegUnitClas.begin(), vNegUnitClas.end(), UnitClaCompareWithWeight());
         sort(vPosUnitClas.begin(), vPosUnitClas.end(), UnitClaCompareWithWeight());
-         // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
+        // stable_sort(fol->vNegUnitClas.begin(),fol->vNegUnitClas.end(),SortRule::UnitClaCmp);
         // stable_sort(fol->vPosUnitClas.begin(),fol->vPosUnitClas.end(),SortRule::UnitClaCmp);
     }
 
@@ -161,7 +163,9 @@ public:
     void generateFormula(Scanner * in);
     //公式预处理
     RESULT preProcess(vector<Clause*>&factorClas);
-
+    //设置策略
+    void SetStrategy();
+    
     // <editor-fold defaultstate="collapsed" desc="归入冗余判断">
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal* actLits, uint16_t uActLeftLitInd, vector<Literal*>&vNewR);
@@ -176,7 +180,7 @@ public:
     // </editor-fold>
 
     //检查单元子句是否存在互补合一 -- unsat
-    bool isUnsat(Clause* unitCal,bool isOutTip=false);
+    bool isUnsat(Clause* unitCal, bool isOutTip = false);
 
     //插入新子句到
     void insertNewCla(Cla_p cla, bool isEquAxiom = false);
@@ -186,8 +190,14 @@ public:
     /// 添加单元子句的谓词对应表
     /// \param unitCla
     void AddUnitPredLst(Clause* unitCla);
-    //添加谓词符号到全局列表中  
-    void AddPredLst(Clause * cla);
+
+
+    //添加文字的谓词符号索引到全局列表中 本质是FP0算法
+    void AddPredIndex(Lit_p lit, bool isUnitCla);
+    
+    //添加文字的谓词符号索引到全局列表中[不区分单元子句或多元子句] 本质是FP0算法
+    void AddPredIndexNoUnit(Lit_p lit, bool isUnitCla);
+    
     vector<Literal*>* getPredLst(Literal * lit);
 
     /*得到互补单元谓词候选文字集合*/
@@ -200,8 +210,9 @@ public:
 
     //根据策略，得到下一次演绎起步子句
     list<Clause*>::iterator getNextStartClause();
-     vector<Clause*>::iterator getNextGoalClause();
-    
+    vector<Clause*>::iterator getNextGoalClause();
+    int GetNextGoalClauseIndex();
+
 };
 
 #endif /* FORMULA_H */

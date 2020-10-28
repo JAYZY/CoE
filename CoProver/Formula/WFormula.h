@@ -34,8 +34,8 @@ enum class WFormulaProp {
     WPTypeLemma = (int) ClauseProp::CPTypeLemma, /* Formula is Lemma */
     WPTypeNegConjecture = (int) ClauseProp::CPTypeNegConjecture, /* Formula is NegConjecture */
     WPTypeQuestion = (int) ClauseProp::CPTypeQuestion,
-    WPIsProofClause = (int) ClauseProp::CPIsProofClause,
-    WPIsRelevant = (int) ClauseProp::CPIsRelevant
+//    WPIsProofClause = (int) ClauseProp::CPIsProofClause,
+//    WPIsRelevant = (int) ClauseProp::CPIsRelevant
 };
 typedef Term_p TFormula_p;
 

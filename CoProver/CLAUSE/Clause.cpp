@@ -19,11 +19,21 @@ using namespace std;
 
 Clause::Clause()
 : properties(ClauseProp::CPIgnoreProps), info(nullptr), literals(nullptr)
-, negLitNo(0), posLitNo(0), weight(0), priority(-1) {
+, negLitNo(0), posLitNo(0), claWeight(0), priority(90) {
     ident = ++Env::global_clause_counter;
     claTB = nullptr; // new TermBank(ident);
     infereType = InfereType::NONE;
+    // = 0;
+    this->gapWithGoal = 0;
+    maxFuncLayer = minFuncLayer = 0; //文字中最大的函数嵌套层数  
+
+    claMinWeight = claMaxWeight = 0; //子句中最小文字权重,最大文字权重
+
+    userTimes = 0; //子句使用次数  < 65536    
+
     uFirstURInd = 0;
+
+
 }
 
 Clause::Clause(const Clause* orig) {
@@ -32,10 +42,14 @@ Clause::Clause(const Clause* orig) {
     this->info = orig->info; //子句信息
 
     this->literals = nullptr; //文字列表
-    this->negLitNo = 0; //负文字个数
-    this->posLitNo = 0; //正文字个数
-    this->weight = 0; //子句权重
-    this->priority = 1;
+    this->negLitNo = orig->negLitNo; //负文字个数
+    this->posLitNo = orig->posLitNo; //正文字个数
+    this->claWeight = orig->claWeight; //子句权重
+    this->claMinWeight = orig->claMinWeight; //子句权重
+    this->claMaxWeight = orig->claMaxWeight; //子句权重
+    this->maxFuncLayer = orig->maxFuncLayer;
+    this->minFuncLayer = orig->minFuncLayer;
+    this->priority = orig->priority;
     this->claTB = orig->claTB;
     this->parentIds = orig->parentIds;
     this->infereType = orig->infereType;
@@ -100,7 +114,105 @@ Clause::~Clause() {
     //   vector<IntOrP>().swap(derivation);
     //PStackFree(junk->derivation);
 }
+/// 扫描字符-解析子句
+/// 调用之前一定会先new  clause(); 
+/// \param in 扫描器scanner
 
+void Clause::ClauseParse(Scanner* in) {
+
+    //Scanner* in = Env::getIn();
+    //TermBank* t = Env::getTb();
+    if (this->claTB)
+        this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
+
+    ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
+    //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
+    this->info = new ClauseInfo("", (in->AktToken())->source.c_str(), (in->AktToken())->line, (in->AktToken())->column);
+    //创建文字
+    //Literal* concl = new Literal();
+    if (in->format == IOFormat::TPTPFormat) {
+        in->AcceptInpId("input_clause");
+        in->AcceptInpTok(TokenType::OpenBracket);
+        this->info->name = (in->AktToken())->literal;
+        in->AcceptInpTok(TokenType::Name);
+        in->AcceptInpTok(TokenType::Comma);
+        string strId = "axiom|hypothesis|conjecture|lemma|unknown|watchlist";
+        type = ClauseTypeParse(in, strId);
+        if (type == ClauseProp::CPTypeConjecture) {
+            type = ClauseProp::CPTypeNegConjecture; /* Old TPTP syntax lies ;-) */
+        }
+        in->AcceptInpTok(TokenType::Comma);
+        in->AcceptInpTok(TokenType::OpenSquare);
+
+        //此处过滤项bank  EqnListParse(in, bank,Comma);
+        //此处解析完子句
+        EqnListParse(TokenType::Comma);
+        //concl->EqnListParse(TokenType::Comma, this->claVarTerms);
+
+        in->AcceptInpTok(TokenType::CloseSquare);
+        in->AcceptInpTok(TokenType::CloseBracket);
+    } else if (in->format == IOFormat::TSTPFormat) {
+
+        in->AcceptInpId("cnf");
+        in->AcceptInpTok(TokenType::OpenBracket);
+
+        this->info->name = (in->AktToken())->literal; //赋值子句名称 如:i_0_266
+        in->AcceptInpTok(TokenType::NamePosIntSQStr);
+        in->AcceptInpTok(TokenType::Comma);
+
+        string strId = "axiom|definition|theorem|assumption|hypothesis|negated_conjecture|lemma|unknown|plain|watchlist";
+        //判断子句类型
+        type = ClauseTypeParse(in, strId);
+
+        //跳过 冒号
+        in->AcceptInpTok(TokenType::Comma);
+
+        if (in->TestInpTok(TokenType::OpenBracket)) {
+            in->AcceptInpTok(TokenType::OpenBracket);
+            //此处生成 文字List
+            EqnListParse(TokenType::Pipe);
+
+            in->AcceptInpTok(TokenType::CloseBracket);
+        } else {
+            //此处 文字List
+            EqnListParse(TokenType::Pipe);
+        }
+
+        if (in->TestInpTok(TokenType::Comma)) {
+            in->AcceptInpTok(TokenType::Comma);
+            in->TSTPSkipSource();
+            if (in->TestInpTok(TokenType::Comma)) {
+
+                in->AcceptInpTok(TokenType::Comma);
+
+                in->CheckInpTok(TokenType::OpenSquare);
+
+                in->ParseSkipParenthesizedExpr();
+            }
+        }
+        in->AcceptInpTok(TokenType::CloseBracket);
+    } else {
+        cout << "文字解析错误" << endl;
+        return;
+    }
+
+
+    in->AcceptInpTok(TokenType::Fullstop);
+
+    //Clause * handle = new Clause(concl);
+    this->ClauseSetTPTPType(type);
+    if (this->ClauseQueryProp(ClauseProp::CPTypeNegConjecture)) {//目标子句
+        //   this->ClausePrint(stdout, true);
+        this->priority = 100; //目标子句优先级   INT32_MAX
+    }
+    this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
+    //ClauseStandardWeight(); //计算子句的权重
+
+    //为了节约内存，若为基项则删除ClaTB
+    if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) {
+        this->ClearClaTB();
+    }
+}
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 
@@ -115,7 +227,7 @@ void Clause::RecomputeLitCounts() {
         handle->EqnSetProp(EqnProp::EPIsHold);
         handle->claPtr = this; /*指定当前文字所在子句*/
         handle->pos = ++iLitPos;
-        assert(iLitPos < UINT8_MAX);
+        assert(iLitPos < UINT16_MAX);
         if (handle->IsPositive()) {
             ++posLitNo;
         } else {
@@ -139,12 +251,17 @@ void Clause::bindingLits(Literal* litLst) {
     Literal* *eqn_append = &eqn_lits;
     Literal* next = nullptr;
 
+    uint32_t maxLitWeight = 0, minLitWeight = UINT_MAX;
+    uint16_t maxLitFuncLayer = 0, minLitFuncLayer = UINT16_MAX;
+    bool isGroundCla = true;
+
+
     int iLitPos = 0;
     while (litLst) {
         litLst->EqnSetProp(EqnProp::EPIsHold);
         litLst->claPtr = this; /*指定当前文字所在子句*/
         litLst->pos = ++iLitPos;
-        assert(iLitPos < UINT8_MAX);
+        assert(iLitPos < UINT16_MAX);
         next = litLst->next;
         if (litLst->IsPositive()) {
             posLitNo++;
@@ -165,6 +282,24 @@ void Clause::bindingLits(Literal* litLst) {
                 neg_append = &((*neg_append)->next);
             }
         }
+
+
+        // <editor-fold defaultstate="collapsed" desc="相关属性计算">
+        uint32_t w = litLst->StandardWeight(true);
+        this->claWeight += w; //直接读取文字的标准权重
+        maxLitWeight = MAX(maxLitWeight, w); //记录最大文字权重
+        minLitWeight = MIN(minLitWeight, w); //记录最小文字权重
+
+        uint16_t depth = litLst->GetMaxFuncDepth(false);
+        maxLitFuncLayer = MAX(maxLitFuncLayer, depth); //记录最大函数嵌套层
+        minLitFuncLayer = MIN(minLitFuncLayer, depth); //记录最小函数嵌套层
+
+        if (!litLst->IsGround(false)) { //检查文字是否为基文字
+            isGroundCla = false;
+        }
+        // </editor-fold>  
+
+
         litLst = next;
     }
     //    *neg_append = eqn_lits;
@@ -175,11 +310,33 @@ void Clause::bindingLits(Literal* litLst) {
     *pos_append = neg_lits;
     *eqn_append = pos_lits;
     literals = eqn_lits;
+
+
+    //
+    //设置基子句属性
+    if (isGroundCla) {
+        this->ClauseSetProp(ClauseProp::CPGroundCla);
+    } else {
+        this->ClauseDelProp(ClauseProp::CPGroundCla);
+    }
+    if (this->literals) {
+        this->claMaxWeight = maxLitWeight;
+        this->claMinWeight = minLitWeight;
+        this->maxFuncLayer = maxLitFuncLayer;
+        this->minFuncLayer = minLitFuncLayer;
+    }
+    //计算文字的变元共享性
+    this->SetEqnListVarState();
 }
 
 void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     //插入新子句
     Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
+
+    uint32_t maxLitWeight = 0, minLitWeight = UINT_MAX;
+    uint16_t maxLitFuncLayer = 0, minLitFuncLayer = UINT16_MAX;
+    bool isGroundCla = true;
+
     Literal* *pos_append = &pos_lits;
     Literal* *neg_append = &neg_lits;
     Literal* *eqn_append = &eqn_lits;
@@ -214,6 +371,21 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
                 neg_append = &((*neg_append)->next);
             }
         }
+        // <editor-fold defaultstate="collapsed" desc="相关属性计算">
+        uint32_t w = newLitP->StandardWeight(true);
+        this->claWeight += w; //直接读取文字的标准权重
+        maxLitWeight = MAX(maxLitWeight, w); //记录最大文字权重
+        minLitWeight = MIN(minLitWeight, w); //记录最小文字权重
+
+        uint16_t depth = newLitP->GetMaxFuncDepth(false);
+        maxLitFuncLayer = MAX(maxLitFuncLayer, depth); //记录最大函数嵌套层
+        minLitFuncLayer = MIN(minLitFuncLayer, depth); //记录最小函数嵌套层
+
+        if (!newLitP->IsGround(false)) { //检查文字是否为基文字
+            isGroundCla = false;
+        }
+        // </editor-fold>
+
         ++litTmpPtr;
     }
     //    *neg_append = eqn_lits;
@@ -224,6 +396,22 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     *pos_append = neg_lits;
     *eqn_append = pos_lits;
     literals = eqn_lits;
+
+    //
+    //设置基子句属性
+    if (isGroundCla) {
+        this->ClauseSetProp(ClauseProp::CPGroundCla);
+    } else {
+        this->ClauseDelProp(ClauseProp::CPGroundCla);
+    }
+    if (this->literals) {
+        this->claMaxWeight = maxLitWeight;
+        this->claMinWeight = minLitWeight;
+        this->maxFuncLayer = maxLitFuncLayer;
+        this->minFuncLayer = minLitFuncLayer;
+    }
+    //计算文字的变元共享性
+    this->SetEqnListVarState();
 }
 
 /*****************************************************************************
@@ -286,7 +474,7 @@ void Clause::getStrOfClause(string&outStr, bool complete) {
         default:
             break;
     }
-    int source = ClauseQueryCSSCPASource();
+    //int source = ClauseQueryCSSCPASource();
     if (ident >= 0) {
         outStr += "cnf(c" /*+ to_string(source) + "_"*/ + to_string(ident) + ", ";
     } else {
@@ -303,6 +491,11 @@ void Clause::getStrOfClause(string&outStr, bool complete) {
         //EqnListTSTPPrint(out, literals, "|", fullterms);
     }
     outStr += (complete == true) ? ") ).\n" : ") ";
+    //zj debg 测试 输出子句信息
+    //    outStr += "最小权重:" + to_string(this->claMinWeight) + ",最大权重:" + to_string(this->claMaxWeight) + ",权重和:" + to_string(this->claWeight);
+    //    outStr += ",最小嵌套:" + to_string(this->minFuncLayer) + ",最大嵌套:" + to_string(this->maxFuncLayer) + ",优先级:" + to_string(this->priority);
+    //    outStr += this->isGroundCla(false) ? "[基子句]" : (this->HasShareVarInCla() ? "[有共享变元]" : "[独立变元]");
+    //    outStr += "\n";
 
 }
 
@@ -406,13 +599,12 @@ void Clause::ClauseTSTPCorePrint(FILE* out, bool fullterms) {
 
 /*-----------------------------------------------------------------------
 // Function: ClauseStandardWeight()
-//   Compute the standard weight of a clause (Vars = 1, Funs = 2,
-//   everything counts equally.
+//   重新计算子句的字符权重 (Vars = 1, Funs = 2,
 /----------------------------------------------------------------------*/
-void Clause::ClauseStandardWeight() {
+void Clause::ClaRecomputStdWeight() {
     Literal* handle;
     for (handle = this->literals; handle; handle = handle->next) {
-        this->weight += handle->StandardWeight();
+        this->claWeight += handle->StandardWeight(true);
     }
 }
 
@@ -523,138 +715,6 @@ ClauseProp Clause::ClauseTypeParse(Scanner* in, string legal_types) {
     return res;
 }
 
-
-/// 解析子句
-/// \param in 扫描器scanner
-
-void Clause::ClauseParse(Scanner* in) {
-
-    //Scanner* in = Env::getIn();
-    //TermBank* t = Env::getTb();
-    if (this->claTB)
-        this->claTB->varsClearExtNames(); //清除变量集合 clear varbank
-
-    ClauseProp type = ClauseProp::CPTypeAxiom; //子句默认属性为 公理集
-    //读取子句相关信息(info) 子句名称-i_0_266,原始字符串,所在行 所在列,
-    this->info = new ClauseInfo("", (in->AktToken())->source.c_str(), (in->AktToken())->line, (in->AktToken())->column);
-
-
-    //创建文字
-    //Literal* concl = new Literal();
-    if (in->format == IOFormat::TPTPFormat) {
-        in->AcceptInpId("input_clause");
-        in->AcceptInpTok(TokenType::OpenBracket);
-        this->info->name = (in->AktToken())->literal;
-        in->AcceptInpTok(TokenType::Name);
-        in->AcceptInpTok(TokenType::Comma);
-        string strId = "axiom|hypothesis|conjecture|lemma|unknown|watchlist";
-        type = ClauseTypeParse(in, strId);
-
-        if (type == ClauseProp::CPTypeConjecture) {
-            type = ClauseProp::CPTypeNegConjecture; /* Old TPTP syntax lies ;-) */
-        }
-        in->AcceptInpTok(TokenType::Comma);
-        in->AcceptInpTok(TokenType::OpenSquare);
-
-        //此处过滤项bank  EqnListParse(in, bank,Comma);
-        //此处解析完子句
-        EqnListParse(TokenType::Comma);
-        //concl->EqnListParse(TokenType::Comma, this->claVarTerms);
-
-        in->AcceptInpTok(TokenType::CloseSquare);
-        in->AcceptInpTok(TokenType::CloseBracket);
-    } else if (in->format == IOFormat::TSTPFormat) {
-
-        in->AcceptInpId("cnf");
-        in->AcceptInpTok(TokenType::OpenBracket);
-
-        this->info->name = (in->AktToken())->literal; //赋值子句名称 如:i_0_266
-        in->AcceptInpTok(TokenType::NamePosIntSQStr);
-        in->AcceptInpTok(TokenType::Comma);
-
-        string strId = "axiom|definition|theorem|assumption|hypothesis|negated_conjecture|lemma|unknown|plain|watchlist";
-        //判断子句类型
-        type = ClauseTypeParse(in, strId);
-        //跳过 冒号
-        in->AcceptInpTok(TokenType::Comma);
-
-        if (in->TestInpTok(TokenType::OpenBracket)) {
-            in->AcceptInpTok(TokenType::OpenBracket);
-            //此处生成 文字List
-            EqnListParse(TokenType::Pipe);
-
-            in->AcceptInpTok(TokenType::CloseBracket);
-        } else {
-            //此处 文字List
-            EqnListParse(TokenType::Pipe);
-        }
-
-        if (in->TestInpTok(TokenType::Comma)) {
-            in->AcceptInpTok(TokenType::Comma);
-            in->TSTPSkipSource();
-            if (in->TestInpTok(TokenType::Comma)) {
-
-                in->AcceptInpTok(TokenType::Comma);
-
-                in->CheckInpTok(TokenType::OpenSquare);
-
-                in->ParseSkipParenthesizedExpr();
-            }
-        }
-        in->AcceptInpTok(TokenType::CloseBracket);
-    } else {
-        cout << "文字解析错误" << endl;
-        return;
-        //        //此处过滤term　EqnListParse(in, bank, Pipe);
-        //        //cout<<"into EqnListParse"<<endl;
-        //        concl->EqnListParse( TokenType::Semicolon);
-        //        //cout<<"out EqnListParse"<<endl;
-        //        if (in->TestInpTok(TokenType::Colon)) {
-        //            if (concl->EqnListLength() > 1) {
-        //                in->AktTokenError("Procedural rule cannot have more than one head literal", false);
-        //            }
-        //            procedural = true;
-        //        } else if (in->TestInpTok(TokenType::QuestionMark)) {
-        //            if (concl->EqnListLength() > 0) {
-        //                in->AktTokenError("Query should consist only of tail literals", false);
-        //            }
-        //            type = ClauseProp::CPTypeNegConjecture;
-        //            /* printf("CPTypeConjecture\n"); */
-        //        }
-        //        if (in->TestInpTok(TokenType::Fullstop)) {
-        //            if (concl->EqnListLength() > 1) {
-        //                in->AktTokenError("Procedural fact cannot have more than one literal", false);
-        //            }
-        //            procedural = true;
-        //        } else {
-        //            in->AcceptInpTok(LesserSign | Colon | QuestionMark);
-        //            in->AcceptInpTokNoSkip(Hyphen);
-        //            //此处过滤term　EqnListParse(in, bank, Pipe);
-        //            precond->EqnListParse(in, bank, Comma);
-        //
-        //            if (procedural && precond->EqnListLength() == 0) {
-        //                in->AktTokenError("Procedural rule or query needs at least one tail literal (Hey! I did not make this syntax! -StS)", false);
-        //            }
-        //            precond->EqnListNegateEqns();
-        //            concl = Literal::EqnListAppend(&concl, precond);
-        //            //concl->EqnListAppend(precond);
-        //        }
-    }
-
-
-    in->AcceptInpTok(TokenType::Fullstop);
-
-    //Clause * handle = new Clause(concl);
-    this->ClauseSetTPTPType(type);
-    this->ClauseSetProp((ClauseProp) ((int32_t) ClauseProp::CPInitial | (int32_t) ClauseProp::CPInputFormula));
-    ClauseStandardWeight();//计算子句的权重
-    
-    //为了节约内存，若为基项则删除ClaTB
-    if (this->ClauseQueryProp(ClauseProp::CPGroundCla)) {
-        this->ClearClaTB();
-    }
-}
-
 Clause* Clause::RenameCopy(Literal* except) {
 
     Clause* newCla = new Clause();
@@ -662,40 +722,101 @@ Clause* Clause::RenameCopy(Literal* except) {
     Lit_p *insert = &newlist;
     Lit_p lit = this->literals;
     uint8_t iLitPos = 0;
+    uint32_t maxLitWeight = 0, minLitWeight = UINT_MAX;
+    uint16_t maxLitFuncLayer = 0, minLitFuncLayer = UINT16_MAX;
+    bool isGroundCla = true;
     while (lit) {
         if (lit == except) {
             lit = lit->next;
             continue;
         }
+
+        //统计正文字\负文字 个数
         if (lit->IsPositive()) {
             ++newCla->posLitNo;
         } else {
             ++newCla->negLitNo;
         }
         *insert = lit->RenameCopy(newCla);
+
         (*insert)->SetHold();
         (*insert)->claPtr = newCla;
         (*insert)->pos = ++iLitPos;
-        assert(iLitPos < UINT8_MAX);
-        newCla->weight = (*insert)->StandardWeight(true);
+        assert(iLitPos < UINT16_MAX);
+
+        // <editor-fold defaultstate="collapsed" desc="相关属性计算">
+        uint32_t w = (*insert)->StandardWeight(true);
+        newCla->claWeight += w; //直接读取文字的标准权重
+        maxLitWeight = MAX(maxLitWeight, w); //记录最大文字权重
+        minLitWeight = MIN(minLitWeight, w); //记录最小文字权重
+
+        uint16_t depth = (*insert)->GetMaxFuncDepth(false);
+        maxLitFuncLayer = MAX(maxLitFuncLayer, depth); //记录最大函数嵌套层
+        minLitFuncLayer = MIN(minLitFuncLayer, depth); //记录最小函数嵌套层
+
+        if (!(*insert)->IsGround(false)) { //检查文字是否为基文字
+            isGroundCla = false;
+        }
+        // </editor-fold>
+
+
         insert = &((*insert)->next);
         lit = lit->next;
     }
     *insert = nullptr;
     newCla->literals = newlist;
+    //
+    //设置基子句属性
+    if (isGroundCla) {
+        newCla->ClauseSetProp(ClauseProp::CPGroundCla);
+    } else {
+        newCla->ClauseDelProp(ClauseProp::CPGroundCla);
+    }
+    if (newCla->literals) {
+        newCla->claMaxWeight = maxLitWeight;
+        newCla->claMinWeight = minLitWeight;
+        newCla->maxFuncLayer = maxLitFuncLayer;
+        newCla->minFuncLayer = minLitFuncLayer;
+    }
+    //计算文字的变元共享性
+    newCla->SetEqnListVarState();
     return newCla;
 
+}
+
+void Clause::SetEqnListVarState() {
+    Lit_p lit = this->Lits();
+    while (lit) {
+        if (this->mapLitposToVarTerm.find(lit) == mapLitposToVarTerm.end()) {
+            assert(lit->IsGround(false));
+            lit->varState = VarState::noVar;
+        } else if (lit->varState != VarState::shareVar) {
+            //根据文字查找变元
+            set<TermCell*>&setVarTerms = this->mapLitposToVarTerm[lit];
+            lit->varState = VarState::freeVar;
+            for (TermCell* varT : setVarTerms) {
+                //根据变元项查找文字
+                set<Lit_p>&setLits = this->mapVarTermToLitpos[varT];
+                if (setLits.size() == 1)
+                    continue;
+                for (Lit_p litShare : setLits) {
+                    litShare->varState = VarState::shareVar;
+                }
+            }
+        }
+        lit = lit->next;
+    }
 }
 
 /**
  * 设置文字的变元共享状态
  */
-void Clause::SetEqnListVarState() {
+void Clause::SetEqnListVarStateByCompute() {
     Lit_p lit = this->Lits();
-    const int MaxVarNum=2000;
+    const int MaxVarNum = 2000;
     //  Lit_p *arrayLit = new Lit_p[this->LitsNumber()];
     Lit_p arrVarLit[MaxVarNum]; //假设变元项最多不超出MaxVarNum  
-    memset(arrVarLit, 0, MaxVarNum*sizeof(Lit_p));
+    memset(arrVarLit, 0, MaxVarNum * sizeof (Lit_p));
 
     for (; lit; lit = lit->next) {
         if (lit->IsGround()) {
@@ -768,11 +889,17 @@ uint16_t Clause::calcMaxFuncLayer() const {
     }
     return maxTermDepth;
 }
+/// 生成子句的文字列表
+/// \param sep
 
 void Clause::EqnListParse(TokenType sep) {
+
     Scanner* in = Env::getIn();
     bool isGroundCla = true;
     TokenType testTok = (TokenType) ((uint64_t) TokenCell::TermStartToken() | (uint64_t) TokenType::TildeSign);
+
+    uint32_t maxLitWeight = 0, minLitWeight = UINT_MAX;
+    uint16_t maxLitFuncLayer = 0, minLitFuncLayer = UINT16_MAX;
 
     if (((in->format == IOFormat::TPTPFormat) && in->TestInpTok(TokenType::SymbToken))
             || ((in->format == IOFormat::LOPFormat) && in->TestInpTok(testTok))
@@ -783,14 +910,25 @@ void Clause::EqnListParse(TokenType sep) {
         Lit_p *neg_append = &neg_lits;
         Lit_p handle = nullptr;
         int originLitPos = 0;
+
         while (true) {
-            handle = new Literal(in, this);
+            handle = new Literal(in, ++originLitPos, this); //记录文字在子句中的原始位置
+            // <editor-fold defaultstate="collapsed" desc="相关属性计算">
+            uint32_t w = handle->StandardWeight(false);
+            this->claWeight += w; //直接读取文字的标准权重
+            maxLitWeight = MAX(maxLitWeight, w); //记录最大文字权重
+            minLitWeight = MIN(minLitWeight, w); //记录最小文字权重
+
+            uint16_t depth = handle->GetMaxFuncDepth(false);
+            maxLitFuncLayer = MAX(maxLitFuncLayer, depth); //记录最大函数嵌套层
+            minLitFuncLayer = MIN(minLitFuncLayer, depth); //记录最小函数嵌套层
 
             if (!handle->IsGround(false)) { //检查文字是否为基文字
                 isGroundCla = false;
             }
 
-            handle->pos = ++originLitPos; //记录文字在子句中的原始位置
+            // handle->pos = ++originLitPos; //记录文字在子句中的原始位置
+            //统计正文字\负文字 个数
             if (handle->IsPositive()) {
                 ++posLitNo;
                 *pos_append = handle;
@@ -800,8 +938,12 @@ void Clause::EqnListParse(TokenType sep) {
                 *neg_append = handle;
                 neg_append = &((*neg_append)->next);
             }
+
+            // </editor-fold>
             if (!in->TestInpTok(sep))break;
             in->NextToken();
+
+
         }
         *pos_append = neg_lits;
         *neg_append = nullptr;
@@ -810,7 +952,19 @@ void Clause::EqnListParse(TokenType sep) {
     //设置基子句属性
     if (isGroundCla) {
         this->ClauseSetProp(ClauseProp::CPGroundCla);
+    } else {
+        this->ClauseDelProp(ClauseProp::CPGroundCla);
     }
+    if (this->literals) {
+        this->claMaxWeight = maxLitWeight;
+        this->claMinWeight = minLitWeight;
+        this->maxFuncLayer = maxLitFuncLayer;
+        this->minFuncLayer = minLitFuncLayer;
+    }
+    //计算文字的变元共享性
+    this->SetEqnListVarState();
+
+
 }
 
 Literal* Clause::GetFirstHoldLit()const {

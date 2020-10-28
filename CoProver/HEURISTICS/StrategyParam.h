@@ -16,15 +16,18 @@
 
 #include <cstdint>
 #include "Global/IncDefine.h"
+//排序策略--被动文字稳定度 由低到高，由高到低
 
-enum class POSLIT_STEADY : uint8_t {
+enum class PasLitSteady : uint8_t {
     NumASC = 1, //子句文字数升序 由少到多
     NumDesc, //子句文字数降序 有多到少
 
 };
-//排序策略-- 由低到高，由高到低
 
-enum class SORT_STRATEGY {
+
+//排序策略--主动文字稳定度 由低到高，由高到低
+
+enum class ActLitSteady : uint8_t {
     ASC = 1, //升序
     DESC, //降序
     MINIV, //近似值
@@ -81,11 +84,12 @@ public:
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="权重相关">
-    static uint8_t CLA_NOMGU_WIGHT; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
-    static uint8_t CLA_REDUNDANCY_WIGHT; //子句归结中发现冗余,改变的优先级 
-    static uint8_t CLA_OVERLIMIT_WIGHT; //子句超过限制,改变的优先级
-    static uint8_t LIT_REDUNDANCY_WIGHT; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
-    static uint8_t LIT_OVERLIMIT_WIGHT; //文字超过限制,改变的优先级
+    //static int8_t ClaNoMGUWeight; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
+    static int8_t ClaRedundancyWeight; //子句归结中发现冗余,改变的优先级 
+    static int8_t ClaAllOverFuncLayer; //子句中所有文字超过函数嵌套限制,改变的优先级
+
+    static int8_t LitRedunancyWeight; //文字归结中发现冗余,改变的优先级 
+    static int8_t LitOverFuncLayer; //文字超过函数嵌套限制,改变的优先级
 
 
 
@@ -93,12 +97,12 @@ public:
 
     // <editor-fold defaultstate="collapsed" desc="启发式策略">
     static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
-    static POSLIT_STEADY SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
+    static PasLitSteady SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
     static ALimit ALIT_LIMIT; //主界线文字限制
 
-    static SORT_STRATEGY Weight_Sort; //权重排序策略
+    static ActLitSteady Weight_Sort; //权重排序策略
     //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
-    static int32_t IterCount_LIMIT; //create triangle count limit
+    static uint32_t IterCount_LIMIT; //create triangle count limit
 
 
     /* 剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
@@ -107,7 +111,7 @@ public:
     static uint32_t MaxLitNumOfR; //分离式R中最大文字数
     //left literals number during the process limit. =0 noLimit
     static uint32_t MaxLitsNumOfTriNewCla; //做△过程中生成新子句的文字数限制
-    static uint32_t R_MAX_FUNCLAYER; //最大函数嵌套层限制-不超过256
+    static uint32_t MaxFuncLayerOfR; //最大函数嵌套层限制-不超过256
     static uint32_t MaxLitNumOfNewCla; //新子句最大的文字数限制（literals number of new clause limit. =0 noLimit）    
     // </editor-fold>
 
@@ -126,12 +130,14 @@ public:
 
     static bool ADD_EQULITY; //whether add equlity axiom
     static bool ADD_CR;
-    static bool IS_ALitNoEqual; //主界线文字相同
-    static bool IS_ALitEqualR; //主界线文字与R文字相同
+
+    static bool RuleALitsAllowEqual; //规则：主界线文字是否允许相同
+    static bool RuleALitsAllowEqualR; //主界线文字与R文字相同
+
     static bool IS_RollBackGoalPath; //是否回退含有目标子句的路径
     static bool ISFactor; //是否执行 因子规则 factor rule
 
-
+    static bool ISSplitUnitCalIndex; //单独分割单元子句索引
 
 
 };

@@ -14,9 +14,10 @@
 #include "Literal.h" 
 #include "Orderings/Ordering.h"
 #include "Clause.h"
+#include "LIB/Out.h"
 
 Literal::Literal() {
-    usedCount = 0;
+    aUsedCount = 0;
     this->properties = EqnProp::EPIsHold;
     pos = 0;
     reduceTime = 0;
@@ -27,6 +28,7 @@ Literal::Literal() {
     parentLitPtr = nullptr;
     varState = VarState::unknown;
     matchLitPtr = nullptr;
+    uUnitMatchInd = 0;
     //weight = 0;
     //  zjlitWight = 0;
 
@@ -37,12 +39,12 @@ Literal::Literal() {
  * @param in
  * @param cla
  */
-Literal::Literal(Scanner* in, Cla_p cla) : Literal() {
+Literal::Literal(Scanner* in, int litPos, Cla_p cla) : Literal() {
     Term_p lt = nullptr, rt = nullptr;
     this->claPtr = cla;
     this->pos = 0;
     this->properties = EqnProp::EPIsHold;
-
+    this->pos = litPos;
 
     bool positive = eqn_parse_real(in, &lt, &rt, false);
 
@@ -91,50 +93,135 @@ Literal::~Literal() {
 bool Literal::eqn_parse_real(Scanner* in, Term_p *lref, Term_p *rref, bool fof) {
     bool positive = true;
     bool negate = false;
-    switch (in->format) {
-        case IOFormat::LOPFormat:
-            if (in->TestInpTok(TokenType::TildeSign)) {
-                negate = true;
-                in->NextToken();
-            }
-            positive = eqn_parse_mixfix(lref, rref);
-            break;
-        case IOFormat::TPTPFormat:
-            if (fof) {
-                if (in->TestInpTok(TokenType::TildeSign)) {
-                    negate = true;
-                    in->NextToken();
-                }
-            } else {
-                in->CheckInpTok(TokenType::SymbToken);
-                if (in->TestInpTok(TokenType::Hyphen)) {
-                    negate = true;
-                    in->NextToken();
-                    in->AcceptInpTokNoSkip(TokenType::Hyphen);
-                } else {
-                    in->NextToken();
-                    in->AcceptInpTokNoSkip(TokenType::Plus);
-                }
-            }
-            positive = eqn_parse_prefix(lref, rref);
-
-            break;
-        case IOFormat::TSTPFormat:
-            if (in->TestInpTok(TokenType::TildeSign)) {//检查是否为 ~ 负文字
-                negate = true;
-                in->NextToken();
-            }
-            positive = eqn_parse_infix(lref, rref);
-            break;
-        default:
-            assert(false && "Format not supported");
+    if (in->format == IOFormat::TSTPFormat) {
+        if (in->TestInpTok(TokenType::TildeSign)) {//检查是否为 ~ 负文字
+            negate = true;
+            in->NextToken();
+        }
+        positive = eqn_parse_infix(lref, rref);
+    } else {
+        Out::Error("输入格式不支持", ErrorCodes::FILE_ERROR);
     }
+    // <editor-fold defaultstate="collapsed" desc="注释掉...old code已经过时">
+
+
+    //    switch (in->format) {
+    //        case IOFormat::LOPFormat:
+    //            if (in->TestInpTok(TokenType::TildeSign)) {
+    //                negate = true;
+    //                in->NextToken();
+    //            }
+    //            positive = eqn_parse_mixfix(lref, rref);
+    //            break;
+    //        case IOFormat::TPTPFormat:
+    //            if (fof) {
+    //                if (in->TestInpTok(TokenType::TildeSign)) {
+    //                    negate = true;
+    //                    in->NextToken();
+    //                }
+    //            } else {
+    //                in->CheckInpTok(TokenType::SymbToken);
+    //                if (in->TestInpTok(TokenType::Hyphen)) {
+    //                    negate = true;
+    //                    in->NextToken();
+    //                    in->AcceptInpTokNoSkip(TokenType::Hyphen);
+    //                } else {
+    //                    in->NextToken();
+    //                    in->AcceptInpTokNoSkip(TokenType::Plus);
+    //                }
+    //            }
+    //            positive = eqn_parse_prefix(lref, rref);
+    //
+    //            break;
+    //        case IOFormat::TSTPFormat:
+    //            if (in->TestInpTok(TokenType::TildeSign)) {//检查是否为 ~ 负文字
+    //                negate = true;
+    //                in->NextToken();
+    //            }
+    //            positive = eqn_parse_infix(lref, rref);
+    //            break;
+    //        default:
+    //            assert(false && "Format not supported");
+    //    }
+
+    // </editor-fold>
+
     if (negate) {
         positive = !positive;
     }
     return positive;
 }
 
+/*****************************************************************************
+ * Parse a literal without external sign assuming that _all_equational 
+ * literals are infix. Return sign. This is for TSTP 
+ ****************************************************************************/
+bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
+    Term_p lterm;
+    Term_p rterm;
+    bool positive = true;
+    Scanner* in = Env::getIn();
+    TermBank* bank = this->claPtr->GetClaTB();
+
+    //lterm = TBTermParse(in, bank);
+    lterm = bank->TBTermParseReal(in, this, true);
+
+    //    if(bank->inCount==0){     
+    //       claPtr->ClearClaTB();
+    //    }
+    //BOOL_TERM_NORMALIZE(lterm);
+    if (Env::getGTbank()->falseTerm == lterm) {
+        lterm = Env::getGTbank()->trueTerm;
+        positive = !positive; //修改项的 正负
+    }
+
+    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign); //'!='  '='
+
+    Sigcell* sig = Env::getSig();
+    if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) { //不是变元 而且 是谓词符号 ->非等词项
+        rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
+    } else {
+        if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) { //项为变元或 函数符
+
+            if (in->TestInpTok(TokenType::NegEqualSign)) { //'!='
+                positive = !positive;
+            }
+            in->AcceptInpTok(equalToke);
+
+            rterm = bank->TBTermParseReal(in, this, true); //TBTermParse(in, bank);
+
+            if (!rterm->IsVar()) {
+                if (sig->SigIsPredicate(rterm->fCode)) {
+                    in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
+                }
+                sig->SigSetFunction(rterm->fCode, true);
+            }
+        } else if (in->TestInpTok(equalToke)) { /* Now both sides must be terms */
+
+            sig->SigSetFunction(lterm->fCode, true);
+            if (in->TestInpTok(TokenType::NegEqualSign)) {
+                positive = !positive;
+            }
+            in->AcceptInpTok(equalToke);
+
+            rterm = bank->TBTermParseReal(in, this, true); //TBTermParse(in, bank);
+
+            if (!rterm->IsVar()) {
+                if (sig->SigIsPredicate(rterm->fCode)) {
+                    in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
+                }
+                sig->SigSetFunction(rterm->fCode, true);
+            }
+        } else { /* It's a predicate */
+            rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
+            sig->SigSetPredicate(lterm->fCode, true);
+        }
+    }
+    *lref = lterm;
+    *rref = rterm;
+
+    return positive;
+}
 
 //   Parse a literal without external sign assuming that _all_
 //   equational literals are prefix. Return sign. This is for TPTP
@@ -152,14 +239,14 @@ bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
 
         //lterm = TBTermParse(in, bank);直接调用TBTermParseReal
         //解析项
-        lterm = claTermBank->TBTermParseReal(in, true); //TBTermParse();
+        lterm = claTermBank->TBTermParseReal(in, this, true); //TBTermParse();
         //BOOL_TERM_NORMALIZE(lterm);
         if (lterm == Env::getGTbank()->falseTerm) {
             lterm = Env::getGTbank()->trueTerm;
             positive = !positive;
         }
         in->AcceptInpTok(TokenType::Comma);
-        rterm = claTermBank->TBTermParseReal(in, true); //TBTermParse(in, bank);
+        rterm = claTermBank->TBTermParseReal(in, this, true); //TBTermParse(in, bank);
         //BOOL_TERM_NORMALIZE(rterm);
         if (rterm == Env::getGTbank()->falseTerm) {
             rterm = Env::getGTbank()->trueTerm;
@@ -167,7 +254,7 @@ bool Literal::eqn_parse_prefix(TermCell * *lref, TermCell * *rref) {
         }
         in->AcceptInpTok(TokenType::CloseBracket);
     } else {
-        lterm = claTermBank->TBTermParseReal(in, true); //TBTermParse(in, bank);
+        lterm = claTermBank->TBTermParseReal(in, this, true); //TBTermParse(in, bank);
         //BOOL_TERM_NORMALIZE(lterm);
         if (lterm == Env::getGTbank()->falseTerm) {
             lterm = Env::getGTbank()->trueTerm;
@@ -196,76 +283,6 @@ bool Literal::eqn_parse_mixfix(TermCell **lref, TermCell * *rref) {
     return eqn_parse_infix(lref, rref);
 }
 
-/*****************************************************************************
- * Parse a literal without external sign assuming that _all_equational 
- * literals are infix. Return sign. This is for TSTP 
- ****************************************************************************/
-bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
-    Term_p lterm;
-    Term_p rterm;
-    bool positive = true;
-    Scanner* in = Env::getIn();
-    TermBank* bank = this->claPtr->GetClaTB();
-
-    //lterm = TBTermParse(in, bank);
-    lterm = bank->TBTermParseReal(in, true);
-
-    //    if(bank->inCount==0){     
-    //       claPtr->ClearClaTB();
-    //    }
-    //BOOL_TERM_NORMALIZE(lterm);
-    if (Env::getGTbank()->falseTerm == lterm) {
-        lterm = Env::getGTbank()->trueTerm;
-        positive = !positive; //修改项的 正负
-    }
-
-    TokenType equalToke = (TokenType) ((uint64_t) TokenType::NegEqualSign | (uint64_t) TokenType::EqualSign); //'!='  '='
-
-    Sigcell* sig = Env::getSig();
-    if (!lterm->IsVar() && sig->SigIsPredicate(lterm->fCode)) { //不是变元 而且 是谓词符号 ->非等词项
-        rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
-    } else {
-        if (lterm->IsVar() || sig->SigIsFunction(lterm->fCode)) { //项为变元或 函数符
-
-            if (in->TestInpTok(TokenType::NegEqualSign)) { //'!='
-                positive = !positive;
-            }
-            in->AcceptInpTok(equalToke);
-
-            rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
-
-            if (!rterm->IsVar()) {
-                if (sig->SigIsPredicate(rterm->fCode)) {
-                    in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
-                }
-                sig->SigSetFunction(rterm->fCode, true);
-            }
-        } else if (in->TestInpTok(equalToke)) { /* Now both sides must be terms */
-
-            sig->SigSetFunction(lterm->fCode, true);
-            if (in->TestInpTok(TokenType::NegEqualSign)) {
-                positive = !positive;
-            }
-            in->AcceptInpTok(equalToke);
-
-            rterm = bank->TBTermParseReal(in, true); //TBTermParse(in, bank);
-
-            if (!rterm->IsVar()) {
-                if (sig->SigIsPredicate(rterm->fCode)) {
-                    in->AktTokenError("Predicate symbol used as function symbol in preceding atom", false);
-                }
-                sig->SigSetFunction(rterm->fCode, true);
-            }
-        } else { /* It's a predicate */
-            rterm = Env::getGTbank()->trueTerm; /* Non-Equational literal */
-            sig->SigSetPredicate(lterm->fCode, true);
-        }
-    }
-    *lref = lterm;
-    *rref = rterm;
-
-    return positive;
-}
 
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
@@ -274,21 +291,47 @@ bool Literal::eqn_parse_infix(TermCell * *lref, TermCell * *rref) {
 
 VarState Literal::getVarState() {
     if (this->varState != VarState::unknown) return this->varState;
-    if (this->IsGround()) {
-        varState = VarState::noVar;
-    } else {
-        this->claPtr->SetEqnListVarState();
-    }
+    this->claPtr->SetEqnListVarState();
+    //    if (this->IsGround()) {
+    //        varState = VarState::noVar;
+    //    } else {
+    //        this->claPtr->SetEqnListVarStateByCompute();
+    //    }
     return varState;
 }
+
+bool Literal::IsShareVar(Literal* litB) {
+
+    if (this->varState == VarState::freeVar || this->varState == VarState::noVar
+            || litB->varState == VarState::freeVar || litB->varState == VarState::noVar)
+        return false;
+    //根据文字查找变元
+    set<TermCell*>&setVarTermsA = this->claPtr->mapLitposToVarTerm[this];
+    set<TermCell*>&setVarTermsB = this->claPtr->mapLitposToVarTerm[litB];
+    if ((0 == setVarTermsA.size()) || (0 == setVarTermsB.size()))
+        return false;
+
+    bool isShare = false;
+    for (TermCell* varT : setVarTermsA) {
+        if (setVarTermsB.find(varT) != setVarTermsB.end()) {
+            isShare = true;
+            break;
+        }
+    }
+    return isShare;
+
+}
+
+
+
 //不考虑变元绑定
 
-bool Literal::IsShareVar(Literal* litA) {
+bool Literal::IsShareVarByCompute(Literal* litA) {
     if (this->claPtr != litA->claPtr)return false;
     if (this->varState == VarState::freeVar || litA->varState == VarState::freeVar || this->IsGround() || litA->IsGround()) {
         return false;
     }
-     const int MaxVarNum=2000;
+    const int MaxVarNum = 2000;
     //map<TermCell*, Literal*>mapVar2Lit;
     char arrVarLit[MaxVarNum]; //假设变元项最多不超出500
     memset(arrVarLit, 0, MaxVarNum);
@@ -513,13 +556,16 @@ Literal* Literal::EqnListFlatCopy() {
 
 Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
 
-    Term_p lt = lterm->RenameCopy(newCla->GetClaTB(), deref);
-    Term_p rt = rterm->RenameCopy(newCla->GetClaTB(), deref);
-    Literal* newLit = new Literal(lt, rt, false);
-    newLit->usedCount = this->usedCount;
+    Literal* newLit = new Literal();
+    Term_p lt = lterm->RenameCopy(newCla->GetClaTB(), newLit, deref);
+    Term_p rt = rterm->RenameCopy(newCla->GetClaTB(), newLit, deref);
+
+    newLit->EqnAlloc(lt, rt, this->IsPositive());
+    //newLit->aUsedCount = this->aUsedCount;
     newLit->claPtr = newCla;
     newLit->parentLitPtr = this;
-    newLit->properties = this->properties;
+    // newLit->properties = this->properties;
+
     return newLit;
 }
 
@@ -529,8 +575,8 @@ Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
  ****************************************************************************/
 Literal* Literal::EqnCopyDisjoint() {
 
-    Term_p lt = this->getClaTermBank()->TBInsertDisjoint(lterm);
-    Term_p rt = this->getClaTermBank()->TBInsertDisjoint(rterm);
+    Term_p lt = this->getClaTermBank()->TBInsertDisjoint(lterm, this);
+    Term_p rt = this->getClaTermBank()->TBInsertDisjoint(rterm, this);
 
     Literal* handle = new Literal(lt, rt, false); /* Properties will be taken care of later! */
     handle->properties = properties;
@@ -574,6 +620,7 @@ Literal* Literal::EqnFlatCopy() {
 						    later! */
     handle->properties = eq->properties;
     if (!handle->EqnQueryProp(EqnProp::EPIsOriented)) {
+
         handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
     }
     return handle;
@@ -587,13 +634,14 @@ Literal* Literal::EqnCopyOpt() {
 
     TermBank_p calTermBank = this->getClaTermBank();
 
-    Term_p lNewTerm = calTermBank->TBInsertOpt(lterm, DerefType::DEREF_ALWAYS);
-    Term_p rNewTerm = calTermBank->TBInsertOpt(rterm, DerefType::DEREF_ALWAYS);
+    Term_p lNewTerm = calTermBank->TBInsertOpt(lterm, this, DerefType::DEREF_ALWAYS);
+    Term_p rNewTerm = calTermBank->TBInsertOpt(rterm, this, DerefType::DEREF_ALWAYS);
     Literal* handle = new Literal(lNewTerm, rNewTerm, false);
     /* Properties will be taken care of later! */
     handle->properties = properties;
     handle->EqnDelProp(EqnProp::EPMaxIsUpToDate);
     handle->EqnDelProp(EqnProp::EPIsOriented);
+
     return handle;
 }
 
@@ -626,6 +674,7 @@ Term_p Literal::EqnTermsTBTermEncode(bool EqnDirIsReverse) {
 
 void Literal::EqnFOFParse(Scanner* in, TermBank_p bank) {
     //Term_p lterm, rterm;
+
     bool positive = eqn_parse_real(in, &this->lterm, &rterm, true);
     EqnAlloc(this->lterm, this->rterm, positive);
 }
@@ -636,15 +685,20 @@ bool Literal::EqualsStuct(Literal* lit) {
     if (this->lterm->equalStruct(lit->lterm) && this->rterm->equalStruct(lit->rterm))
         return true;
     //考虑等词情况
-    if (this->EqnIsEquLit() && this->lterm->equalStruct(lit->rterm) && this->rterm->equalStruct(lit->lterm))
+    if (this->EqnIsEquLit() && lit->EqnIsEquLit()
+            && this->lterm->equalStruct(lit->rterm) && this->rterm->equalStruct(lit->lterm)) {
         return true;
+    }
+
     return false;
 }
 //检查两个文字是否相同，在同一个子句中有共同项；
 
-bool Literal::EqnEqual(Literal* lit) {
+bool Literal::EqualInSameCla(Literal* lit) {
+    assert(this->claPtr==lit->claPtr);
     bool res = (this->lterm == lit->lterm)&&(this->rterm == lit->rterm);
     if (!res) {
+
         res = (this->lterm == lit->rterm)&&(this->rterm == lit->lterm);
     }
     return res;
@@ -682,6 +736,7 @@ CompareResult Literal::Compare(Literal* lit) {
     } else { //neg-pos
         assert(lit->IsPositive());
         assert(this->IsNegative());
+
         return Ordering::InverseRelation(lit->ComparePosToNeg(this));
     }
     return CompareResult::toUncomparable; //应该到不了这个语句
@@ -791,6 +846,7 @@ CompareResult Literal::ComparePosToPos(Literal* posEqn) {
 
     if (((r1l2 == CompareResult::toLesser) || (r1l2 == CompareResult::toEqual))
             && ((l1r2 == CompareResult::toLesser) || (l1r2 == CompareResult::toEqual))) {
+
         return CompareResult::toLesser; /* Case (3) */
     }
     return CompareResult::toUncomparable;
@@ -844,6 +900,7 @@ CompareResult Literal::ComparePosToNeg(Literal* negEqn) {
 
         if (((l1l2 == CompareResult::toLesser) || (l1l2 == CompareResult::toEqual) || (l1r2 == CompareResult::toLesser || (l1r2 == CompareResult::toEqual))
                 && ((r1l2 == CompareResult::toLesser) || (r1l2 == CompareResult::toEqual) || (r1r2 == CompareResult::toLesser) || (r1r2 == CompareResult::toEqual)))) {
+
             return CompareResult::toLesser; /* Case (3) Buggy, changed by StS */
         }
     }
@@ -857,6 +914,7 @@ CompareResult Literal::ComparePosToNeg(Literal* negEqn) {
 void Literal::EqnListFree(Literal* lst) {
     Literal* handle;
     while (lst) {
+
         handle = lst;
         lst = lst->next;
         DelPtr(handle);
@@ -871,7 +929,7 @@ int Literal::EqnListRemoveDuplicates(Literal* lst) {
         handle = &(lst->next);
         while (*handle) {
 
-            if ((*handle)->isSameProps(lst)&&(*handle)->EqnEqual(lst)) {
+            if ((*handle)->isSameProps(lst)&&(*handle)->EqualInSameCla(lst)) {
                 EqnListDeleteElement(handle);
                 removed++;
             } else {

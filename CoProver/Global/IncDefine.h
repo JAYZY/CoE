@@ -23,9 +23,10 @@
 #include <list>
 #include <vector>
 #include <set>
+#include <cmath>
 //#include "Environment.h"
 #include <sys/param.h>
-#include<sys/wait.h>
+#include <sys/wait.h>
 
 #define DELOUT
 #define NDEBUG
@@ -62,17 +63,19 @@ enum class CompareResult : uint8_t {
     toNotleeq
 };
 
-enum class InfereType : uint16_t {
+enum class InfereType : uint8_t {
     NONE, //原始子句
     BI, // BinerayInference
-    UD,
+    UD, 
     RN, //rename
     RD, //REDUCT 合一下拉
-    FACTOR,
+    FACTOR,//因子归结
+    SCSA,//演绎过程生成的子句(单元)
     SCS//矛盾体分离 
 
 
 };
+
 enum class ErrorCodes {
     NO_ERROR = 0,
     PROOF_FOUND = 0,
@@ -87,14 +90,21 @@ enum class ErrorCodes {
     INCOMPLETE_PROOFSTATE = 9,
     OTHER_ERROR = 10,
     INPUT_SEMANTIC_ERROR = 11,
-    INPUT_PARAM_ERROR=12
-            
+    INPUT_PARAM_ERROR = 12
+
 };
+
 enum class ResRule : uint8_t {
-    /*主界线文字相同(A文字集中有相同文字)*/
-    ALitSameALits,
-    ALitSameBLits, /*与前面剩余文字相同(A文字与B文字相同)*/
-    BLitSameBLits, /*剩余文字与前面剩余文字相同(B文字与B文字相同)*/
+    Unknown,
+
+    ALitSameRLit, /*与前面剩余文字相同(A文字与B文字相同)*/
+    ALItPairRLit, /*与前面剩余文字直接互补(A文字与B文字相同)*/
+    ASameOrPairRLit, /*与前面剩余文字相同或互补(A文字与B文字相同)*/
+   
+    ALitSameALits, /*主界线文字相同(A文字集中有相同文字)*/
+    ALitPairALits, /*主界线文字直接互补(A文字集中有直接互补文字)*/
+    ASameOrPairALit, /*主界线文字相同或直接互补*/
+
     DelHoldLit, /*剩余文字被删除*/
     ChgPasLit, //换被归结文字
     ChgActLit, //换主界线文字(主动归结文字)    
@@ -112,10 +122,10 @@ enum class ResRule : uint8_t {
 //-101 文件格式错误
 
 enum class RESULT {
-    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102, MoreLit, MoreFuncLayer, Factor,
+    READERR = -101, READOK = -100, NO_ERROR = -1, NOCLAUSE = 0, UNSAT = 100, SAT = 101, UNKNOWN = 102, OverLimit, MoreLit, MoreFuncLayer, Factor,
     ERR_STARTID = 200, ERR_NET, ERR_OUTFOLDER, ERR_INVOKE, OUT_OF_MEMORY = 204, CPU_LIMIT_ERROR, SYS_ERROR, UnknownFile,
 
-    NOMGU/*没有合一*/, SUCCES, NOLits/*没有文字*/, RollBack, FAIL
+    NOMGU/*没有合一*/, SUCCES, NOLits/*没有文字*/, RSubsump, RollBack, FAIL
 };
 
 /*---------------------------------------------------------------------*/

@@ -26,6 +26,8 @@ public:
 
     //检查子句是否为恒真
     static bool isTautology(Clause* cla);
+    //检查子句是否为恒真     static bool IsTautology(vector<Lit_p> vlits);
+    
     // <editor-fold defaultstate="collapsed" desc="Factor Rule Check">
     static Clause* FactorOnce(Clause* cla);
 

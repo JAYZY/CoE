@@ -37,6 +37,8 @@ bool Simplification::isTautology(Clause* cla) {
     return false;
 }
 
+ 
+
 
 
 /// 检查子句genCla 是否存在替换 使得候选子句 C 归入到查询子句 G, 目的检查查询子句G是否冗余
@@ -576,7 +578,7 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
 
             uint32_t substPos = subst.Size();
             if (isMatch) {
-                
+
                 isMatch = false;
                 if (unify.SubstComputeMatch(varEqn->lterm, conEqn->lterm, &subst) && unify.SubstComputeMatch(varEqn->rterm, conEqn->rterm, &subst)) {
                     isMatch = true;
@@ -603,8 +605,9 @@ bool Simplification::ClauseSubsumeArrayLit(Literal** arrayConLit, uint16_t conLi
                 ind = 0;
             }//匹配失败
             else {
-                subst.SubstBacktrackToPos(substPos); //还原替换
-                Literal* conEqn = arrayConLit[++ind]; //varEqn匹配下一个 conEqn 文字
+                subst.SubstBacktrackToPos(substPos); //还原替换++ind
+                ++ind;
+                //Literal* conEqn = arrayConLit[++ind]; //varEqn匹配下一个 conEqn 文字
             }
         }
         //全部匹配成功

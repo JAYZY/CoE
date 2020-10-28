@@ -30,7 +30,7 @@ public:
         if (iGoal != 0) {
             return iGoal < 0;
         }
-        int uesdCount = cA->literals->usedCount - cB->literals->usedCount;
+        int uesdCount = cA->literals->aUsedCount - cB->literals->aUsedCount;
         if (uesdCount == 0)
             return cA->Lits()->StandardWeight() < cB->Lits()->StandardWeight();
         return uesdCount < 0; //优先使用使用次数少的

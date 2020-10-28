@@ -246,12 +246,12 @@ void Subst::SubstCompleteInstance(TermCell* term, TermCell* defaultBinding) {
         }
     }
 }
-bool Subst::isReverseSubst(int claId,int pos){
-    for(int i=pos+1;i<vecSubst.size();++i){
-        TermCell* term=vecSubst[i];
-        assert(term->IsVar());
-        if(term->claId!=claId)
-            return true; //逆向替换
-    }
-    return false;
-}
+//bool Subst::IsReverseReplace(int claId,int pos){
+//    for(int i=pos+1;i<vecSubst.size();++i){
+//        TermCell* term=vecSubst[i];
+//        assert(term->IsVar());
+//        if(term->claId!=claId)
+//            return true; //逆向替换
+//    }
+//    return false;
+//}

@@ -21,17 +21,21 @@ public:
     ~SortRule(void) {
     };
 
+    /// 子句中文字的排序规则
+    /// \param litA
+    /// \param litB
+    /// \return 
+
     static inline bool LitCmp(Literal* litA, Literal* litB) {
 
-        //对子句中的文字进行排序
+        //对子句中的文字进行排序 使用次数 冗余次数  稳定度  
         /*1. 优先使用次数少的文字;2,优先使用稳定低的文字 3.优先使用正文字; */
-             if (litA->usedCount != litB->usedCount)
-                   return litA->usedCount < litB->usedCount; //优先使用次数少的文字
+        if (litA->aUsedCount != litB->aUsedCount)
+            return litA->aUsedCount < litB->aUsedCount; //优先使用次数少的文字
         long weight = 0;
 
-        weight = StrategyParam::Weight_Sort == SORT_STRATEGY::ASC ? litA->StandardWeight() - litB->StandardWeight()
+        weight = StrategyParam::Weight_Sort == ActLitSteady::ASC ? litA->StandardWeight() - litB->StandardWeight()
                 : litB->StandardWeight() - litA->StandardWeight(); //稳定度由低到高
-
 
         if (0 == weight) {
             if (litA->IsNegative() && litB->IsPositive())
@@ -44,22 +48,35 @@ public:
 
     /*--------------------------------------------------------------------------
     / 被动归结文字排序（排序的文字在同一个谓词对应的文字列表中）                /
-    /1.子句所在文字数最少;2.用weight(KBO)代替稳定度，由低到高，  【文字稳定度(默认由低到高)】
+    /1.文字使用最少的;1.子句所在文字数最少;2.用weight(KBO)代替稳定度，由低到高，  【文字稳定度(默认由低到高)】
     /-------------------------------------------------------------------------*/
     static bool PoslitCmp(Literal*litA, Literal*litB) {
-
+        
+        //排序规则 : 优先选择结构相同的.再选择文字少的        
         int32_t litNumDiff = litB->claPtr->LitsNumber() - litA->claPtr->LitsNumber();
-        if (litNumDiff == 0) {
-
-            if (iActLitFuncDep>-1) {
-                assert(iActLitFuncDep>-1); //
-                return  (litA->StandardWeight() - iActLitFuncDep) < (litB->StandardWeight() - iActLitFuncDep);
-            } else
-
-                return (StrategyParam::Weight_Sort == SORT_STRATEGY::ASC) ? litB->StandardWeight() > litA->StandardWeight() //由高到低
-                : litA->StandardWeight() < litB->StandardWeight(); //由低到高 -- KOB 反应 文字的复杂程度
+        int litPostUseDiff = litB->pUsedCount - litA->pUsedCount; //因为存在回退问题,因此排序不考虑 使用次数问题
+        int structLikeDiff = 0;
+        if (iActLitFuncDep == -1) {
+            structLikeDiff = (StrategyParam::Weight_Sort == ActLitSteady::ASC) ? litB->StandardWeight() - litA->StandardWeight() //由低到高
+                    : litA->StandardWeight() - litB->StandardWeight();
+        } else {
+            structLikeDiff = (ABS((int) litB->StandardWeight() - iActLitFuncDep) - ABS((int) litA->StandardWeight() - iActLitFuncDep)); //结构相似 值越小 越相似
         }
-        return litNumDiff > 0;
+        //if (litPostUseDiff == 0) {
+        if (litNumDiff == 0) {
+            return structLikeDiff > 0;
+        }
+        //    return litNumDiff > 0;
+        //}
+        return litPostUseDiff > 0;
+        //        if (litPostUseDiff == 0) {
+        //            if (structLikeDiff == 0) {
+        //                return litNumDiff > 0;
+        //            } else {
+        //                return structLikeDiff > 0;
+        //            }
+        //        }
+        //        return litPostUseDiff > 0;    
 
     }
 

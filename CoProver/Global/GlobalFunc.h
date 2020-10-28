@@ -7,7 +7,7 @@ Changes
 -----------------------------------------------------------------------*/
 #pragma once
 #include "IncDefine.h"
-
+#include <sstream>
 //#include<bitset>
 using namespace std;
 
@@ -27,7 +27,7 @@ inline void TrimStr(string& s) {
 }
 
 
- 
+
 //查找子字符串
 
 inline int FindSubStr(string& str, const string& subStr) {
@@ -58,7 +58,7 @@ inline int FindSubStr(string& str, char subStr) {
     int strLen = str.size(), subStrLen = 1;
     if (strLen < subStrLen)
         return -1;
-    while (++pos<strLen) {
+    while (++pos < strLen) {
         if (str[pos] == subStr) {
             return pos;
         }
@@ -151,6 +151,16 @@ inline bool IsGroundLits(vector<string>& vectStrLits) {
         }
     }
     return isBase;
+}
+
+//浮点转字符串,默认保存2位
+
+inline string Float2Str(float num, int precision = 2) {
+    std::stringstream buf;
+    buf.precision(2); //覆盖默认精度
+    buf.setf(std::ios::fixed); //保留小数位
+    buf << num;
+    return buf.str();
 }
 // </editor-fold>
 

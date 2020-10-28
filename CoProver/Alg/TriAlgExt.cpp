@@ -60,6 +60,7 @@ RESULT TriAlgExt::ExtendTri() {
 
     //根据策略,获取given-clause 子句
     list<Clause*>*lstCla = fol->getWorkClas();
+
     //zj:9.12 copy all workcla
     ClauseSet* procedClaSet = new ClauseSet();
 
@@ -144,7 +145,7 @@ RESULT TriAlgExt::ExtendTri() {
                 Clause* newCla = new Clause();
 
                 newCla->bindingAndRecopyLits(vNewR);
-                if (newCla->MinFuncLayer() > StrategyParam::R_MAX_FUNCLAYER) {
+                if (newCla->minFuncLayer > StrategyParam::MaxFuncLayerOfR) {
                     DelPtr(newCla);
                     isDeduct = false;
                 } else {
@@ -184,19 +185,19 @@ RESULT TriAlgExt::ExtendTri() {
                         //--- 目前放入主界线文字的策略：按照子句中文字顺序第一个保留的文字放入主界线
                         assert(triLit);
                         triLit->EqnDelProp(EqnProp::EPIsHold);
-                        ++triLit->usedCount;
+                        ++triLit->aUsedCount;
                         vMainTri.push_back(triLit);
                         addTri = true;
                     } else {
                         isDeduct = false;
                     }
-                }                
+                }
             }
 
         } else if (vMainTri.empty()) { //匹配失败的子句也加入主界线
             assert(triLit);
             triLit->EqnDelProp(EqnProp::EPIsHold);
-            ++triLit->usedCount;
+            ++triLit->aUsedCount;
             vMainTri.push_back(triLit);
             addTri = true;
 
@@ -529,10 +530,12 @@ RESULT TriAlgExt::DeduceOnceByFullPath(Clause * actCla) {
     vector<Literal*> vDelActLit;
     vDelActLit.reserve(8);
     actCla->SetAllLitsHold();
-    uint32_t uInd = actCla->uFirstURInd; //单元子句 匹配起始位置
+
     Literal* actLitPtr = actCla->literals;
     bool isChFirstLit = false;
     bool isReduce = false;
+
+    uint32_t uInd = actLitPtr->uUnitMatchInd; //单元子句 匹配起始位置
     //=== 遍历子句中的所有文字
     for (; actLitPtr; actLitPtr = actLitPtr->next) {
         if (!actLitPtr->EqnQueryProp(EqnProp::EPIsHold)) {
@@ -603,7 +606,7 @@ RESULT TriAlgExt::DeduceOnceByFullPath(Clause * actCla) {
         newCla->bindingAndRecopyLits(vHoldLits);
 
         //*** 检查新子句函数层限制
-        if (newCla->MinFuncLayer() > StrategyParam::R_MAX_FUNCLAYER) {
+        if (newCla->MinFuncLayer() > StrategyParam::MaxFuncLayerOfR) {
             DelPtr(newCla);
         } else {
             //*** 做Factor Condense Rule ---                
@@ -668,7 +671,7 @@ bool TriAlgExt::UCTriRed(Literal* aLitPtr, vector<Literal*> &vNewR, vector<Liter
             } else {
                 res = false;
                 vCandUnitClas[uInd]->claPtr->priority -= 1;
-                aLitPtr->usedCount += StrategyParam::LIT_REDUNDANCY_WIGHT;
+                aLitPtr->aUsedCount += StrategyParam::LitRedunancyWeight;
             }
         }
         //--- Rule check End
@@ -687,7 +690,7 @@ bool TriAlgExt::UCTriRed(Literal* aLitPtr, vector<Literal*> &vNewR, vector<Liter
                 delUnitCla.push_back(candUnitCal);
                 //--- 变名后的单元子句都不添加到主界线
             }
-            ++aLitPtr->usedCount;
+            ++aLitPtr->aUsedCount;
             //            //--- 如果是共享变元则需要充分使用--添加回退点
             //            if (aLitPtr->getVarState() == VarState::shareVar) {
             //                RollBackPoint* rbP = new RollBackPoint();
@@ -875,7 +878,7 @@ RESULT TriAlgExt::MainTriReduce(Literal **actLit, Clause* actCla, vector<Literal
                         //return ResRule::RSubsump; 
                         resReduce = RESULT::FAIL; //子句冗余
 
-                        actCla->priority -= StrategyParam::CLA_REDUNDANCY_WIGHT;
+                        actCla->priority -= StrategyParam::ClaRedundancyWeight;
                     } else {
 
                     }
@@ -1158,6 +1161,7 @@ ResRule TriAlgExt::CheckUnitRule(Literal* actLitPtr, vector<Literal*>&vDelActLit
 ResRule TriAlgExt::RuleCheck(Literal* alitPtr, vector<Literal*>& vNewR) {//, uint8_t*vDelLits
     Clause* actCla = alitPtr->claPtr;
     vector<Literal*>vDelLits;
+
     vDelLits.reserve(actCla->LitsNumber() - 1);
     ResRule resRule = ResRule::RULEOK;
 

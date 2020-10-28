@@ -23,41 +23,44 @@ StrategyParam::~StrategyParam() {
 }
 
 // <editor-fold defaultstate="collapsed" desc="IO相关">
-InFormat StrategyParam::IFormat=InFormat::CNF;
+InFormat StrategyParam::IFormat = InFormat::CNF;
 // </editor-fold>
 
 
-uint8_t StrategyParam::CLA_NOMGU_WIGHT = 3; //子句起步找不到归结,改变的优先级 (说明该子句不适合起步)
-uint8_t StrategyParam::CLA_REDUNDANCY_WIGHT = 2; //子句归结中发现冗余,改变的优先级 
-uint8_t StrategyParam::CLA_OVERLIMIT_WIGHT = 1; //子句超过限制,改变的优先级
+int8_t StrategyParam::ClaAllOverFuncLayer = -10; //子句中所有文字超过限制,改变的优先级
+int8_t StrategyParam::ClaRedundancyWeight = -3; //子句归结中发现冗余,改变的优先级 
 
-uint8_t StrategyParam::LIT_REDUNDANCY_WIGHT = 2; //文字归结中发现冗余,改变的优先级 (说明该文字不适合起步)
-uint8_t StrategyParam::LIT_OVERLIMIT_WIGHT = 2; //文字超过限制,改变的优先级
+int8_t StrategyParam::LitRedunancyWeight = -2; //文字归结中发现冗余,改变的优先级 
+int8_t StrategyParam::LitOverFuncLayer = -2; //文字超过限制,改变的优先级
 //初始化参数==================================	
 
 bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
-bool StrategyParam::IS_ALitEqualR = false;
-bool StrategyParam::IS_ALitNoEqual = false;
+bool StrategyParam::RuleALitsAllowEqualR = false;
+bool StrategyParam::RuleALitsAllowEqual = false;
 bool StrategyParam::ISFactor = true;
-bool StrategyParam::IS_RollBackGoalPath=false;
+bool StrategyParam::IS_RollBackGoalPath = false;
+///谓词符号是否分离单元子句和非单元子句的
+bool StrategyParam::ISSplitUnitCalIndex=true;
+
 
 ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //Num_Weight_Prio;
-POSLIT_STEADY StrategyParam::SEL_POSLIT_STEADY = POSLIT_STEADY::NumDesc;
-SORT_STRATEGY StrategyParam::Weight_Sort=SORT_STRATEGY::DESC;
+PasLitSteady StrategyParam::SEL_POSLIT_STEADY = PasLitSteady::NumDesc;
+ActLitSteady StrategyParam::Weight_Sort = ActLitSteady::DESC;
 
 
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;
-int32_t StrategyParam::IterCount_LIMIT = INT_MAX;
+uint32_t StrategyParam::IterCount_LIMIT = UINT32_MAX;
 
 
-uint32_t StrategyParam::MaxLitNumOfR = 5; //R 的最大文字数限制 △完成后，产生的新子句文字数限制
-uint32_t StrategyParam::MaxLitsNumOfTriNewCla = 1; //△过程中生成新最大文字数限制
-uint32_t StrategyParam::R_MAX_FUNCLAYER = 3;
+uint32_t StrategyParam::MaxLitNumOfR = 2; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
+uint32_t StrategyParam::MaxFuncLayerOfR = 1;    //R 的最大函数嵌套层
+
+uint32_t StrategyParam::MaxLitsNumOfTriNewCla =3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
 uint32_t StrategyParam::MaxLitNumOfNewCla = 1; //完成△中，新子句加入到子句集的文字数限制
 
 
 
 bool StrategyParam::isFullUC = true;
-bool StrategyParam::isOutTPTP=false;
+bool StrategyParam::isOutTPTP = false;
 

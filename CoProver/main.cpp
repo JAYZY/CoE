@@ -15,6 +15,8 @@
 #include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
 #include "Alg/Resolution.h"
+    //    int olds = size / 3;
+    //    int *x;
 #include "INOUT/FileOp.h"
 #include "Inferences/InferenceInfo.h"
 #include "Global/Environment.h"
@@ -25,8 +27,6 @@ using namespace std;
 
 int main(int argc, char** argv) {
     //    int size = 1000000000;
-    //    int olds = size / 3;
-    //    int *x;
     //    x = new int[size];
     //    double initial_time = cpuTime();
     //    memset(x, 0, size * sizeof (int));
@@ -60,9 +60,9 @@ int main(int argc, char** argv) {
     char *path = NULL;
     path = getcwd(NULL, 0);
     puts(path);
-
     free(path);
 
+    
     if (StrategyParam::IFormat == InFormat::FOF) {
         double startTime = CPUTime();
         string cmd = "timeout 3600  ./eprover2.1 " + Env::tptpFileName + " --cnf --output-file=" + FileOp::getInstance()->cnfFileName; //判断文件名称;
@@ -121,7 +121,8 @@ int main(int argc, char** argv) {
         //  res = resolution.BaseAlgByOnlyBinaryCla(fol);
         // if (res == RESULT::UNKNOWN) {
         //res = resolution.BaseAlg(&fol); //使用记录路径的方式进行路径回退
-        res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
+        res = resolution.BaseAlgByLearn(&fol); //使用记录路径的方式进行路径回退
+        //res = resolution.BaseExtendAlg(&fol); //使用记录路径的方式进行路径回退
         //}
     }
     string strRes = "";

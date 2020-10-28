@@ -48,7 +48,7 @@ GroundTermBank::~GroundTermBank() {
 
 TermCell* GroundTermBank::GBInsert(TermCell* term) {
     assert(term);
-    assert(0 == term->uVarCount);
+    assert(0 == term->GetVarCount());
     for (int i = 0; i < term->arity; ++i) {
         term->args[i] = GBInsert(term->args[i]);
     }
@@ -64,7 +64,7 @@ TermCell* GroundTermBank::GBInsert(TermCell* term) {
 TermCell* GroundTermBank::GTermTopInsert(TermCell* t) {
     assert(t);
     assert(!t->IsVar()); //确保插入的项不能是变元
-    assert(0 == t->uVarCount);
+    assert(0 == t->GetVarCount());
     TermCell* newTerm = termStore->TermCellStoreInsert(t); //插入新项到 termStore中
 
     if (newTerm) /* TermCell 已经存在,就需要delete t. node already existed, just add properties */ {
@@ -75,7 +75,9 @@ TermCell* GroundTermBank::GTermTopInsert(TermCell* t) {
         t->entryNo = ++(inCount);
         /* Groundness may change below */
         t->TermCellSetProp(TermProp::TPIsGround);
-        assert(t->weight == t->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
+        t->SetMaxVarDepth(0);
+        
+        assert(t->GetTermWeight() == t->ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
         assert((t->IsGround() == 0) == (t->TBTermIsGround() == 0));
     }
     return t;

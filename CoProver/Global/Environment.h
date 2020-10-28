@@ -15,13 +15,13 @@
 #include "Terms/GroundTermBank.h" 
 
 extern int TmpErrno;
-
+//class GroundTermBank;
 class Env {
 private:
 
     static Scanner* in;
     
-    static GTermBank_p GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
+    static GroundTermBank* GTBank; // 全局唯一一个基项bank 存储共享基项term 只存储不删除.
     static Sig_p sig; // 全局唯一一个sig 存储项相关的符号 只存储不删除
 public:
     static IOFormat parseFormat;  //文件的输入类型
@@ -70,7 +70,7 @@ public:
         return in;
     }
 
-    static GTermBank_p getGTbank() {
+    static GroundTermBank* getGTbank() {
         if (!GTBank)
             GTBank = new GroundTermBank();
         assert(GTBank);

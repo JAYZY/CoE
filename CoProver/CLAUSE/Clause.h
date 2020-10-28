@@ -24,17 +24,17 @@ using namespace std;
 /*---------------------------------------------------------------------*/
 
 /* 枚举 -- 子句属性类型 */
-enum class ClauseProp {
+enum class ClauseProp : uint32_t {
     CPIgnoreProps = 0, /* For masking propertiesout */
     CPInitial = 1, /* Initial clause */
     CPInputFormula = 2 * ClauseProp::CPInitial, /* _Really_ initial clause in TSTP sense */
     CPIsProcessed = 2 * ClauseProp::CPInputFormula, /* Clause has been processed previously (用这个属性表示子句中处理过恒真文字和相同文字)*/
-    CPIsOriented = 2 * ClauseProp::CPIsProcessed, /* Term and literal comparisons are up to date */
-    CPIsDIndexed = 2 * ClauseProp::CPIsOriented, /* Clause is in the demod_index of its set */
-    CPIsSIndexed = 2 * ClauseProp::CPIsDIndexed, /* Clause is in the fvindex of its set */
-    CPIsGlobalIndexed = 2 * ClauseProp::CPIsSIndexed, /* Clause is in the Subterm FPIndex  */
-    CPGroundCla = 2 * ClauseProp::CPIsGlobalIndexed, /* Rewritability of the clause has been established. Temporary property. */
-    CPDeleteClause = 2 * ClauseProp::CPGroundCla, /* Clause should be deleted for some reason */
+    CPIsOriented = 2 * ClauseProp::CPIsProcessed, /* Term and literal comparisons are up to date(子句中文字完成排序 ) */
+    CPGroundCla = 2 * ClauseProp::CPIsOriented, /* 基子句 */
+    CPHasSharedVarCla = 2 * ClauseProp::CPGroundCla, /* 含共享变元子句 */
+    CPCopyCla = 2 * ClauseProp::CPHasSharedVarCla,
+    CPDeleteClause = 2 * CPCopyCla, /* Clause should be deleted for some reason */
+    /*子句读取时候的类型*/
     CPType1 = 2 * ClauseProp::CPDeleteClause, /* Three bits used to encode the Clause type, taken from TPTP or  TSTP input format or assumed */
     CPType2 = 2 * ClauseProp::CPType1,
     CPType3 = 2 * ClauseProp::CPType2,
@@ -47,24 +47,7 @@ enum class ClauseProp {
     CPTypeNegConjecture = ClauseProp::CPType1 | ClauseProp::CPType3, /* Clause is an negated conjecture (used for refutation) */
     CPTypeQuestion = ClauseProp::CPType2 | ClauseProp::CPType3, /* `Clause is a question only used for FOF, really. */
     CPTypeWatchClause = ClauseProp::CPType1 | ClauseProp::CPType2 | ClauseProp::CPType3, /* Clause is intended as a watch list clause */
-    CPIsIRVictim = 2 * ClauseProp::CPType3, /* Clause has just been simplified in interreduction */
-    CPOpFlag = 2 * ClauseProp::CPIsIRVictim, /* Temporary marker */
-    CPIsSelected = 2 * ClauseProp::CPOpFlag, /* For analysis of selected clauses only */
-    CPIsFinal = 2 * ClauseProp::CPIsSelected, /* Clause is a final clause, i.e. a clause that might be used by a postprocessor. */
-    CPIsProofClause = 2 * ClauseProp::CPIsFinal, /* Clause is part of a successful proof. */
-    CPIsSOS = 2 * ClauseProp::CPIsProofClause, /* Clause is in the set of support.*/
-    CPNoGeneration = 2 * ClauseProp::CPIsSOS, /* No generating inferences with this clause are necessary */
-    CP_CSSCPA_1 = 2 * ClauseProp::CPNoGeneration, /* CSSCPA clause sources */
-    CP_CSSCPA_2 = 2 * ClauseProp::CP_CSSCPA_1,
-    CP_CSSCPA_4 = 2 * ClauseProp::CP_CSSCPA_2,
-    CP_CSSCPA_8 = 2 * ClauseProp::CP_CSSCPA_4,
-    CP_CSSCPA_Mask = ClauseProp::CP_CSSCPA_1 | ClauseProp::CP_CSSCPA_2 | ClauseProp::CP_CSSCPA_4 | ClauseProp::CP_CSSCPA_8,
-    CP_CSSCPA_Unkown = 0,
-    CPIsProtected = 2 * ClauseProp::CP_CSSCPA_8, /* Unprocessed clause has been used in simplification and cannot be deleted even if parents die. */
-    CPWatchOnly = 2 * ClauseProp::CPIsProtected,
-    CPSubsumesWatch = 2 * ClauseProp::CPWatchOnly,
-    CPLimitedRW = 2 * ClauseProp::CPSubsumesWatch, /* Clause has been processed and hence can only be rewritten in limited ways. */
-    CPIsRelevant = 2 * ClauseProp::CPLimitedRW /* Clause is selected as relevant for a proof attempt (used by SInE). */
+
 
 };
 //子句的信息
@@ -132,25 +115,36 @@ class Clause {
 private:
     /*同一子句中相同变元共享同一个内存地址--而且是有序的*/
     TermBank_p claTB;
-    //记录变元与文字的对应关系,变元x1 有文字L1，L2，
-    map<int, uint16_t>mapVarToLitpos;
 public:
+    //记录变元与文字的对应关系,变元x1 有文字L1，L2，  变元索引,文字pos  [待优化] 后续可以考虑用 二进制位来简化 x|=(1<<litPos)
+    map<TermCell*, set<Literal*>> mapVarTermToLitpos;
+    //记录文字位置与文字的对应关系,变元x1 有文字L1，L2，  变元索引,文字pos
+    map<Literal*, set<TermCell*>> mapLitposToVarTerm;
+    InfereType infereType; //子句演绎类型; uint8_t
+
+    //------句相关属性-------    
+    uint16_t gapWithGoal; //记录与目标子句之间的距离 初始化为0 表示与目标子句无关 与目标子句直接互补+1 子目标+1(一层目标子句 +1)
+    uint16_t maxFuncLayer, minFuncLayer; //文字中最大的函数嵌套层数  
     uint16_t negLitNo; //负文字个数
-    uint16_t posLitNo; //正文字个数    
-    //uint16_t maxFuncLayer; //文字中最大的函数嵌套层数
+    uint16_t posLitNo; //正文字个数
+    uint16_t claMinWeight, claMaxWeight; //子句中最小文字权重,最大文字权重
+
+
+    uint32_t userTimes; //子句使用次数  < 2^32   
+    uint32_t claWeight; //子句权重 固定不变 体现子句的稳定度(算法1.字符的简单和;2.稳定度算法),例:f(x) = 2+1=3  f(a)=4; 越大越复杂     
+
+    float priority; //优先级 --(越大越好,目标子句为最大,与目标子句无关则为0 )
+
     uint32_t ident; //子句创建时确定的唯一识别子句的id   PS:一般为子句编号     
-    uint32_t weight; //子句权重
+    ClauseProp properties; //子句属性 uint32_t
 
-    int priority; //优先级 -- 越大越好, 若为目标子句优先,则目标子句的优先级 一直保持最大.当然起步的时候需要策略控制避免永远都是由目标子句起步
-    ClauseProp properties; //子句属性
-    ClauseInfo* info; //子句信息    
-    set<uint32_t> parentIds; //父子句编号集;
-    InfereType infereType; //子句演绎类型;
-    Literal* literals; //文字列表   
-
-    //------ 记录第一个文字的单元下拉位置
+    //    //------ 记录第一个文字的单元下拉位置 放入文字
     uint32_t uFirstURInd;
 
+    ClauseInfo* info; //子句信息    
+    set<uint32_t> parentIds; //父子句编号集;
+
+    Literal* literals; //文字列表   
 
 public:
     /*---------------------------------------------------------------------*/
@@ -177,10 +171,11 @@ public:
     /*                       Inline  Function                              */
     /*---------------------------------------------------------------------*/
     //
+    // <editor-fold defaultstate="collapsed" desc="inline 相关属性">
 
     inline TermBank_p GetClaTB() {
         if (claTB == nullptr)
-            claTB = new TermBank(ident);
+            claTB = new TermBank(this);
         return claTB;
     }
 
@@ -197,70 +192,42 @@ public:
         return literals;
     }
 
-    inline void PutFirstLitToLast() {
-        assert(literals);
-        if (1 == this->LitsNumber())
-            return;
-        Literal* p, *q;
-        q = this->literals;
-        this->literals = literals->next;
-        p = this->literals;
-        while (p->next) {
-            p = p->next;
-        }
-        p->next = q;
-        q->next = nullptr;
-    }
-    /// 得到子句的最小函数嵌套层
-    /// \return 
-
-    inline uint16_t MinFuncLayer() {
-
-        Literal* lit = this->literals;
-        uint16_t minFuncLayer = lit->MaxFuncLayer();
-        while (true) {
-            lit = lit->next;
-            if (lit == nullptr)
-                break;
-            minFuncLayer = MIN(minFuncLayer, lit->MaxFuncLayer());
-        }
-        return minFuncLayer;
-    }
-    /// 检查子句中是否有文字满足函数嵌套要求
-    /// \return 第一个满足要求的文字， nullptr 均不符合要求
-
-    inline Literal* CheckDepthLimit() {
-        Literal* litP = this->literals;
-        while (litP) {
-            if (litP->CheckDepthLimit()) {
-                return litP;
-            }
-            litP = litP->next;
-        }
-        return nullptr;
-    }
-
     inline uint32_t GetClaId() {
         return this->ident;
     }
 
     inline void GetWeight(uint64_t value) {
         assert(value>-1);
-        weight = value;
+        claWeight = value;
     }
 
     inline uint32_t GetWeight() {
-        return weight;
+        return claWeight;
     }
 
     inline uint16_t LitsNumber() const {
         return posLitNo + negLitNo;
     }
 
+    inline int GetMaxVarId() {
+        int maxVarId = 0;
+        if (claTB == nullptr || claTB->GetShareVar() == nullptr)
+            maxVarId = 0;
+        else {
+            maxVarId = claTB->GetShareVar()->VarBankGetVCount();
+        }
+        return maxVarId;
+    }
+
+
+    /// 空子句
+    /// \return 
+
     inline bool ClauseIsEmpty() {
         return 0 == LitsNumber();
     }
-
+    /// 是否为单元子句
+    /// \return 
     inline bool isUnit() {
         return 1 == (posLitNo + negLitNo);
     }
@@ -275,16 +242,88 @@ public:
         return (0 == posLitNo && 1 == negLitNo);
     }
 
-    inline bool isDel() {
-        return this->ClauseQueryProp(ClauseProp::CPDeleteClause);
+    /// 是否为基子句
+    /// \param isCompute 是否重新计算(默认=false)
+    /// \return 
+
+    inline bool isGroundCla(bool isCompute = false) {
+        bool isGroundCla = false;
+        if (isCompute) {
+            if (claTB == nullptr || claTB->GetShareVar() == nullptr || claTB->GetShareVar()->VarBankGetVCount() == 0) {
+                isGroundCla = true;
+                this->ClauseSetProp(ClauseProp::CPGroundCla);
+                this->ClauseDelProp(ClauseProp::CPHasSharedVarCla);
+            } else {
+                isGroundCla = false;
+                this->ClauseDelProp(ClauseProp::CPGroundCla);
+            }
+        } else {
+            isGroundCla = QueryProp(properties, ClauseProp::CPGroundCla);
+        }
+        return isGroundCla;
+    }
+    /// 是否在子句中有共享变元
+    /// \return 
+
+    inline bool HasShareVarInCla() {
+        return QueryProp(properties, ClauseProp::CPHasSharedVarCla);
+    }
+    /// 通过变元共享列表来判断是否有共享变元存在
+    /// \return 
+
+    inline bool HasShareVarInClaByVarLst() {
+        return (this->mapVarTermToLitpos.size() < this->GetMaxVarId());
     }
 
-    inline bool isGoal() {
-        return posLitNo == 0;
+    inline void SetShareVarInCla() {
+        DelProp(properties, ClauseProp::CPGroundCla);
+        SetProp(properties, ClauseProp::CPHasSharedVarCla);
     }
+
+
+    ///子句中所有变元均为独立变元
+
+    inline bool IsAllAloneVarInCla() {
+        return !HasShareVarInCla()&&!isGroundCla(true);
+    }
+
+    /// 是否为删除子句
+    /// \return 
+
+    inline bool isDel() {
+        return QueryProp(properties, ClauseProp::CPDeleteClause);
+    }
+
+    /// 是否为目标子句
+    /// \return 
+
+    inline bool isGoal() { //目标子句的判断 由输入的子句标注
+        return QueryProp(properties, ClauseProp::CPTypeNegConjecture);
+    }
+    //是否为拷贝的子句
+
+    inline bool isCopeyCla() {
+        return QueryProp(properties, ClauseProp::CPCopyCla);
+    }
+
+    inline void SetCopyClaProp() {
+        this->ClauseSetProp(ClauseProp::CPCopyCla);
+    }
+    /// 无正文字且负文字个数>1
+    /// \return 
+
+    inline bool isNoPos() {
+        return (0 == posLitNo && negLitNo > 1);
+    }
+    /// 是否为原始子句
+    /// \return 
 
     inline bool isOrial() {
         return this->ClauseQueryProp(ClauseProp::CPInitial);
+    }
+
+    inline bool isAxiom() {
+        return this->ClauseQueryProp(ClauseProp::CPTypeAxiom);
     }
 
     inline void SetOrigin() {
@@ -333,14 +372,60 @@ public:
     }
 
     inline int ClauseQueryCSSCPASource() {
-        return ((int) properties & (int) ClauseProp::CP_CSSCPA_Mask) / (int) ClauseProp::CP_CSSCPA_1;
+        return 0; //((int) properties & (int) ClauseProp::CP_CSSCPA_Mask) / (int) ClauseProp::CP_CSSCPA_1;
     }
-
-
+    // </editor-fold>
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
     //
+
+    inline void PutFirstLitToLast() {
+        assert(literals);
+        if (1 == this->LitsNumber())
+            return;
+        Literal* p, *q;
+        q = this->literals;
+        this->literals = literals->next;
+        p = this->literals;
+        while (p->next) {
+            p = p->next;
+        }
+        p->next = q;
+        q->next = nullptr;
+    }
+    /// 得到子句的最小函数嵌套层
+    /// \return 
+
+    inline uint16_t MinFuncLayer() {
+
+        Literal* lit = this->literals;
+        uint16_t minFuncLayer = lit->MaxFuncLayer();
+        while (true) {
+            lit = lit->next;
+            if (lit == nullptr)
+                break;
+            minFuncLayer = MIN(minFuncLayer, lit->MaxFuncLayer());
+        }
+        return minFuncLayer;
+    }
+    /// 检查子句中是否有文字满足函数嵌套要求
+    /// \return 第一个满足要求的文字， nullptr 均不符合要求
+
+    inline Literal* CheckDepthLimit() {
+        Literal* litP = this->literals;
+        while (litP) {
+            if (litP->CheckDepthLimit()) {
+                return litP;
+            }
+            litP = litP->next;
+        }
+        return nullptr;
+    }
+
+
+
+
     void RecomputeLitCounts();
     //重新绑定文字列表,并重新计算
     void bindingLits(Literal * lit);
@@ -353,8 +438,8 @@ public:
     void ClausePrintTPTPFormat(FILE * out);
     void ClauseTSTPPrint(FILE* out, bool fullterms, bool complete);
     void ClauseTSTPCorePrint(FILE* out, bool fullterms);
-
-    void ClauseStandardWeight();
+    ///重新计算子句的权重--字符权重
+    void ClaRecomputStdWeight();
 
     void EqnListTSTPPrint(FILE* out, Literal* lst, string sep, bool fullterms);
     //得到字符串
@@ -366,16 +451,18 @@ public:
     Clause * RenameCopy(Literal * except);
 
 
-    //设置文字的变元共享状态
+    //设置文字的变元共享状态--新的方法,查找对应表
     void SetEqnListVarState();
+    //设置文字的变元共享状态--旧方法遍历文字和遍历子项计算
+    void SetEqnListVarStateByCompute();
 
     uint16_t calcMaxFuncLayer() const;
 
     Literal * GetFirstHoldLit()const;
     Literal * FindMaxLit();
     void GetVecHoldLit(vector<Literal*>&vHoldLits)const;
-    
-    
+
+
     //用模板+仿函数来实现 根据制定比较规则查找最大的Literal
 
     template<typename FunObj, typename T >

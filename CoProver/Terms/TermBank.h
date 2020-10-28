@@ -22,6 +22,7 @@
 #include "TermCellStore.h"
 #include "INOUT/Scanner.h"
 #include "TermCell.h"
+class Literal;
 
 class TermBank {
 private:
@@ -29,7 +30,7 @@ private:
     static bool TBPrintDetails;
     VarBank* shareVars; /* 子句共享变元存储对象 -- Information about (shared) variables */
 public:
-    uint16_t claId;
+    Clause* pCla;
     unsigned long inCount; /* TermBank中项个数统计 -- How many terms have been inserted? */
     SplayTree<PTreeCell>freeVarSets; /*项中的自由变元,不能共享的. Associates a term (or Tformula) with the set of its free variables.
                                         * Only initalized for specific operations and then reset again */
@@ -51,7 +52,7 @@ public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
     /*---------------------------------------------------------------------*/
-    TermBank(uint16_t claId); //Sig_p sig);   
+    TermBank(Clause* claptr); //Sig_p sig);   
     virtual ~TermBank();
 
     /*---------------------------------------------------------------------*/
@@ -61,7 +62,7 @@ public:
     // <editor-fold defaultstate="collapsed" desc="Inline Function">   
 
     inline long TBStorageMEM() {
-        return sizeof (TermBank) + sizeof (TermCell) * termStore->entries +termStore->argCount * sizeof (Term_p);
+        return sizeof (TermBank) + sizeof (TermCell) * termStore->entries + termStore->argCount * sizeof (Term_p);
     }
 
     /*清除所有变量名称*/
@@ -72,7 +73,7 @@ public:
 
     /* 返回非变元项个数 */
     inline long TBNonVarTermNodes() {
-        return termStore->entries;
+        return termStore ? termStore->entries : 0;
     }
 
     /* 返回神仙数字 项个数+函数项的元个数 */
@@ -90,24 +91,31 @@ public:
         term->TermPrint(out, DerefType::DEREF_NEVER);
     }
 
-    inline TermCell* VarInert(const string& name, uint16_t claId) {//,int litPos
-        if (shareVars == nullptr) {
-            shareVars = new VarBank();
-        }
-        return shareVars->Insert(name, claId);
-    }
-
-    inline TermCell* VarInert(FunCode fCode, uint16_t claId) {//,int litPos
-        if (shareVars == nullptr) {
-            shareVars = new VarBank();
-        }
-        return shareVars->Insert(fCode, claId);
-    }
-
     inline VarBank* GetShareVar() {
         return shareVars;
     }
+    /// 将项t 插入到存储列表中
+    /// \param t
+    /// \return 
+
+    inline TermCell* TermInsert(TermCell* t) {
+        if (termStore == nullptr) {
+            termStore = new TermCellStore(8);
+        }
+        return termStore->TermCellStoreInsert(t);
+    }
+
+
     // </editor-fold>
+
+    /// 记录变元项与文字位置的相互对应关系
+    /// \param litPos
+    /// \param t
+
+    void SetVartermMapLitpos(Literal* litPtr, TermCell* t);
+    TermCell* VarInert(const string& name, Literal* litPtr);
+
+    TermCell* VarInert(FunCode fCode, Literal* litPtr);
 
     static inline bool TBTermEqual(TermCell* t1, TermCell* t2) {
         return (t1 == t2);
@@ -117,6 +125,7 @@ public:
         return super->TermIsSubterm((term), DerefType::DEREF_NEVER, TermEqulType::PtrEquel);
     }
 
+
 private:
     /*---------------------------------------------------------------------*/
     /*                    Member Function[private]                         */
@@ -124,13 +133,13 @@ private:
     void tb_print_dag(FILE *out, NumTree_p spNode);
 
     /* 转换一个子项  i.e. a term which cannot start with a predicate symbol. */
-    TermCell* tb_subterm_parse(Scanner* in);
+    TermCell* tb_subterm_parse(Scanner* in, Literal* litptr);
 
     /*读取一个项的子项列表 Parse a list of terms  */
-    int tb_term_parse_arglist(Scanner* in, TermCell*** arg_anchor, bool isCheckSymbProp); //this is Old
-    int tb_term_parse_arglist(Scanner* in, TermCell* term, bool isCheckSymbProp);
+    //int tb_term_parse_arglist(Scanner* in, TermCell*** arg_anchor, int LitPos, bool isCheckSymbProp); //this is Old
+    int tb_term_parse_arglist(Scanner* in, TermCell* term, Literal* LitPtr, bool isCheckSymbProp);
     /* Parse a LOP list into an (shared) internal $cons list. */
-    TermCell* tb_parse_cons_list(Scanner* in, bool isCheckSymbProp);
+    TermCell* tb_parse_cons_list(Scanner* in, Literal* LitPtr, bool isCheckSymbProp);
 
     TermCell* tb_termtop_insert(TermCell* t);
 
@@ -152,7 +161,7 @@ public:
     TermCell* DefaultSharedTermCellAlloc(void);
 
     /* 解析scanner对象为一个Term,并存储到termbank中. */
-    TermCell* TBTermParseReal(Scanner* in, bool isCheckSymbProp);
+    TermCell* TBTermParseReal(Scanner* in, Literal* litptr, bool isCheckSymbProp);
 
     /* Make ref point to a term of the same structure as *ref, but with properties prop set. 
      * Properties do not work for variables! */
@@ -168,7 +177,7 @@ public:
     /* 插入项　t 到　TermBank 中．新项t的属性 0; 与TBInsert比较多了一个属性初始化为0; */
     // TermCell* TBInsertNoProps(TermCell* term, DerefType deref);
 
-    TermCell* TBInsertOpt(TermCell* term, DerefType deref);
+    TermCell* TBInsertOpt(TermCell* term, Literal* litptr, DerefType deref);
 
     //TermCell* TBInsertRepl(TermCell* term, DerefType deref, TermCell* old, TermCell* repl);
     /* 插入项t到TermBank 中,判断是否为基项或存在绑定,该方法用于rewrite  */
@@ -187,7 +196,7 @@ public:
     void TBPrintBankInOrder(FILE* out);
     void TBPrintTerm(FILE* out, TermCell* term, bool fullterms, DerefType deref = DerefType::DEREF_ALWAYS);
     void TBPrintTermCompact(FILE* out, TermCell* term);
-    TermCell* TBInsertDisjoint(TermCell* term);
+    TermCell* TBInsertDisjoint(TermCell* term, Literal* litptr);
 };
 typedef TermBank *TermBank_p;
 #endif /* TERMBANK_H */

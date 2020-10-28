@@ -40,7 +40,7 @@ public:
     /*---------------------------------------------------------------------*/
     //
 
-    inline FunCode VarBankGetVCount() {
+    inline int  VarBankGetVCount() {
         return vctFCodes.size();
     };
 

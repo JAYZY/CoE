@@ -15,6 +15,7 @@
 #include "INOUT/FileOp.h"
 #include "CLAUSE/Clause.h"
 #include "VarBank.h"
+
 bool TermCell::TermPrintLists = true;
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[private]                          */
@@ -46,10 +47,10 @@ TermCell* TermCell::term_check_consistency_rek(SplayTree<PTreeCell>&branch, Dere
 /*                    Constructed Function                             */
 
 /*---------------------------------------------------------------------*/
-TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), weight(DEFAULT_FWEIGHT) {
-    
-    uMaxFuncLayer=0;
-             
+TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(0), arity(0), claId(0), binding(nullptr), args(nullptr), uTermWeight(DEFAULT_FWEIGHT) {
+
+    this->uMaxFuncLayer = 0;
+    this->uMaxVarDepth = 0;
     // zjweight = 0.0f;
     //rw_data.nf_date[0] = SysDateCreationTime();
     //rw_data.nf_date[1] = SysDateCreationTime();
@@ -57,9 +58,9 @@ TermCell::TermCell() : properties(TermProp::TPIgnoreProps), fCode(0), uVarCount(
 
 /*构造函数 - 创建一个constant term 如:ａ ,b */
 TermCell::TermCell(long symbol) : TermCell() {
-    weight = DEFAULT_FWEIGHT;
+    this->uTermWeight = DEFAULT_FWEIGHT;
     //  zjweight = 1.0f;
-    fCode = symbol;
+    this->fCode = symbol;
 }
 
 /*构造函数 - 创建一个function term 函数符如:f */
@@ -94,47 +95,131 @@ TermCell::TermCell(long f_code, int arity) : TermCell() {
  * [重要方法]-- 根据scanner 创建term
  * Parse a term from the given scanner object into the internal termrepresentation.
  ****************************************************************************/
-TermCell* TermCell::TermParse(Scanner* in, TermBank* tb) {
-    string idStr;
-    Sig_p sig = Env::getSig();
-    TermCell* handle = nullptr;
-    VarBank_p vars = tb->GetShareVar();
-    if (Sigcell::SigSupportLists && in->TestInpTok(TokenType::OpenSquare)) {
-        handle = parse_cons_list(in, tb);
-    } else {
-        FuncSymbType idType;
-        if ((idType = TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
-            handle = vars->Insert(idStr, tb->claId);
-        } else {
-            handle = new TermCell();
-            if (in->TestInpTok(TokenType::OpenBracket)) {
-                if ((idType == FuncSymbType::FSIdentInt)&&(sig->distinctProps & FPIsInteger)) {
-                    in->AktTokenError("Number cannot have argument list (consider --free-numbers)", false);
-                }
-                if ((idType == FuncSymbType::FSIdentObject)&&(sig->distinctProps & FPIsObject)) {
-                    in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
-                }
+//TermCell* TermCell::TermParse(Scanner* in, TermBank* tb) {
+//    string idStr;
+//    Sig_p sig = Env::getSig();
+//    TermCell* handle = nullptr;
+//    VarBank_p vars = tb->GetShareVar();
+//    if (Sigcell::SigSupportLists && in->TestInpTok(TokenType::OpenSquare)) {
+//        handle = parse_cons_list(in, tb);
+//    } else {
+//        FuncSymbType idType;
+//        //变元项判断
+//        if ((idType = TermParseOperator(in, idStr)) == FuncSymbType::FSIdentVar) {
+//            handle = vars->Insert(idStr, tb->claId);
+//            handle->uVarCount = 1; //变元项个数
+//            handle->uMaxFuncLayer = 0; //函数深度
+//        } else {
+//            handle = new TermCell();
+//            if (in->TestInpTok(TokenType::OpenBracket)) {
+//                if ((idType == FuncSymbType::FSIdentInt)&&(sig->distinctProps & FPIsInteger)) {
+//                    in->AktTokenError("Number cannot have argument list (consider --free-numbers)", false);
+//                }
+//                if ((idType == FuncSymbType::FSIdentObject)&&(sig->distinctProps & FPIsObject)) {
+//                    in->AktTokenError("Object cannot have argument list (consider --free-objects)", false);
+//                }
+//
+//                handle->arity = TermParseArgList(in, &(handle->args), tb);
+//            } else {
+//                handle->arity = 0;
+//            }
+//            handle->fCode = TermCell::TermSigInsert(sig, idStr, handle->arity, false, idType);
+//            if (!handle->fCode) {
+//                string errpos; //
+//                in->AktToken()->PosRep(errpos);
+//                errpos += ' ' + idStr + " used with arity " + to_string((long) handle->arity)
+//                        + " but registered with arity ";
+//                errpos += to_string((long) sig->SigFindArity(sig->SigFindFCode(idStr)));
+//                //Error(DStrView(errpos), SYNTAX_ERROR);
+//                cout << "SYNTAX_ERROR:" + errpos << endl;
+//            }
+//        }
+//        //DStrReleaseRef(source_name);
+//        //DStrFree(id);
+//    }
+//    assert(true);
+//    return nullptr;
+//}
 
-                handle->arity = TermParseArgList(in, &(handle->args), tb);
-            } else {
-                handle->arity = 0;
-            }
-            handle->fCode = TermCell::TermSigInsert(sig, idStr, handle->arity, false, idType);
-            if (!handle->fCode) {
-                string errpos; //
-                in->AktToken()->PosRep(errpos);
-                errpos += ' ' + idStr + " used with arity " + to_string((long) handle->arity)
-                        + " but registered with arity ";
-                errpos += to_string((long) sig->SigFindArity(sig->SigFindFCode(idStr)));
-                //Error(DStrView(errpos), SYNTAX_ERROR);
-                cout << "SYNTAX_ERROR:" + errpos << endl;
+/// 获取子句函数嵌套
+/// \return 
+
+uint8_t TermCell::ComputeMaxFuncDepth() {
+    uint8_t ldepth;
+    if (this->IsGround())
+        return this->uMaxFuncLayer;
+    this->uMaxFuncLayer = 0;
+    for (int i = 0; i < arity; ++i) {
+        TermCell* term = TermCell::TermDerefAlways(args[i]);
+        ldepth = term->ComputeMaxFuncDepth();
+        this->uMaxFuncLayer = MAX(this->uMaxFuncLayer, ldepth);
+    }
+    if (this->uMaxFuncLayer > UINT16_MAX - 1) {
+        Out::Error("Error:函数嵌套层超过最大限制(65535)!", ErrorCodes::SYNTAX_ERROR);
+    }
+    return ++this->uMaxFuncLayer;
+}
+
+/* 重新计算项的变元嵌套深度 - the depth of a term. */
+uint16_t TermCell::TermDepth() {
+    if (0 == arity || this->IsVar())
+        return 0;
+    uint16_t maxdepth = 0, ldepth;
+    for (int i = 0; i < arity; ++i) {
+        ldepth = args[i]->TermDepth();
+        maxdepth = MAX(maxdepth, ldepth);
+    }
+    return maxdepth + 1;
+}
+
+
+/// 检查最大函数嵌套层限制. 包括了 变元绑定
+/// \return >0 -- 函数嵌套层数 -1 -- 不符合限制
+
+uint16_t TermCell::CheckTermDepthLimit() {
+    uint16_t maxdepth = 0, ldepth = 0;
+    //debug
+    if (this->arity == 0) {
+        maxdepth = 0;
+    } else if (this->IsGround()) {
+        maxdepth = this->uMaxFuncLayer;
+        if (maxdepth > StrategyParam::MaxFuncLayerOfR)
+            return -1;
+    } else {
+        maxdepth = 0;
+        for (int i = 0; i < arity; ++i) {
+            TermCell* term = TermCell::TermDerefAlways(args[i]);
+            ldepth = term->IsGround() ? term->GetFuncLayer() : term->CheckTermDepthLimit();
+            if (-1 == ldepth)
+                return -1;
+            if (maxdepth < ldepth) {
+                maxdepth = ldepth;
+                if (maxdepth + 1 > StrategyParam::MaxFuncLayerOfR)
+                    return -1;
             }
         }
-        //DStrReleaseRef(source_name);
-        //DStrFree(id);
+        ++maxdepth;
     }
-    assert(true);
-    return nullptr;
+    return maxdepth;
+}
+
+TermCell* TermCell::TermDeref(TermCell* term, DerefType deref) {
+    assert((term->IsVar()) || !(term->binding));
+    if (deref == DerefType::DEREF_ALWAYS) {
+        while (term->binding) {
+            term = term->binding;
+        }
+    } else {
+        int ideref = (int) deref;
+        while (ideref) {
+            if (!term->binding) {
+                break;
+            }
+            term = term->binding;
+            --ideref;
+        }
+    }
+    return term;
 }
 
 /***************************************************************************** 
@@ -165,31 +250,31 @@ FuncSymbType TermCell::TermParseOperator(Scanner* in, string&idStr) {
 /***************************************************************************** 
  * Parse a LOP list into an internal $cons list.
  ****************************************************************************/
-TermCell* TermCell::parse_cons_list(Scanner* in, TermBank* tb) {
-    in->AcceptInpTok(TokenType::OpenSquare);
-    TermCell* current = new TermCell();
-    if (!in->TestInpTok(TokenType::CloseSquare)) {
-        current->fCode = (FunCode) DerefType::CONSCODE;
-        current->arity = 2;
-        current->args = new TermCell*[2];
-        current->args[0] = TermCell::TermParse(in, tb);
-        current->args[1] = new TermCell();
-        current = current->args[1];
-        while (in->TestInpTok(TokenType::Comma)) {
-            in->NextToken();
-            current->fCode = (FunCode) DerefType::CONSCODE;
-            current->arity = 2;
-            current->args = new TermCell*[2];
-            current->args[0] = TermCell::TermParse(in, tb);
-            current->args[0]-> TermCellDelProp(TermProp::TPTopPos);
-            current->args[1] = new TermCell();
-            current = current->args[1];
-        }
-    }
-    in->AcceptInpTok(TokenType::CloseSquare);
-    current->fCode = (FunCode) DerefType::NILCODE;
-    return current;
-}
+//TermCell* TermCell::parse_cons_list(Scanner* in, TermBank* tb) {
+//    in->AcceptInpTok(TokenType::OpenSquare);
+//    TermCell* current = new TermCell();
+//    if (!in->TestInpTok(TokenType::CloseSquare)) {
+//        current->fCode = (FunCode) DerefType::CONSCODE;
+//        current->arity = 2;
+//        current->args = new TermCell*[2];
+//        current->args[0] = TermCell::TermParse(in, tb);
+//        current->args[1] = new TermCell();
+//        current = current->args[1];
+//        while (in->TestInpTok(TokenType::Comma)) {
+//            in->NextToken();
+//            current->fCode = (FunCode) DerefType::CONSCODE;
+//            current->arity = 2;
+//            current->args = new TermCell*[2];
+//            current->args[0] = TermCell::TermParse(in, tb);
+//            current->args[0]-> TermCellDelProp(TermProp::TPTopPos);
+//            current->args[1] = new TermCell();
+//            current = current->args[1];
+//        }
+//    }
+//    in->AcceptInpTok(TokenType::CloseSquare);
+//    current->fCode = (FunCode) DerefType::NILCODE;
+//    return current;
+//}
 
 /*-----------------------------------------------------------------------
 //
@@ -210,45 +295,59 @@ TermCell* TermCell::parse_cons_list(Scanner* in, TermBank* tb) {
 //
 /----------------------------------------------------------------------*/
 
-int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb) {
-    // VarBank_p vars = tb->shareVars;
+//int TermCell::TermParseArgList(Scanner* in, TermCell*** arg_anchor, TermBank* tb) {
+//    // VarBank_p vars = tb->shareVars;
+//    TermCell* *handle;
+//    int arity;
+//    int size;
+//    int i;
+//
+//    in-> AcceptInpTok(TokenType::OpenBracket);
+//    if (in->TestInpTok(TokenType::CloseBracket)) {
+//        in->NextToken();
+//        *arg_anchor = NULL;
+//        return 0;
+//    }
+//    size = 2; //TERMS_INITIAL_ARGS;
+//    handle = new TermCell*[size]; // (TermCell**)SizeMalloc(size*sizeof(TermCell*));
+//    arity = 0;
+//    handle[arity] = TermCell::TermParse(in, tb);
+//
+//    arity++;
+//    while (in->TestInpTok(TokenType::Comma)) {
+//        in->NextToken();
+//        if (arity == size) {
+//            size += TERMS_INITIAL_ARGS;
+//            handle = new TermCell*[size]; // (TermCell**)SecureRealloc(handle, size*sizeof(TermCell*));
+//        }
+//        handle[arity] = TermCell::TermParse(in, tb);
+//        arity++;
+//    }
+//    in-> AcceptInpTok(TokenType::CloseBracket);
+//    *arg_anchor = new TermCell*[arity]; // TermArgArrayAlloc(arity);
+//    for (i = 0; i < arity; i++) {
+//        (*arg_anchor)[i] = handle[i];
+//    }
+//    delete[] handle;
+//    //SizeFree(handle, size*sizeof(TermCell*));
+//
+//    return arity;
+//}
+
+TermCell** TermCell::TermArgListCopy() {
     TermCell* *handle;
-    int arity;
-    int size;
-    int i;
-
-    in-> AcceptInpTok(TokenType::OpenBracket);
-    if (in->TestInpTok(TokenType::CloseBracket)) {
-        in->NextToken();
-        *arg_anchor = NULL;
-        return 0;
-    }
-    size = TERMS_INITIAL_ARGS;
-    handle = new TermCell*[size]; // (TermCell**)SizeMalloc(size*sizeof(TermCell*));
-    arity = 0;
-    handle[arity] = TermCell::TermParse(in, tb);
-    arity++;
-    while (in->TestInpTok(TokenType::Comma)) {
-        in->NextToken();
-        if (arity == size) {
-            size += TERMS_INITIAL_ARGS;
-            handle = new TermCell*[size]; // (TermCell**)SecureRealloc(handle, size*sizeof(TermCell*));
+    if (arity) {
+        handle = new TermCell*[arity];
+        for (int i = 0; i < arity; ++i) {
+            handle[i] = args[i];
         }
-        handle[arity] = TermCell::TermParse(in, tb);
-        arity++;
+    } else {
+        handle = nullptr;
     }
-    in-> AcceptInpTok(TokenType::CloseBracket);
-    *arg_anchor = new TermCell*[arity]; // TermArgArrayAlloc(arity);
-    for (i = 0; i < arity; i++) {
-        (*arg_anchor)[i] = handle[i];
-    }
-    delete[] handle;
-    //SizeFree(handle, size*sizeof(TermCell*));
-
-    return arity;
+    return handle;
 }
 
-TermCell* TermCell::RenameCopy(TermBank* tb, DerefType deref) {
+TermCell* TermCell::RenameCopy(TermBank* tb, Lit_p litptr, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
     if (source->TBTermIsGround())//若为全局共享基项,则直接返回GTermBank中的全局共享基项
@@ -257,10 +356,12 @@ TermCell* TermCell::RenameCopy(TermBank* tb, DerefType deref) {
     if (source->IsVar()) {
         string varName;
         source->getVarName(varName);
-        t = tb->VarInert(varName, tb->claId); // vars->VarBankFCodeAssertAlloc(this->fCode);
-        t->uVarCount = 1;
-        t->weight = DEFAULT_VWEIGHT;
-        t->uMaxFuncLayer = 0;
+        t = tb->VarInert(varName, litptr); // vars->VarBankFCodeAssertAlloc(this->fCode);
+        t->SetVarCount(1);
+        t->SetTermWeight(DEFAULT_VWEIGHT);
+        t->SetFuncLayer(0);
+        
+        
     } else {
         uint16_t uFuncLayer = 0;
         t = new TermCell(source->fCode);
@@ -270,19 +371,20 @@ TermCell* TermCell::RenameCopy(TermBank* tb, DerefType deref) {
         if (t->arity > 0) {
             t->args = new TermCell*[t->arity];
             for (int i = 0; i < t->arity; ++i) {
-                t->args[i] = source->args[i]-> RenameCopy(tb);
-                t->weight += t->args[i]->weight;
-                t->uVarCount += t->args[i]->uVarCount;
-                uFuncLayer = MAX(uFuncLayer, t->args[i]->uMaxFuncLayer);
+                t->args[i] = source->args[i]-> RenameCopy(tb, litptr);
+                t->SetTermWeight(t->GetTermWeight() + t->args[i]->GetTermWeight());
+                t->SetVarCount(t->GetVarCount() + t->args[i]->GetVarCount());
+                uFuncLayer = MAX(uFuncLayer, t->args[i]->GetFuncLayer());
             }
+
             ++uFuncLayer;
         } else {
-            t->uVarCount = 0;
-            t->weight = DEFAULT_FWEIGHT;
+            t->SetVarCount(0);
+            t->SetTermWeight(DEFAULT_FWEIGHT);
             uFuncLayer = 0;
         }
 
-        t->uMaxFuncLayer = uFuncLayer;
+        t->SetFuncLayer(uFuncLayer);
         // TermBank::tb_termtop_insert(this);  重命名的项不存储到 termbank中        
         t = tb->TBTermTopInsert(t);
     }
@@ -292,13 +394,13 @@ TermCell* TermCell::RenameCopy(TermBank* tb, DerefType deref) {
 
 //P1(f(x1))  x1-y1->a1;   P1(f(a1))
 
-TermCell* TermCell::TermCopy(TermBank* tb, DerefType deref) {
+TermCell* TermCell::TermCopy(TermBank* tb, Lit_p litptr, DerefType deref) {
 
     TermCell* source = TermDeref(this, deref);
-    TermCell* handle = source->TermEquivCellAlloc(tb);
+    TermCell* handle = source->TermEquivCellAlloc(tb, litptr);
 
     for (int i = 0; i < handle->arity; ++i) /* Hack: Loop will not be entered if arity = 0 */ {
-        handle->args[i] = handle->args[i]->TermCopy(tb, deref);
+        handle->args[i] = handle->args[i]->TermCopy(tb, litptr, deref);
     }
     return handle;
 }
@@ -323,6 +425,24 @@ void TermCell::TermTopFree() {
     }
 }
 
+void TermCell::TermFree(TermCell* junk) {
+    assert(junk);
+    if (!junk->IsVar()) {
+        assert(!junk->TermCellQueryProp((TermProp) ((int32_t) TermProp::TPIsShared)));
+        if (junk->arity) {
+            int i;
+
+            assert(junk->args);
+            for (i = 0; i < junk->arity; i++) {
+                TermFree(junk->args[i]);
+            }
+        } else {
+            assert(!junk->args);
+        }
+        DelPtr(junk);
+    }
+}
+
 /*---------------------------------------------------------------------*/
 /*                  Member Function-[public]                           */
 /*---------------------------------------------------------------------*/
@@ -339,9 +459,9 @@ TermCell* TermCell::TermTopCopy(TermCell* source) {
     t->arity = source->arity;
     t->binding = nullptr;
     t->args = source->TermArgListCopy();
-    t->uMaxFuncLayer = source->uMaxFuncLayer;
-    t->uMaxVarId = source->uMaxVarId;
-    t->uVarCount = source->uVarCount;
+    t->SetFuncLayer(source->GetFuncLayer());
+    t->SetMaxVarId(source->GetMaxVarId());
+    t->SetVarCount(source->GetVarCount());
     t->lson = nullptr;
     t->rson = nullptr;
 
@@ -914,7 +1034,7 @@ bool TermCell::TermIsDefTerm(int minArity) {
     if (arity < minArity) {
         return false;
     }
-    if (this->TermStandardWeight() != (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT)) {
+    if (this->ComputeTermStandardWeight() != (DEFAULT_FWEIGHT + arity * DEFAULT_VWEIGHT)) {
         return false;
     }
     for (i = 0; i < arity; ++i) {
@@ -1019,7 +1139,7 @@ TermCell* TermCell::TermCopyKeepVars(DerefType deref) {
     if (source->IsVar()) {
         return source;
     }
-    handle = source->TermEquivCellAlloc(NULL);
+    handle = source->TermEquivCellAlloc(NULL, NULL);
 
     for (i = 0; i < handle->arity; i++) /* Hack: Loop will not be entered if
 				     arity = 0 */ {
@@ -1033,12 +1153,12 @@ TermCell* TermCell::TermCopyKeepVars(DerefType deref) {
  * 注：非共享项，指变元项和不存储到TermBank中的项． 
  ****************************************************************************/
 
-TermCell* TermCell::TermEquivCellAlloc(TermBank* tb) {
+TermCell* TermCell::TermEquivCellAlloc(TermBank* tb, Lit_p litptr) {
     TermCell* handle = nullptr; //new TermCell();
 
     if (IsVar()) //变元项　
     {
-        handle = tb->VarInert(fCode, tb->claId);
+        handle = tb->VarInert(fCode, litptr);
     } else {
         // handle=new TermCell(*this);
         handle = TermCell::TermTopCopy(this);
@@ -1055,17 +1175,17 @@ bool TermCell::equalStruct(TermCell* term) {
     }
     TermCell* t1 = TermCell::TermDerefAlways(this);
     TermCell* t2 = TermCell::TermDerefAlways(term);
-    
-    
+
+
     if (t1->fCode != t2->fCode) {
         return false;
     }
     if (t1 == t2) {
         return true;
-    }else if(t1->IsVar()&&t2->IsVar()){//若两者均为变元，则不相同则为false
+    } else if (t1->IsVar() && t2->IsVar()) {//若两者均为变元，则不相同则为false
         return false;
     }
-    
+
     //注意,尽管 不同子句的x1 存储地方不同,地址不相同,但是fcode一定是相同的.
     for (int i = 0; i < t1->arity; i++) {
         if (!t1->args[i]->equalStruct(t2->args[i])) {
@@ -1125,7 +1245,6 @@ bool TermCell::TermStructEqual(TermCell* t1, TermCell* t2) {
 bool TermCell::TermStructEqualNoDeref(TermCell* t1, TermCell* t2) {
 
     int i;
-
     if (t1 == t2) {
         return true;
     }
@@ -1260,10 +1379,7 @@ int TermCell::TermStructWeightCompare(TermCell* t1, TermCell* t2) {
     long res;
     short i;
     CompareResult subres;
-
-
     assert(t2);
-
     if (t1->fCode == (FunCode) DerefType::TRUECODE) {
         assert(t1->arity == 0);
         if (t2->fCode == (FunCode) DerefType::TRUECODE) {
@@ -1276,7 +1392,7 @@ int TermCell::TermStructWeightCompare(TermCell* t1, TermCell* t2) {
         assert(t2->arity == 0);
         return 1;
     }
-    res = t1->TermStandardWeight() - t2->TermStandardWeight();
+    res = t1->ComputeTermStandardWeight() - t2->ComputeTermStandardWeight();
     if (res) {
         return res;
     }
@@ -1413,22 +1529,41 @@ deref_super, DerefType deref_test) {
     return false;
 }
 
-/*-----------------------------------------------------------------------
-//
-// Function: TermWeight()
-//
-//   
-//
-// Global Variables: -
-//
-// Side Effects    : Memory operations for the stack used.
-//
-/----------------------------------------------------------------------*/
+/// 计算项的相关统计信息 包括权重,函数嵌套,最大变元ID
+/// \param t
+
+void ComputeTermInfo(TermCell* t) {
+    t->SetTermWeight(0);
+    t->SetFuncLayer(0);
+    t->SetVarCount(0);
+    t->SetMaxVarDepth(0);
+
+    if (0 == t->arity) {//没有子项返回
+        if (t->IsVar()) {
+            t->SetVarCount(1);
+            t->SetMaxVarId(-t->fCode);
+        }
+        return;
+    }
+    for (int i = 0; i < t->arity; ++i) {
+        TermCell* subT = t->args[i];
+        ComputeTermInfo(subT);
+        t->SetTermWeight(t->GetTermWeight() + subT->GetTermWeight());
+        t->SetFuncLayer(MAX(t->GetFuncLayer(), (subT->GetFuncLayer() + 1)));
+
+        if (subT->GetVarCount() > 0) {
+            t->SetMaxVarDepth(MAX(t->GetMaxVarDepth(), (subT->GetMaxVarDepth() + 1)));
+            t->SetMaxVarId(MAX(t->GetMaxVarId(), subT->GetMaxVarId())); //最大变元ID
+            t->SetVarCount(t->GetVarCount() + subT->GetVarCount());
+
+        }
+    }
+}
 
 /***************************************************************************** 
- * Compute the weight of a term, counting variables as vweight and function symbols as fweight.
+ * 遍历项-计算项的统计信息:包括1.字符权重.2.变元个数,3.函数嵌套最大深度,4.变元嵌套深度;5. counting variables as vweight and function symbols as fweight.
  ****************************************************************************/
-long TermCell::TermWeight(long vweight, long fweight) {
+long TermCell::ComputeTermWeight(long vweight, long fweight) {
     TermCell* term = this;
     long res = 0;
     stack<TermCell*> myStack;
@@ -1441,10 +1576,11 @@ long TermCell::TermWeight(long vweight, long fweight) {
         handle = TermCell::TermDerefAlways(handle);
         if (handle->IsVar()) {
             res += vweight;
+        } else if (handle->TBTermIsGround()) {
+            res += handle->GetTermWeight();
         } else {
             res += fweight;
             for (int i = 0; i < handle->arity; ++i) {
-
                 myStack.push(handle->args[i]);
             }
         }
@@ -1502,8 +1638,7 @@ long TermCell::TermFsumWeight(long vweight, long flimit, vector<long>&fweights, 
 //
 /----------------------------------------------------------------------*/
 
-long TermCell::TermNonLinearWeight(long vlweight, long vweight,
-        long fweight) {
+long TermCell::TermNonLinearWeight(long vlweight, long vweight, long fweight) {
 
     TermCell* term = this;
     long res = 0;
@@ -1584,6 +1719,7 @@ long TermCell::TermSymTypeWeight(long vweight, long fweight, long
                 res += fweight;
             }
             for (i = 0; i < handle->arity; i++) {
+
                 myStack.push(handle->args[i]);
                 // PStackPushP(stack, );
             }
@@ -1676,6 +1812,7 @@ void TermCell::TermAddSymbolDistributionLimited(vector<long>&dist_array, long li
                 ++(dist_array[term->fCode]);
             }
             for (i = 0; i < term->arity; i++) {
+
                 assert(term->args);
 
                 tmpStack.push(term->args[i]);
@@ -1728,6 +1865,7 @@ void TermCell::TermAddSymbolDistExist(vector<long>&dist_array, stack<long>& exis
             ++(dist_array[term->fCode]);
 
             for (i = 0; i < term->arity; i++) {
+
                 assert(term->args);
                 tmpStack.push(term->args[i]);
                 //PStackPushP(stack, );
@@ -1760,6 +1898,7 @@ void TermCell::TermAddSymbolFeaturesLimited(long depth, long *freq_array, long* 
             depth_array[0] = MAX(depth, depth_array[0]);
         }
         for (i = 0; i < term->arity; i++) {
+
             term->args[i]->TermAddSymbolFeaturesLimited(depth + 1, freq_array, depth_array, limit);
         }
     }
@@ -1792,6 +1931,7 @@ void TermCell::TermAddSymbolFeatures(vector<long> &mod_stack, long depth, vector
         ++feature_array[findex];
         feature_array[findex + 1] = MAX(depth, feature_array[findex + 1]);
         for (i = 0; i < term->arity; i++) {
+
             term->args[i]->TermAddSymbolFeatures(mod_stack, depth + 1, feature_array, offset);
         }
     }
@@ -1822,6 +1962,7 @@ void TermCell::TermComputeFunctionRanks(long *rank_array, long *count) {
         term->args[i]-> TermComputeFunctionRanks(rank_array, count);
     }
     if (!rank_array[term->fCode]) {
+
         rank_array[term->fCode] = (*count)++;
     }
 }
@@ -1847,6 +1988,7 @@ long TermCell::TermLinearize(stack<TermCell*> &tmpStack) {
     tmpStack.push(term);
     //PStackPushP(stack, term);
     for (i = 0; i < term->arity; i++) {
+
         res += term->args[i]->TermLinearize(tmpStack);
     }
     return res;
@@ -1865,6 +2007,7 @@ TermCell* TermCell::TermCheckConsistency(DerefType deref) {
     TermCell* res = term_check_consistency_rek(branch, deref);
     assert(branch.IsEmpty());
     printf("...TermCheckConsistency\n");
+
     return res;
 }
 
@@ -1894,10 +2037,12 @@ long TermCell::TBTermDelPropCount(TermProp prop) {
         }
     }
     vector<TermCell*>().swap(vstack);
+
     return count;
 }
 
 long TermCell::TermCollectVariables(SplayTree<PTreeCell> *tree) {
+
     return TermCollectPropVariables(tree, TermProp::TPIgnoreProps);
 }
 
@@ -1931,6 +2076,7 @@ long TermCell::TermAddFunOcc(vector<int>*fOccur, vector<IntOrP>*resStack) {
     }
     vecSt.clear();
     vector<TermCell*>().swap(vecSt);
+
     return res;
 }
 
@@ -1953,7 +2099,7 @@ void TermCell::UnpackTermPos(vector<IntOrP>& pos, long cpos)//object = Term_p t
         tmpPtr.p_val = t;
         pos.push_back(tmpPtr);
         for (i = 0; i < t->arity; i++) {
-            if (cpos < t->args[i]->TermStandardWeight()) {
+            if (cpos < t->args[i]->ComputeTermStandardWeight()) {
                 //PStackPushInt(pos, i);
                 IntOrP tmp;
                 tmp.i_val = i;
@@ -1961,7 +2107,7 @@ void TermCell::UnpackTermPos(vector<IntOrP>& pos, long cpos)//object = Term_p t
                 t = t->args[i];
                 break;
             }
-            cpos -= t->args[i]->TermStandardWeight();
+            cpos -= t->args[i]->ComputeTermStandardWeight();
             assert(cpos >= 0);
         }
     }

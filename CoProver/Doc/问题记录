@@ -40,8 +40,31 @@ B.有公共变元的文字Li' ==>
 
 
 
-2.三角形无法延伸分2种情况
+4.三角形无法延伸分2种情况
 A.最后一个子句中的剩余文字 均 找不到互补文字进行延续
 B.最后一个子句中的剩余文字不满足设定的规则 a）剩余文字个数超过限制；b)
 最后一个子句中没有剩余文字,(平顶)
 目前主要的优化 在于 平顶的时候,采用truncation 操作 生成一些 单元子句.
+
+5.生成新子句的函数包括
+(1) 读取文本时 
+      ClauseParse(Scanner* in) ==> EqnListParse(TokenType sep) ==> Literal(Scanner* in, int litPos, Cla_p cla) 
+(2) 生成新子句时
+    2.1 单元子句复制
+        bindingLits(Literal* litLst) ==> 
+    2.2 剩余文字R 生成新子句 
+        RenameCopy(newCla);  
+         bindingLits(Literal* litLst)
+    2.3 Factor 删除文字时
+        bindingAndRecopyLits
+ 
+$weight_max = Q(s_t)/N(s_t)+ 2C \sqrt{2*lnN(s_{t-1}}/N(s_t))$
+
+//考虑1 先记录 重用单元子句 后面统一输出 !??!?!?  P2941   P3018 Unsat 输出
+//考虑2 改变子句中文字顺序  是采用精准下标控制,还是采用权重排序的方式 ????? P3208
+6. 权重修改记录
+A. 单元子句下拉 A = ~A  若 A 所在子句剩余文字有冗余,则说明 该下拉变元替换导致冗余产生 主动文字和单元子句文字 qulity均-1; P2881
+B. 
+
+
+曹峰 子句重用问题 f (copyClaCopyTimes(cpClaTmp) <= StrategyParam::claReUseTimes) P1558 TriAlg

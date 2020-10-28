@@ -197,9 +197,13 @@ public:
 
     void GetProblemInfo(string & strInfo) {
         strInfo += "% start to proof:" + this->tptpFileName;
-        strInfo += "\n% Version  : CoProver---0.1\n% Problem  : " + this->tptpFileName;
-        strInfo += "\n% Proof found!\n% SZS status Theorem for " + this->tptpFileName;
+        strInfo += "\n% Version  : CoProver---0.1";
+        strInfo += "\n% Problem  : " + this->tptpFileName;
+        strInfo += "\n% Result   : Proof found!";
+        strInfo += "\n% Output   : CNFRefutation";
+        strInfo += "\n% SZS status Theorem for " + this->tptpFileName;        
         strInfo += "\n% SZS output start Proof\n";
+        strInfo += "% -------------------------------------------------\n";
     }
 public:
 

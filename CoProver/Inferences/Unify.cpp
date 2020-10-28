@@ -78,15 +78,15 @@ bool Unify::SubstComputeMatch(TermCell* varMatcher, TermCell* ConMatched, Subst*
         if (varMatcher->IsVar())
             return false;
     }
-    long matcher_weight = varMatcher->TermStandardWeight(),
-            to_match_weight = ConMatched->TermStandardWeight();
+    long matcher_weight = varMatcher->ComputeTermStandardWeight(),
+            to_match_weight = ConMatched->ComputeTermStandardWeight();
     bool res = true;
 
-    assert(varMatcher->TermStandardWeight() ==
-            varMatcher->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
+    assert(varMatcher->ComputeTermStandardWeight() ==
+            varMatcher->ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
 
-    assert(ConMatched->TermStandardWeight() ==
-            ConMatched->TermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
+    assert(ConMatched->ComputeTermStandardWeight() ==
+            ConMatched->ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT));
 
 
     if (matcher_weight > to_match_weight) { //ps:需要检查的项to_match中变元数量< matcher中的变元数

@@ -19,9 +19,9 @@ public:
     /*****************************************************************************
      * 基础三角形算法
      ****************************************************************************/
-    RESULT BaseAlg(Formula *fol);
-    RESULT BaseAlgByOnlyBinaryCla(Formula *fol);
-    RESULT BaseExtendAlg(Formula *fol);
+    RESULT BaseAlg(Formula *fol);  //标准延拓    
+    RESULT BaseExtendAlg(Formula *fol); //扩展延拓
+    RESULT BaseAlgByLearn(Formula *fol);
 private: 
 
 };
