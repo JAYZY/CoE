@@ -28,24 +28,33 @@ private:
     map<int32_t, vector<Literal*>> g_UnitPostPred; //正单元子句谓词
     map<int32_t, vector<Literal*>> g_UnitNegPred; //负单元子句谓词
 
- 
+
 
     map<TermCell*, set<TermCell*>> g_PostEqn; //正等词列表 a=b a=c a=d;  //只有基项 才可以  
     map<TermCell*, set<TermCell*>> g_NegEqn; //负等词 a!=b a!=c
 
     //单文字子句
     // TermIndexing *unitTermIndex = nullptr; //单文字子句索引
+
     /*Statistics(统计信息)--    */
+    struct StartClaInfo {
+        int claUseCount;
+        float claQulity;
+    };
 
 
 
     //list<Clause*> axioms;
-    ClauseSet* origalClaSet; //原始子句集合
 
+    ClauseSet* origalClaSet; //原始子句集合
     Scanner* in;
 
 
 public:
+    map<Cla_p, StartClaInfo*> mapStartClaInfo;
+    //测试--记录谓词列表使用次数
+    map<int32_t, uint32_t> g_predUseTimes;
+
     ClauseSet* workClaSet; //处理后的子句集,(或工作子句集) --不包含单子子句和等词公理
     //公式集的相关信息
     uint32_t uEquLitNum; //等词个数
@@ -85,6 +94,12 @@ public:
 
     inline ClauseSet* getOrigalSet() {
         return origalClaSet;
+    }
+    /// 获取原始子句大小
+    /// \return 
+
+    inline int GetOrigalSetSize() {
+        return origalClaSet->Size();
     }
 
     inline list<Clause*>* getWorkClas() {
@@ -136,6 +151,23 @@ public:
         FileOp::getInstance()->outInfo(sinfo);
     }
 
+    inline void AddPredLstUseTimes(Lit_p lit) {
+        int fcode = lit->IsPositive() ? -lit->lterm->fCode : lit->lterm->fCode;
+        if (lit->EqnIsEquLit()) {//等词
+            lit->IsPositive() ? fcode = -1 : fcode = 0;
+        }
+
+        ++g_predUseTimes[fcode];
+    }
+
+    inline uint32_t GetPredLstUseTimes(Lit_p lit) {
+        int fcode = lit->IsPositive() ? -lit->lterm->fCode : lit->lterm->fCode;
+        if (lit->EqnIsEquLit()) {//等词
+            lit->IsPositive() ? fcode = -1 : fcode = 0;
+        }
+        return g_predUseTimes[fcode];
+    }
+
     /**
      * 对单元子句列表进行排序
      */
@@ -165,7 +197,7 @@ public:
     RESULT preProcess(vector<Clause*>&factorClas);
     //设置策略
     void SetStrategy();
-    
+
     // <editor-fold defaultstate="collapsed" desc="归入冗余判断">
 
     bool leftLitsIsRundacy(Literal** pasClaLeftLits, uint16_t uPosLeftLitInd, Literal* actLits, uint16_t uActLeftLitInd, vector<Literal*>&vNewR);
@@ -194,11 +226,13 @@ public:
 
     //添加文字的谓词符号索引到全局列表中 本质是FP0算法
     void AddPredIndex(Lit_p lit, bool isUnitCla);
-    
+
     //添加文字的谓词符号索引到全局列表中[不区分单元子句或多元子句] 本质是FP0算法
     void AddPredIndexNoUnit(Lit_p lit, bool isUnitCla);
-    
-    vector<Literal*>* getPredLst(Literal * lit);
+    //对全局谓词索引进行排序。
+    void PredIndexSort();
+
+
 
     /*得到互补单元谓词候选文字集合*/
     vector<Literal*>* getPairUnitPredLst(Literal * lit);
@@ -208,8 +242,11 @@ public:
     void printOrigalClasInfo(FILE * out);
 
 
+    void IniStartClaInfo();
+    void AddStartClaInfo(Cla_p cla) ;
     //根据策略，得到下一次演绎起步子句
     list<Clause*>::iterator getNextStartClause();
+    Cla_p GetNextStartClaByUCB(long item);
     vector<Clause*>::iterator getNextGoalClause();
     int GetNextGoalClauseIndex();
 

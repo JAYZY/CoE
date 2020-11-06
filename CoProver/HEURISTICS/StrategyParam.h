@@ -99,7 +99,8 @@ public:
     static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
     static PasLitSteady SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
     static ALimit ALIT_LIMIT; //主界线文字限制
-
+    
+    
     static ActLitSteady Weight_Sort; //权重排序策略
     //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
     static uint32_t IterCount_LIMIT; //create triangle count limit

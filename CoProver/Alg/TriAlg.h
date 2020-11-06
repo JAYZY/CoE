@@ -217,7 +217,7 @@ public:
 
     //生成一个新的子句时,遍历主界线对剩余文字进行合一下拉
     RESULT TriMguReduct();
-
+    
     //清楚三角形的所有变元绑定
     void ClearResVTBinding();
 
@@ -278,18 +278,19 @@ public:
         //=== 输出 .r 信息        
     }
 
-    inline void OutInvalidR() {
-        string sInfo = "| N";
+    inline void OutRInfo(const string&sInfo) {
+         
         FileOp::getInstance()->outRun(sInfo);
     }
     //重命名单元子句输出
 
     inline void OutRNUnitCla(Clause* unitCla) {
         //输出到.r文件
-        string str = "\n";
+        string str = "";
         unitCla->literals->matchLitPtr->GetLitInfoWithSelf(str);
         str += "\nR[" + to_string(unitCla->ident) + "]:";
         unitCla->literals->GetLitInfoWithParent(str);
+        str+=" | "+InferenceInfo::getStrInfoType(InfereType::RN);
         //debug:        if (unitCla->ident == 249)            cout << endl;
         FileOp::getInstance()->outRun(str + "\n");
     }
@@ -314,6 +315,8 @@ public:
 
 
 private:
+    //更新文字质量
+    void UpdateLitQuality();
     //判断一个文字是否可以下拉
     bool ReduceLitByALits(Lit_p checkLit, vector<ALit_p>&vAlits);
     //检查剩余文字是否相同，并添加到剩余文字中 -- 合并
@@ -325,10 +328,12 @@ private:
     ResRule CheckRInvaild(Lit_p lit, vector<Lit_p>&vDelLit, Lit_p *holdLits, uint16_t&holdLitSize);
 
     //对主动归结子句进行处理 并添加到剩余子句集
-    ResRule ActClaGenNewR(Lit_p actLit);
+    RESULT ActClaGenNewR(Lit_p actLit);
 
     //对被动归结子句进行处理 
     ResRule pasClaProc(Lit_p candLit, uint16_t& uPasHoldLitNum);
+    
+    
 };
 
 #endif /* TRIALG_H */

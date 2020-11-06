@@ -360,8 +360,8 @@ TermCell* TermCell::RenameCopy(TermBank* tb, Lit_p litptr, DerefType deref) {
         t->SetVarCount(1);
         t->SetTermWeight(DEFAULT_VWEIGHT);
         t->SetFuncLayer(0);
-        
-        
+
+
     } else {
         uint16_t uFuncLayer = 0;
         t = new TermCell(source->fCode);
@@ -1167,7 +1167,7 @@ TermCell* TermCell::TermEquivCellAlloc(TermBank* tb, Lit_p litptr) {
 }
 
 bool TermCell::equalStruct(TermCell* term) {
-    if (this->TBTermIsGround()) {
+    if (this->TBTermIsGround() && term->TBTermIsGround()) {
         if (this == term) //都是基文字且相同 
             return true;
         else

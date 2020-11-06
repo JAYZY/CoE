@@ -54,7 +54,7 @@ uint32_t StrategyParam::IterCount_LIMIT = UINT32_MAX;
 
 
 uint32_t StrategyParam::MaxLitNumOfR = 2; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
-uint32_t StrategyParam::MaxFuncLayerOfR = 1;    //R 的最大函数嵌套层
+uint32_t StrategyParam::MaxFuncLayerOfR = 6;    //R 的最大函数嵌套层
 
 uint32_t StrategyParam::MaxLitsNumOfTriNewCla =3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
 uint32_t StrategyParam::MaxLitNumOfNewCla = 1; //完成△中，新子句加入到子句集的文字数限制

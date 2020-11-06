@@ -28,7 +28,7 @@
 #include <sys/param.h>
 #include <sys/wait.h>
 
-#define DELOUT
+//#define DELOUT
 #define NDEBUG
 
 #include <cassert>

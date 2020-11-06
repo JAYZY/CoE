@@ -270,35 +270,44 @@ RESULT Resolution::BaseExtendAlg(Formula * fol) {
 #define MaxModifyCount 100
 
 RESULT Resolution::BaseAlgByLearn(Formula * fol) {
-    
+
     RESULT res = RESULT::UNKNOWN;
     uint16_t modifyLimitCount = 0; //修改限制条件次数
     //不能作为起步子句集合--A.单元子句,B等词公理不能作为起步子句
     set<Clause*> notStartClaSet;
     //1.选择起步子句 -- 目标子句
-    // vector<Clause*>::iterator itSelCla = fol->vgoalClas.begin();
-    //vector<Clause*>::iterator itSelCla = fol->getNextGoalClause();
-    int selClaInd = fol->GetNextGoalClauseIndex();
+
+    //int selClaInd = fol->GetNextGoalClauseIndex();
+    //list<Clause*>::iterator selClaIt = fol->getWorkClas()->begin();
+    if (fol->getWorkClas()->empty())
+        return res;
+    fol->IniStartClaInfo();
     TriAlg triAlg(fol);
     double startTimeResolute = CPUTime();
     uint32_t iterNum = 0;
+
+    Clause* selCla = fol->GetNextStartClaByUCB(iterNum); //*selClaIt;
     //int ind = distance(fol->vgoalClas.begin(), itSelCla);
     while (true) {
         if (StrategyParam::IterCount_LIMIT < ++iterNum) {
             res = RESULT::UNKNOWN;
             string strInfo = "# 到达最大演绎次数:" + to_string(StrategyParam::IterCount_LIMIT);
             FileOp::getInstance()->outLog(strInfo);
-
             cout << strInfo << endl;
             break;
         }
-        //zj debug  cout << "# === 演绎次数:" << iterNum << endl;
+
+
+        //zj debug         cout << "# === 演绎次数:" << iterNum << endl;
         // if (iterNum == 1312)                        cout << "debug" << endl;
-        Clause* selCla = fol->vgoalClas[selClaInd];
+        // Clause* selCla = fol->GetNextStartClaByUCB(iterNum); //*selClaIt;
 
         //2.构建一次多元演绎
         //res = triAlg.GenBaseTriByLearn(selCla);
         res = triAlg.GenBaseTriByOneLearn(selCla);
+
+        fol->mapStartClaInfo[selCla]->claUseCount++; //修改子句使用次数
+
 
         //3.判断结果
         /* 3.1 判定不可满足*/
@@ -310,8 +319,9 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
         uint32_t uNewClaSize = triAlg.newClas.size();
         /* 3.2 子句起步没有构建任何三角形 */
         if (0 == uNewClaSize) {
-            notStartClaSet.insert(fol->vgoalClas[selClaInd]);
-            if (notStartClaSet.size() == fol->vgoalClas.size()) {
+            notStartClaSet.insert(selCla);
+
+            if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 if (++modifyLimitCount > MaxModifyCount) {/*记录修改次数*/
                     res = RESULT::UNKNOWN;
                     string strInfo = "# 到达最大限制修改次数:" + to_string(MaxModifyCount);
@@ -327,32 +337,21 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
                             + " 最大函数嵌套层:" + to_string(StrategyParam::MaxFuncLayerOfR);
                     FileOp::getInstance()->outLog(strInfo);
                     FileOp::getInstance()->outRun("\n" + strInfo);
-                    //cout << strInfo << endl;
                     notStartClaSet.clear();
-                    //itSelCla = fol->getNextGoalClause(); //选择一个开始
-                    //  selClaInd = 0;
-                    selClaInd = fol->GetNextGoalClauseIndex();
                 }
-            } else {
-
-                if (++selClaInd == fol->vgoalClas.size()) {
-                    selClaInd = 0;
-                }
-
-                //                if (*itSelCla == nullptr || itSelCla == fol->vgoalClas.end())
-                //                    itSelCla = fol->vgoalClas.begin();
             }
+            selCla = fol->GetNextStartClaByUCB(iterNum); //根据策略选择起步子句
         }/* 3.3 多元演绎构建成功*/
         else {//if (RESULT::SUCCES == res) {
             triAlg.subst->Clear();
             //添加新子句到子句集.
-
+            Cla_p nextStarCla = nullptr;
             for (int i = 0; i < uNewClaSize; i++) {
                 Clause* newCla = triAlg.newClas[i];
 
                 //debug if (newCla->ident >= 16765) cout << "debug" << endl;
                 triAlg.OutNewClaInfo(newCla); //输出新子句
-                fol->insertNewCla(newCla);
+
                 double pri = 0;
                 for (Literal* tmpLit = newCla->literals; tmpLit; tmpLit = tmpLit->next) {
                     pri += tmpLit->parentLitPtr->claPtr->priority;
@@ -360,19 +359,27 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
                 /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
                 //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
                 newCla->priority = pri / newCla->LitsNumber();
-                fol->vgoalClas.push_back(newCla);
+                fol->insertNewCla(newCla);
+                //新子句为演绎最后一个子句文字全部下拉，则设置为下次起步子句;
+                //考虑 即是单元子句，又是文字全部下拉怎么处理 -- 从该单元子句起步 加入起步子句集合 （若后面充分后退情况下 可以不加入）
+                if (newCla->isLemmaCla()) {
+                    assert(RESULT::NOLits == res);
+                    nextStarCla = newCla;
+                    fol->AddStartClaInfo(newCla);
+                    cout <<"newCla:"<< newCla->ident << "# === 演绎次数:" << iterNum << endl;
+                }
             }
-            //选择下一个起步子句
-            if (++selClaInd == fol->vgoalClas.size()) {
-                selClaInd = 0;
+
+            fol->mapStartClaInfo[selCla]->claQulity += 0.5f; //演绎成功+0.5
+            if (RESULT::NOLits == res) {
+                //cout << (*selClaIt)->isLemmaCla() << "# === 演绎次数:" << iterNum << endl;
+                fol->mapStartClaInfo[selCla]->claQulity++; //修改子句质量+1
+            }//选择下一个起步子句-只从原始子句起步
+            if (nullptr == nextStarCla) {
+                selCla = fol->GetNextStartClaByUCB(iterNum);
             }
-            //            (++itSelCla);
-            //            if ((*itSelCla) == nullptr || itSelCla == fol->vgoalClas.end())
-            //                itSelCla = fol->vgoalClas.begin();
 
         }
-        
-
     }
     PaseTime("BaseAlgByLearn ", startTimeResolute); //输出演绎的时间
     return res;

@@ -213,7 +213,7 @@ RESULT TriAlgExt::ExtendTri() {
             givenCla->priority -= 50;
         }
         fol->workClaSet->RemoveClause(givenCla);
-        procedClaSet->InsertCla(givenCla);
+        procedClaSet->InsertCla(givenCla,false);
 
         // cout<<lstCla.size()<<endl;
         if (fol->workClaSet->ClauseSetEmpty())
@@ -303,7 +303,7 @@ RESULT TriAlgExt::ExtendTriByFull() {
         }
 
         fol->workClaSet->RemoveClause(givenCla);
-        procedClaSet->InsertCla(givenCla);
+        procedClaSet->InsertCla(givenCla,false);
     }
     //=== △构建完成 ===== 
     fol->workClaSet = procedClaSet;

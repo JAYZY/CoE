@@ -15,8 +15,8 @@
 #include "Formula/Formula.h"
 #include "PROOF/ProofControl.h"
 #include "Alg/Resolution.h"
-    //    int olds = size / 3;
-    //    int *x;
+//    int olds = size / 3;
+//    int *x;
 #include "INOUT/FileOp.h"
 #include "Inferences/InferenceInfo.h"
 #include "Global/Environment.h"
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     }
     StrategyParam::isOutTPTP = true;
     //StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Post_Weight;
-    StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight;
+
     cout << argv[0] << endl;
     //命令行解析
     char *path = NULL;
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     puts(path);
     free(path);
 
-    
+
     if (StrategyParam::IFormat == InFormat::FOF) {
         double startTime = CPUTime();
         string cmd = "timeout 3600  ./eprover2.1 " + Env::tptpFileName + " --cnf --output-file=" + FileOp::getInstance()->cnfFileName; //判断文件名称;
@@ -70,22 +70,27 @@ int main(int argc, char** argv) {
         Env::tptpFileName = FileOp::getInstance()->cnfFileName;
         PaseTime("FOF2CNFByEprover_", startTime);
     }
-
+    Formula fol;
+    fol.SetStrategy();//设置启发式规则
     //全局扫描器Scanner读取文件 argv[1]
     Env::IniScanner(nullptr, const_cast<char*> (Env::tptpFileName.c_str()), true, nullptr);
 
     //生成公式集\子句-----------------
-    Formula fol;
+    
     fol.generateFormula(Env::getIn());
     PaseTime("GenFormula_");
-   
+
     //输出原始子句 
     fol.printOrigalClaSet();
-
+    
     vector<Clause*> factorClas;
     //预处理操作---------------------       FileOp::getInstance()->outInfo("\n#------ preProcessed Clauses ------\n");
     RESULT res = fol.preProcess(factorClas);
 
+    
+    //全局索引排序
+    //fol.PredIndexSort();
+    
     //输出预处理后子句 
     // fol->printProcessedClaSet(stdout);
     if (res == RESULT::SUCCES) {
@@ -95,6 +100,7 @@ int main(int argc, char** argv) {
             fol.GenerateEqulitAxiom();
             fol.printEqulityAxioms();
         }
+    
         FileOp::getInstance()->outInfo("\n#------ New Clauses ------\n");
         //--- 输出factor .i 信息 --- 
         // <editor-fold defaultstate="collapsed" desc="輸出factor .i信息">

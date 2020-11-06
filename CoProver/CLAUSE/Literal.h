@@ -70,7 +70,7 @@ public:
     uint32_t uUnitMatchInd; //文字检查单元下拉的列表下标 ind
 
     //模拟MCTS 搜索算法
-    float qulity; //节点价值  根据 延拓计算值   
+    float qulity; //节点价值  根据 延拓计算值  默认值为1 
 
     //---------------
     EqnProp properties; /*prositive ,maximal,equational */
@@ -184,6 +184,7 @@ public:
     }
 
     inline void SetHold() {
+        this->matchLitPtr = nullptr;
         EqnSetProp(EqnProp::EPIsHold);
     }
 
@@ -847,13 +848,23 @@ public:
     /// 计算 蒙特卡洛算法的 UCB(upper confidence bound)值
     /// \return 
 
-    inline float GetUCB(int parentUseTimes) {
+    inline float GetActUCB(int parentUseTimes) {
         if (this->aUsedCount == 0) //若没有被使用过 则 值为无穷大
             return INT_MAX * 1.0f;
-        float C =0.7071068f;// 1 / rsqrt(2) ; //常数,经验值为 2开方. 值越大越偏向广度搜索.越小偏向深度搜索.
-        this->qulity / this->aUsedCount + C * sqrt(2* log(parentUseTimes) / this->aUsedCount);
+        float C = 0.7071068f; // 1 / rsqrt(2) ; //常数,经验值为 2开方. 值越大越偏向广度搜索.越小偏向深度搜索.
+        return this->qulity / this->aUsedCount + C * sqrt(2 * log(parentUseTimes) / this->aUsedCount);
     }
+
+    inline float GetPasUCB(int parentUseTimes) {
+        if (this->pUsedCount == 0) //若没有被使用过 则 值为无穷大
+            return INT_MAX * 1.0f;
+        float C = 0.7071068f; // 1 / rsqrt(2) ; //常数,经验值为 2开方. 值越大越偏向广度搜索.越小偏向深度搜索.
+        return this->qulity / this->pUsedCount + C * sqrt(2 * log(parentUseTimes) / this->pUsedCount);
+    }
+
+
     /// 更新节点质量 -- 需要回溯所有父文字的 质量
+
 
     /// \param value
 

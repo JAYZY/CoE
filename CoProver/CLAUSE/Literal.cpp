@@ -18,6 +18,7 @@
 
 Literal::Literal() {
     aUsedCount = 0;
+    pUsedCount=0;
     this->properties = EqnProp::EPIsHold;
     pos = 0;
     reduceTime = 0;
@@ -29,6 +30,7 @@ Literal::Literal() {
     varState = VarState::unknown;
     matchLitPtr = nullptr;
     uUnitMatchInd = 0;
+    qulity=1.0f;
     //weight = 0;
     //  zjlitWight = 0;
 

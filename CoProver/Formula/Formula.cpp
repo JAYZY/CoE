@@ -340,7 +340,7 @@ void Formula::generateFormula(Scanner* in) {
                         Clause* clause = new Clause();
                         clause->ClauseParse(in);
                         //debug                        clause->GetClaTB()->TBPrintBankInOrder(stdout);
-                        origalClaSet->InsertCla(clause);
+                        origalClaSet->InsertCla(clause, false);
 
                         /*
                         printf("number of clause:%u\n", Env::global_clause_counter);
@@ -446,8 +446,10 @@ RESULT Formula::preProcess(vector<Clause*>&factorClas) {
             return RESULT::UNSAT;
         }
     }
-    SetStrategy();
-
+    if (StrategyParam::MaxLitNumOfR > this->uMaxLitNumOfCla)
+        StrategyParam::MaxLitNumOfR = this->uMaxLitNumOfCla+2;
+    if (StrategyParam::MaxFuncLayerOfR > this->uMaxFuncLayerOfCla + 1)
+        StrategyParam::MaxFuncLayerOfR = this->uMaxFuncLayerOfCla + 1;
     //StrategyParam::MaxLitNumOfR = 3; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
     //StrategyParam::MaxLitsNumOfTriNewCla = 2;
     //StrategyParam::MaxLitNumOfNewCla = 2; //限制新子句添加到子句集中  -- 决定了搜索空间的膨胀
@@ -459,6 +461,9 @@ RESULT Formula::preProcess(vector<Clause*>&factorClas) {
     fprintf(stdout, "# Number Of Subsumption Clause:%8u #\n", uFSNum);
     fprintf(stdout, "# Number Of Tautology Clause  :%8u #\n", uTautologyNum);
     fprintf(stdout, "# Number Of Factor  Clause    :%8u #\n", uFactorNum);
+    fprintf(stdout, "%12s", "# --------------------------------------#\n");
+    fprintf(stdout, "# Stragegy:MaxLitNumOfR       :%8u #\n", StrategyParam::MaxLitNumOfR);
+    fprintf(stdout, "# Stragegy:MaxFuncLayerOfR    :%8u #\n", StrategyParam::MaxFuncLayerOfR);
     fprintf(stdout, "%12s", "# ======================================#\n");
     return RESULT::SUCCES;
 }
@@ -467,13 +472,15 @@ void Formula::SetStrategy() {
     //rule set
     StrategyParam::RuleALitsAllowEqual = false;
     StrategyParam::RuleALitsAllowEqualR = false;
-
+    StrategyParam::ISSplitUnitCalIndex = false; //谓词索引是否包含单元子句    
     //limited Set
-     StrategyParam::MaxLitNumOfR = 2; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
-     StrategyParam::MaxFuncLayerOfR = 1; //R 的最大函数嵌套层
-     StrategyParam::MaxLitsNumOfTriNewCla = 3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
-     StrategyParam::MaxLitNumOfNewCla = 1; //完成△中，新子句加入到子句集的文字数限制
+    StrategyParam::MaxLitNumOfR = 5; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
+    StrategyParam::MaxFuncLayerOfR = 15; //R 的最大函数嵌套层
+    StrategyParam::MaxLitsNumOfTriNewCla = 3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
+    StrategyParam::MaxLitNumOfNewCla = 3; //完成△中，新子句加入到子句集的文字数限制
 
+    //select strategy
+    StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //子句集排序规则
 }
 
 //检查单元子句是否存在互补合一 -- unsat
@@ -931,7 +938,6 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
 
     //将每个文字-添加到总索引中
     while (lit) {
-
         //
         if (!isEquAxiom) {
             if (lit->EqnIsEquLit()) {
@@ -983,13 +989,17 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
     }
 
     /* 目标子句或非单元子句 添加到 workClaSet 中 */
-    if (cla->isGoal() || !cla->isUnit()) {
-        if (cla->isGoal()) { //添加目标子句
+    bool isGoalCla = cla->isGoal();
+    if (isGoalCla || !cla->isUnit() || cla->isNoPos()) {
+        if (isGoalCla || cla->isNoPos()) { //添加目标子句 -- //认为全部负文字也为目标子句
             this->addGoalClas(cla); /* 处理目标子句 添加到目标子句列表 -- vgoalClas */
         }
+        //if(!cla->isUnit()&&cla->isNoPos())
         //添加到工作子句集中  
-        this->workClaSet->InsertCla(cla);
+        this->workClaSet->InsertCla(cla, isGoalCla); //工作集合1.非单元子句;2.目标子句
     }
+
+
 
     //输出 .tp  -- 结合证明时,输出结果给 其它证明器使用  [是否输出手动添加的等词公理?- 暂时不输出]
     if (StrategyParam::isOutTPTP) {
@@ -1079,6 +1089,15 @@ void Formula::AddPredIndex(Lit_p lit, bool isUnitCla) {
     }
 }
 
+void Formula::PredIndexSort() {
+    for (auto& elem : g_NonUnitPostPred) {
+        stable_sort(elem.second.begin(), elem.second.end(), SortRule::PoslitCmp);
+    }
+    for (auto& elem : g_NonUnitNegPred) {
+        stable_sort(elem.second.begin(), elem.second.end(), SortRule::PoslitCmp);
+    }
+}
+
 void Formula::AddPredIndexNoUnit(Lit_p lit, bool isUnitCla) {
 
     map<int32_t, vector < Literal*>> *mapPred = lit->IsPositive() ? &g_NonUnitPostPred : &g_NonUnitNegPred;
@@ -1124,24 +1143,49 @@ vector<Literal*>* Formula::getPairUnitPredLst(Literal* lit) {
 /*得到互补谓词候选文字集合*/
 vector<Literal*>* Formula::getPairPredLst(Literal* lit) {
     //debug       if (lit->EqnIsEquLit())          cout << "eqlit" << endl;
+
     if (lit->IsPositive())
         return (lit->EqnIsEquLit()) ? &g_NonUnitNegPred[0] : &g_NonUnitNegPred[lit->lterm->fCode];
     else
         return (lit->EqnIsEquLit()) ? &g_NonUnitPostPred[0] : &g_NonUnitPostPred[lit->lterm->fCode];
-}
 
-vector<Literal*>* Formula::getPredLst(Literal* lit) {
-    assert(!lit->EqnIsEquLit()); //不能是等词文字
-    if (lit->IsPositive())
-        return &g_NonUnitPostPred[lit->lterm->fCode];
-
-    else
-        return &g_NonUnitNegPred[lit->lterm->fCode];
 }
 
 list<Clause*>::iterator Formula::getNextStartClause() {
 
     return min_element(this->workClaSet->getClaSet()->begin(), this->workClaSet->getClaSet()->end(), SortRule::ClaCmp);
+
+}
+
+void Formula::IniStartClaInfo() {
+    //添加所有的原始子句
+    for (Cla_p cla : * this->workClaSet->getClaSet()) {
+        mapStartClaInfo[cla] = new StartClaInfo{0, 1.0f};
+    }
+}
+
+void Formula::AddStartClaInfo(Cla_p cla) {
+    //添加新子句
+
+    mapStartClaInfo[cla] = new StartClaInfo{0, 1.0f};
+
+}
+
+Cla_p Formula::GetNextStartClaByUCB(long item) {
+    float maxUCB = 0.0f;
+    Cla_p retClaPtr = mapStartClaInfo.begin()->first;
+    for (auto &elem : mapStartClaInfo) {
+        float claUCB = SortRule::ComputeUBC(elem.second->claQulity, elem.second->claUseCount, item);
+        if (abs(claUCB - INT_MAX) < 0.000001) {
+            retClaPtr = elem.first;
+            break;
+        }
+        if (claUCB > maxUCB) {
+            maxUCB=claUCB;
+            retClaPtr = elem.first;
+        }
+    }
+    return retClaPtr;
 
 }
 

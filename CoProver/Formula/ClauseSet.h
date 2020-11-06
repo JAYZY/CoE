@@ -60,11 +60,12 @@ public:
                     return c1->LitsNumber() > c2->LitsNumber();
                 });
     }
-    //按文字升序排列
-
+    //按文字升序排列 
+    
     inline void SortByLitNumAsc() {
         claLst.sort(
                 [](Clause*c1, Clause * c2)->bool {
+                    
                     return c1->LitsNumber() < c2->LitsNumber();
                 });
     }
@@ -73,7 +74,7 @@ public:
     /*---------------------------------------------------------------------*/
     /*                  Member Function-[public]                           */
     /*---------------------------------------------------------------------*/
-    void InsertCla(Clause* newCla);
+    void InsertCla(Clause* newCla,bool isGoal);
     long InsertSet(ClauseSet* set);
 
     void CopyClalst(list<Clause*>&retClaSet);

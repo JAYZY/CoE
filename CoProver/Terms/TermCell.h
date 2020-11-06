@@ -23,6 +23,7 @@
 #include "HEURISTICS/StrategyParam.h"
 
 enum class DerefType : uint8_t {
+     
     TRUECODE = 1,
     FLASECODE = 2,
     NILCODE = 3,

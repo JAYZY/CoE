@@ -126,7 +126,7 @@ long FormulaSet::FormulaAndClauseSetParse(Scanner* in, ClauseSet* cset,
                         assert(in->TestInpId("input_clause|cnf"));
                         Clause* clause = new Clause();
                         clause->ClauseParse(in);
-                        cset->InsertCla(clause);
+                        cset->InsertCla(clause,false);
                     }
                     res++;
                 }

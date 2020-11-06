@@ -228,6 +228,7 @@ public:
     }
     /// 是否为单元子句
     /// \return 
+
     inline bool isUnit() {
         return 1 == (posLitNo + negLitNo);
     }
@@ -306,14 +307,24 @@ public:
         return QueryProp(properties, ClauseProp::CPCopyCla);
     }
 
+    inline bool isLemmaCla() {
+        return QueryProp(properties, ClauseProp::CPTypeLemma);
+    }
+    ///设置子句拷贝属性    
+
     inline void SetCopyClaProp() {
         this->ClauseSetProp(ClauseProp::CPCopyCla);
     }
-    /// 无正文字且负文字个数>1
+    ///设置子句推出的引理属性 -- 这种子句一般是在演绎过程中最后一个演绎子句所有文字被下拉nolits
+
+    inline void SetLemmaClaProp() {
+        this->ClauseSetProp(ClauseProp::CPTypeLemma);
+    }
+    /// 无正文字全为负文字
     /// \return 
 
     inline bool isNoPos() {
-        return (0 == posLitNo && negLitNo > 1);
+        return (0 == posLitNo);
     }
     /// 是否为原始子句
     /// \return 

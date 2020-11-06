@@ -23,7 +23,7 @@ ClauseSet::ClauseSet() {
     this->members = 0;
     this->litNum = 0;
     //this->date = SysDateCreationTime();
-   //SysDateInc(&this->date);
+    //SysDateInc(&this->date);
 
     //    this->demod_index = NULL;
     //    this->fvindex = NULL;
@@ -43,8 +43,12 @@ ClauseSet::~ClauseSet() {
 /*---------------------------------------------------------------------*/
 //插入子句
 
-void ClauseSet::InsertCla(Clause* newCla) {
-    claLst.push_back(newCla);
+void ClauseSet::InsertCla(Clause* newCla, bool isGoal) {
+    if (isGoal) {
+        claLst.push_front(newCla);
+    } else {
+        claLst.push_back(newCla);
+    }
     ++members;
     this->litNum += newCla->LitsNumber();
 }
@@ -55,7 +59,7 @@ long ClauseSet::InsertSet(ClauseSet* otherSet) {
     long res = 0;
     while (!otherSet->ClauseSetEmpty()) {
         handle = otherSet->ClauseSetExtractFirst();
-        this->InsertCla(handle);
+        this->InsertCla(handle,false);
         ++res;
     }
     members += res;
@@ -83,17 +87,18 @@ void ClauseSet::FreeAllClas() {
     while (!claLst.empty()) {
         handle = claLst.front();
         claLst.pop_front();
-        DelPtr(handle);     
+        DelPtr(handle);
     }
-    this->litNum=0;
-    this->members=0;
-            
+    this->litNum = 0;
+    this->members = 0;
+
 }
 //删除子句,只是从集合中删除并不是真正删除该子句
+
 void ClauseSet::RemoveClause(Clause* cla) {
-   // cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
+    // cla->ClauseSetProp(ClauseProp::CPDeleteClause);//设置被删除子句
     this->claLst.remove(cla);
-     this->litNum-= cla->LitsNumber();
+    this->litNum -= cla->LitsNumber();
     --this->members;
     //DelPtr(cla);
 }
