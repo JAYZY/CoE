@@ -156,6 +156,8 @@ public:
     inline bool IsSelected() {
         return EqnQueryProp(EqnProp::EPIsSelected);
     }
+    /// 正文字
+    /// \return 
 
     inline bool IsPositive() {
         return EqnQueryProp(EqnProp::EPIsPositive);
@@ -163,6 +165,26 @@ public:
 
     inline bool IsNegative() {
         return !(EqnQueryProp(EqnProp::EPIsPositive));
+    }
+    /// 文字恒假
+    /// \return true-恒假
+
+    inline bool IsFalse() {
+        if (!this->EqnIsEquLit() || this->IsPositive()) {
+            return false;
+        }
+        if (this->lterm->equalStruct(this->rterm))
+            return true;
+    }
+    /// 文字恒真
+    /// \return true-恒真
+
+    inline bool IsTrue() {
+        if (!this->EqnIsEquLit() || this->IsNegative()) {
+            return false;
+        }
+        if (this->lterm->equalStruct(this->rterm))
+            return true;
     }
 
     inline bool IsMaximal() {
@@ -1020,6 +1042,7 @@ public:
     /// \return 
 
     void EqnFOFParse(Scanner* in, TermBank_p bank);
+
 
     bool EqualsStuct(Literal * lit);
     bool EqualInSameCla(Literal* lit);

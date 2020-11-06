@@ -18,7 +18,7 @@
 
 Literal::Literal() {
     aUsedCount = 0;
-    pUsedCount=0;
+    pUsedCount = 0;
     this->properties = EqnProp::EPIsHold;
     pos = 0;
     reduceTime = 0;
@@ -30,7 +30,7 @@ Literal::Literal() {
     varState = VarState::unknown;
     matchLitPtr = nullptr;
     uUnitMatchInd = 0;
-    qulity=1.0f;
+    qulity = 1.0f;
     //weight = 0;
     //  zjlitWight = 0;
 
@@ -681,6 +681,9 @@ void Literal::EqnFOFParse(Scanner* in, TermBank_p bank) {
     EqnAlloc(this->lterm, this->rterm, positive);
 }
 
+ 
+
+
 //检查两个文字 是否相同（包含了其中的变元替换）
 
 bool Literal::EqualsStuct(Literal* lit) {
@@ -697,10 +700,9 @@ bool Literal::EqualsStuct(Literal* lit) {
 //检查两个文字是否相同，在同一个子句中有共同项；
 
 bool Literal::EqualInSameCla(Literal* lit) {
-    assert(this->claPtr==lit->claPtr);
+    assert(this->claPtr == lit->claPtr);
     bool res = (this->lterm == lit->lterm)&&(this->rterm == lit->rterm);
     if (!res) {
-
         res = (this->lterm == lit->rterm)&&(this->rterm == lit->lterm);
     }
     return res;

@@ -365,8 +365,9 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
                 if (newCla->isLemmaCla()) {
                     assert(RESULT::NOLits == res);
                     nextStarCla = newCla;
+
                     fol->AddStartClaInfo(newCla);
-                    cout <<"newCla:"<< newCla->ident << "# === 演绎次数:" << iterNum << endl;
+                    cout << "newCla:" << newCla->ident << "# === 演绎次数:" << iterNum << endl;
                 }
             }
 
@@ -377,6 +378,8 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
             }//选择下一个起步子句-只从原始子句起步
             if (nullptr == nextStarCla) {
                 selCla = fol->GetNextStartClaByUCB(iterNum);
+            } else {
+                selCla = nextStarCla;
             }
 
         }

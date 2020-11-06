@@ -1297,7 +1297,7 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
     }
     //--- 起步信息输出-==========================
     string strOut = "\n# 起步子句 C" + to_string(givenCla->ident) + ":";
-    //debug       if (givenCla->ident == 5)        cout << "debug" << endl;
+    //debug      if (givenCla->ident == 847)        cout << "debug" << endl;
     //strOut += ((actLitPtr == nullptr) ? "-[无满足要求起步文字]:" : ("-" + to_string(actLit->uUnitMatchInd) + ":"));
     givenCla->getStrOfClause(strOut);
     FileOp::getInstance()->outRun(strOut);
@@ -1349,6 +1349,7 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
             if (pasLitPtr->claPtr == actLitPtr->claPtr || (!candCla->isUnit() && setUsedCla.find(pasLitPtr->claPtr) != setUsedCla.end()))
                 continue;
             uint32_t backpoint = subst->Size();
+
             isDeductOk = unify.literalMgu(actLitPtr, pasLitPtr, subst);
             if (isDeductOk) {//合一
                 actLitPtr->SetNoHold();
@@ -1501,22 +1502,23 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
         } else {
             if (resGenNewC == RESULT::NOLits)
                 resTri = resGenNewC;
-            //2.--输出-- 演绎路径 | 输出重用的单元子句
+            //3.添加到新的子句集               
+            Clause * newCla = new Clause();
+            //2.--输出-- 演绎路径 | 输出重用的单元子句            
             string info = "";
             switch (resTri) {
                 case RESULT::MoreLit:
                     info = "MoreLit"; //文字数过多
                     break;
                 case RESULT::NOLits:
+                    newCla->SetLemmaClaProp();
                     //更新文字质量
                     UpdateLitQuality();
                     info = "NOLits"; //全部下拉，没有延拓文字
                     break;
             }
 
-            //3.添加到新的子句集               
-            Clause * newCla = new Clause();
-            newCla->SetLemmaClaProp();
+
             newCla->bindingAndRecopyLits(vNewR);
             bool isAdd = Add2NewClas(newCla, InfereType::SCS);
             if (isAdd) {
@@ -1576,6 +1578,11 @@ ResRule TriAlg::RuleCheckSimple(Literal*actLit, Literal* pasLit, bool ExistRever
         for (int i = 0; i < vNewR.size(); --i) {
             Lit_p RLitA = vNewR[i];
 
+            //若为等词检查是否存在 a!=a 恒真存在 }
+            if (RLitA->IsFalse()) {
+                FileOp::getInstance()->outLog("#---等词恒假---" + to_string(RLitA->claPtr->ident));
+                return ResRule::TAUTOLOGY; //恒真
+            }
             // <editor-fold defaultstate="collapsed" desc="--- R中文字与同子句中-主界线文字-相同下拉·[合并]">
             ALit_p triLit = vALitTri[triInd];
 
@@ -1775,14 +1782,19 @@ ResRule TriAlg::CheckRInvaild(Lit_p checkLit, vector<Lit_p>&vDelLit, Lit_p *hold
     Lit_p lit = checkLit->claPtr->literals;
     while (lit) {
         if (lit->IsHold() && lit != checkLit) {
-
+            //若为等词检查是否存在 a!=a 恒真存在 }
+            if (lit->IsFalse()) {
+                FileOp::getInstance()->outLog("#---等词恒假---" + to_string(lit->claPtr->ident));
+                return ResRule::TAUTOLOGY; //恒真
+            }
+            
             bool ishold = true;
             //检查函数层是否超过范围
             if (!lit->CheckDepthLimit()) {
                 return ResRule::MoreFunclayer;
             }
             //剩余文字与主动文字相同 [合并]
-            if (lit->EqualsStuct(checkLit)) {
+            if (lit->isSameProps(checkLit) && lit->EqualsStuct(checkLit)) {
                 vDelLit.push_back(lit);
                 ishold = false;
             }
@@ -4659,7 +4671,7 @@ void TriAlg::outTri(vector<ALit_p>& vTri, string & outStr) {
 
 void TriAlg::outR(Clause * actCla, const string & info) {
     string outStr = "";
-    size_t uSizeR = actCla ? 0:vNewR.size() ;
+    size_t uSizeR = actCla ? 0 : vNewR.size();
     if (0 == uSizeR && actCla == nullptr) {
         outStr = "R:空子句";
         FileOp::getInstance()->outRun(outStr);
