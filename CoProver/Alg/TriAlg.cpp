@@ -1297,7 +1297,9 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
     }
     //--- 起步信息输出-==========================
     string strOut = "\n# 起步子句 C" + to_string(givenCla->ident) + ":";
-    //debug      if (givenCla->ident == 847)        cout << "debug" << endl;
+    //debug     
+    if (givenCla->ident == 487)
+        cout << "debug" << endl;
     //strOut += ((actLitPtr == nullptr) ? "-[无满足要求起步文字]:" : ("-" + to_string(actLit->uUnitMatchInd) + ":"));
     givenCla->getStrOfClause(strOut);
     FileOp::getInstance()->outRun(strOut);
@@ -1364,7 +1366,7 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
                 pasLitPtr->claPtr->SetAllLitsHold();
                 pasLitPtr->SetNoHold();
                 //规则检查
-                bool isReverse = vALitTri.empty() ? false : actLitPtr->IsShareVar(vALitTri.back()->blit);
+                bool isReverse = true; //vALitTri.empty() ? false : actLitPtr->IsShareVar(vALitTri.back()->blit);
                 ResRule resRule = RuleCheckSimple(actLitPtr, pasLitPtr, isReverse);
 
                 if (resRule == ResRule::RULEOK) {
@@ -1502,29 +1504,31 @@ RESULT TriAlg::GenBaseTriByOneLearn(Clause* givenCla) {
         } else {
             if (resGenNewC == RESULT::NOLits)
                 resTri = resGenNewC;
+
+            //输出主界线、R以及若有拷贝的单元子句输出拷贝的单元子句
+            this->OutTriAndR(nullptr, "");
             //3.添加到新的子句集               
             Clause * newCla = new Clause();
             //2.--输出-- 演绎路径 | 输出重用的单元子句            
             string info = "";
             switch (resTri) {
                 case RESULT::MoreLit:
-                    info = "MoreLit"; //文字数过多
+                    info = " | MoreLit"; //文字数过多
                     break;
                 case RESULT::NOLits:
                     newCla->SetLemmaClaProp();
                     //更新文字质量
                     UpdateLitQuality();
-                    info = "NOLits"; //全部下拉，没有延拓文字
+                    info = " | NOLits"; //全部下拉，没有延拓文字
                     break;
             }
 
 
             newCla->bindingAndRecopyLits(vNewR);
             bool isAdd = Add2NewClas(newCla, InfereType::SCS);
-            if (isAdd) {
-                //输出主界线、R以及若有拷贝的单元子句输出拷贝的单元子句
-                this->OutTriAndR(newCla, info);
-            }
+
+            this->OutRInfo(info);
+
         }
     }
 
@@ -1575,13 +1579,21 @@ ResRule TriAlg::RuleCheckSimple(Literal*actLit, Literal* pasLit, bool ExistRever
         int triInd = vALitTri.size() - 1;
 
         //检查剩余文字R是否恒真
-        for (int i = 0; i < vNewR.size(); --i) {
+        for (int i = 0; i < vNewR.size(); ++i) {
             Lit_p RLitA = vNewR[i];
 
             //若为等词检查是否存在 a!=a 恒真存在 }
-            if (RLitA->IsFalse()) {
-                FileOp::getInstance()->outLog("#---等词恒假---" + to_string(RLitA->claPtr->ident));
+            int8_t isTrueOrFalse = RLitA->IsTrueOrFalse();
+            if (1 == isTrueOrFalse) {
+                FileOp::getInstance()->outLog("#---逆向导致R等词恒真，冗余---" + to_string(RLitA->claPtr->ident));
                 return ResRule::TAUTOLOGY; //恒真
+            }
+            if (-1 == isTrueOrFalse) {
+                string strDebug = "";
+                RLitA->getStrOfEqnTSTP(strDebug, DerefType::DEREF_ALWAYS);
+                //cout << "#---逆向导致R等词恒假删除_C:" << RLitA->claPtr->ident << " R:" + strDebug << endl;
+                arryDelRInd[i] = 1; //相同-删除
+                continue;
             }
             // <editor-fold defaultstate="collapsed" desc="--- R中文字与同子句中-主界线文字-相同下拉·[合并]">
             ALit_p triLit = vALitTri[triInd];
@@ -1642,18 +1654,16 @@ ResRule TriAlg::RuleCheckSimple(Literal*actLit, Literal* pasLit, bool ExistRever
     uint32_t pasLitHoldNum = 0;
     uint16_t isOkLitNum = 0;
     for (Lit_p lit = actLit->claPtr->literals; lit; lit = lit->next) {
-        if (lit->IsHold()) {
-
-            if (ReduceLitByALits(lit, vALitTri)) {
-                vReduceByALit.push_back(lit);
-            } else {
-                if (lit->CheckDepthLimit() <= StrategyParam::MaxFuncLayerOfR) {
-                    ++isOkLitNum; //满足条件的文字数
-                }
-
-                ++pasLitHoldNum; //计算主动文字剩余文字数
+        if (lit->IsNoHold() || (!vDelLitInAP.empty() && std::find(vDelLitInAP.begin(), vDelLitInAP.end(), lit) != vDelLitInAP.end())) {
+            continue;
+        }
+        if (ReduceLitByALits(lit, vALitTri)) {
+            vReduceByALit.push_back(lit);
+        } else {
+            if (lit->CheckDepthLimit() <= StrategyParam::MaxFuncLayerOfR) {
+                ++isOkLitNum; //满足条件的文字数
             }
-
+            ++pasLitHoldNum; //计算主动文字剩余文字数
         }
     }
     //6.检查文字数是否超过函数层限制
@@ -1661,7 +1671,6 @@ ResRule TriAlg::RuleCheckSimple(Literal*actLit, Literal* pasLit, bool ExistRever
         res = ResRule::MoreFunclayer;
     }//6.检查文字数是否超过数字限制
     else if (pasLitHoldNum + vNewR.size() > StrategyParam::MaxLitNumOfR) {
-
         //超出限制，演绎停止。
         res = ResRule::MoreLit;
     }
@@ -1783,20 +1792,32 @@ ResRule TriAlg::CheckRInvaild(Lit_p checkLit, vector<Lit_p>&vDelLit, Lit_p *hold
     while (lit) {
         if (lit->IsHold() && lit != checkLit) {
             //若为等词检查是否存在 a!=a 恒真存在 }
-            if (lit->IsFalse()) {
-                FileOp::getInstance()->outLog("#---等词恒假---" + to_string(lit->claPtr->ident));
+            int8_t isTrueOrFalse = lit->IsTrueOrFalse();
+            if (1 == isTrueOrFalse) {
+                FileOp::getInstance()->outLog("#---等词恒真---" + to_string(lit->claPtr->ident));
+                //cout << "#---等词恒真,冗余_C:" << lit->claPtr->ident << endl;
                 return ResRule::TAUTOLOGY; //恒真
             }
-            
+
             bool ishold = true;
-            //检查函数层是否超过范围
-            if (!lit->CheckDepthLimit()) {
-                return ResRule::MoreFunclayer;
-            }
-            //剩余文字与主动文字相同 [合并]
-            if (lit->isSameProps(checkLit) && lit->EqualsStuct(checkLit)) {
+            if (-1 == isTrueOrFalse) {
+                //恒假文字删除
+                //string strDebug = "";
+                //lit->getStrOfEqnTSTP(strDebug, DerefType::DEREF_ALWAYS);
+                //cout << "#---等词恒假删除_C:" << lit->claPtr->ident << " l:" + strDebug << endl;
                 vDelLit.push_back(lit);
                 ishold = false;
+            }
+            if (ishold) {
+                //检查函数层是否超过范围
+                if (!lit->CheckDepthLimit()) {
+                    return ResRule::MoreFunclayer;
+                }
+                //剩余文字与主动文字相同 [合并]
+                if (lit->isSameProps(checkLit) && lit->EqualsStuct(checkLit)) {
+                    vDelLit.push_back(lit);
+                    ishold = false;
+                }
             }
             if (ishold) {
                 // <editor-fold defaultstate="collapsed" desc="检查是否与R恒真">

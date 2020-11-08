@@ -399,6 +399,8 @@ TermBank_p Literal::getClaTermBank() {
 void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
     if (IsPropFalse()) {
         fputs("$false", out);
+    } else if (IsTrivial()) {
+        fputs("$true", out);
     } else {
         if (EqnIsEquLit()) {
 
@@ -421,6 +423,8 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
 void Literal::getStrOfEqnTSTP(string&outStr, DerefType deref) {
     if (IsPropFalse()) {
         outStr += "$false";
+    } else if (IsTrivial()) {
+        outStr += "$true";
     } else {
         if (EqnIsEquLit()) {
             lterm->getStrOfTerm(outStr, deref);
@@ -681,7 +685,7 @@ void Literal::EqnFOFParse(Scanner* in, TermBank_p bank) {
     EqnAlloc(this->lterm, this->rterm, positive);
 }
 
- 
+
 
 
 //检查两个文字 是否相同（包含了其中的变元替换）

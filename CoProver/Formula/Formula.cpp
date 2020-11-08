@@ -61,44 +61,45 @@ void Formula::GenerateEqulitAxiom() {
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
 
     //======================================================================/
-    //(1) Reflexivity: X1=X1
-    Clause* claReflex = new Clause();
-    claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
+    if (StrategyParam::IsAddRefleSymEquAxiom) {
+        //(1) Reflexivity: X1=X1
+        Clause* claReflex = new Clause();
+        claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
 
-    Lit_p reflexLit = new Literal(); //Reflexivity: X1=X1
-    TermCell* t = claReflex->GetClaTB()->VarInert("A", reflexLit);
-    reflexLit->EqnAlloc(t, t, true);
-    reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
-    reflexLit->EqnSetProp(EqnProp::EPIsPositive);
+        Lit_p reflexLit = new Literal(); //Reflexivity: X1=X1
+        TermCell* t = claReflex->GetClaTB()->VarInert("A", reflexLit);
+        reflexLit->EqnAlloc(t, t, true);
+        reflexLit->EqnSetProp(EqnProp::EPIsEquLiteral);
+        reflexLit->EqnSetProp(EqnProp::EPIsPositive);
 
-    claReflex->bindingLits(reflexLit);
-    claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
-    claReflex->ClauseSetProp(ClauseProp::CPType1);
-    //claReflex->info->name = "reflexivity";
-    this->insertNewCla(claReflex, true);
+        claReflex->bindingLits(reflexLit);
+        claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
+        claReflex->ClauseSetProp(ClauseProp::CPType1);
+        //claReflex->info->name = "reflexivity";
+        this->insertNewCla(claReflex, true);
 
-    //(2) Symmetry: X1~=X2 | X2 =X1
-    Clause* claSymmetry = new Clause();
-    Lit_p symLitA = new Literal();
-    TermCell* lt = claSymmetry->GetClaTB()->VarInert("A", symLitA);
-    TermCell* rt = claSymmetry->GetClaTB()->VarInert("B", symLitA);
-    symLitA->EqnAlloc(lt, rt, false);
-    symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
+        //(2) Symmetry: X1~=X2 | X2 =X1
+        Clause* claSymmetry = new Clause();
+        Lit_p symLitA = new Literal();
+        TermCell* lt = claSymmetry->GetClaTB()->VarInert("A", symLitA);
+        TermCell* rt = claSymmetry->GetClaTB()->VarInert("B", symLitA);
+        symLitA->EqnAlloc(lt, rt, false);
+        symLitA->EqnSetProp(EqnProp::EPIsEquLiteral);
 
-    Lit_p symLitB = new Literal();
-    lt = claSymmetry->GetClaTB()->VarInert("B", symLitB);
-    rt = claSymmetry->GetClaTB()->VarInert("A", symLitB);
-    symLitB->EqnAlloc(lt, rt, false);
-    symLitB->EqnSetProp(EqnProp::EPIsEquLiteral);
-    symLitB->EqnSetProp(EqnProp::EPIsPositive);
+        Lit_p symLitB = new Literal();
+        lt = claSymmetry->GetClaTB()->VarInert("B", symLitB);
+        rt = claSymmetry->GetClaTB()->VarInert("A", symLitB);
+        symLitB->EqnAlloc(lt, rt, false);
+        symLitB->EqnSetProp(EqnProp::EPIsEquLiteral);
+        symLitB->EqnSetProp(EqnProp::EPIsPositive);
 
-    symLitA->next = symLitB;
-    claSymmetry->bindingLits(symLitA);
-    claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom);
-    claSymmetry->ClauseSetProp(ClauseProp::CPType1);
-    //claSymmetry->info->name = "symmetry";    vEqulityAxiom.push_back(claSymmetry);
-    this->insertNewCla(claSymmetry, true);
-
+        symLitA->next = symLitB;
+        claSymmetry->bindingLits(symLitA);
+        claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom);
+        claSymmetry->ClauseSetProp(ClauseProp::CPType1);
+        //claSymmetry->info->name = "symmetry";    vEqulityAxiom.push_back(claSymmetry);
+        this->insertNewCla(claSymmetry, true);
+    }
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
     Clause* claTrans = new Clause();
     Lit_p transA = new Literal();
@@ -447,7 +448,7 @@ RESULT Formula::preProcess(vector<Clause*>&factorClas) {
         }
     }
     if (StrategyParam::MaxLitNumOfR > this->uMaxLitNumOfCla)
-        StrategyParam::MaxLitNumOfR = this->uMaxLitNumOfCla+2;
+        StrategyParam::MaxLitNumOfR = this->uMaxLitNumOfCla + 2;
     if (StrategyParam::MaxFuncLayerOfR > this->uMaxFuncLayerOfCla + 1)
         StrategyParam::MaxFuncLayerOfR = this->uMaxFuncLayerOfCla + 1;
     //StrategyParam::MaxLitNumOfR = 3; //剩余子句集中最大文字数限制-- 决定了△的继续延拓（思考：与扩展▲的区别在于此）   
@@ -481,6 +482,9 @@ void Formula::SetStrategy() {
 
     //select strategy
     StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //子句集排序规则
+    //是否添加 相关等词
+    StrategyParam::IsAddRefleSymEquAxiom = false;
+    
 }
 
 //检查单元子句是否存在互补合一 -- unsat
@@ -1181,7 +1185,7 @@ Cla_p Formula::GetNextStartClaByUCB(long item) {
             break;
         }
         if (claUCB > maxUCB) {
-            maxUCB=claUCB;
+            maxUCB = claUCB;
             retClaPtr = elem.first;
         }
     }

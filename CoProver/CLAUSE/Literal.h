@@ -167,24 +167,23 @@ public:
         return !(EqnQueryProp(EqnProp::EPIsPositive));
     }
     /// 文字恒假
-    /// \return true-恒假
+    /// \return (-1)-恒假 a!=a (1)-恒真  (0)-非恒假恒真
 
-    inline bool IsFalse() {
-        if (!this->EqnIsEquLit() || this->IsPositive()) {
-            return false;
+    inline int8_t IsTrueOrFalse() {
+        int8_t res=0;
+        if(this->EqnIsEquLit()&&(this->lterm->equalStruct(this->rterm)) ){
+            res=this->IsPositive()?1:-1;
         }
-        if (this->lterm->equalStruct(this->rterm))
-            return true;
+        return res;
     }
     /// 文字恒真
-    /// \return true-恒真
+    /// \return true-恒真 a=a
 
     inline bool IsTrue() {
-        if (!this->EqnIsEquLit() || this->IsNegative()) {
-            return false;
-        }
-        if (this->lterm->equalStruct(this->rterm))
+        if (this->EqnIsEquLit() && this->IsPositive()&& (this->lterm->equalStruct(this->rterm)))
             return true;
+        else
+            return false;
     }
 
     inline bool IsMaximal() {

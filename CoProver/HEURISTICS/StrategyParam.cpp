@@ -33,7 +33,7 @@ int8_t StrategyParam::ClaRedundancyWeight = -3; //子句归结中发现冗余,�
 int8_t StrategyParam::LitRedunancyWeight = -2; //文字归结中发现冗余,改变的优先级 
 int8_t StrategyParam::LitOverFuncLayer = -2; //文字超过限制,改变的优先级
 //初始化参数==================================	
-
+bool StrategyParam::IsAddRefleSymEquAxiom = true;
 bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
 bool StrategyParam::RuleALitsAllowEqualR = false;

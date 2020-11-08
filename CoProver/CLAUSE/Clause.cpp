@@ -794,6 +794,7 @@ void Clause::SetEqnListVarState() {
             //根据文字查找变元
             set<TermCell*>&setVarTerms = this->mapLitposToVarTerm[lit];
             lit->varState = VarState::freeVar;
+            
             for (TermCell* varT : setVarTerms) {
                 //根据变元项查找文字
                 set<Lit_p>&setLits = this->mapVarTermToLitpos[varT];
@@ -801,6 +802,7 @@ void Clause::SetEqnListVarState() {
                     continue;
                 for (Lit_p litShare : setLits) {
                     litShare->varState = VarState::shareVar;
+                    lit->varState = VarState::shareVar;
                 }
             }
         }

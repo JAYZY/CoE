@@ -99,8 +99,8 @@ public:
     static ClaSelStrategy CLAUSE_SEL_STRATEGY; //
     static PasLitSteady SEL_POSLIT_STEADY; //被动归结文字子句所在文字数策略
     static ALimit ALIT_LIMIT; //主界线文字限制
-    
-    
+
+
     static ActLitSteady Weight_Sort; //权重排序策略
     //  static ALimit SEL_POSLIT_STEADY;               //被动归结文字文字数策略
     static uint32_t IterCount_LIMIT; //create triangle count limit
@@ -129,6 +129,7 @@ public:
     // sstatic INT32 SEL_ACTLIT_STEADY; //主动归结文字文字数策略
     //static INT32 SEL_POSLIT_STRATEGY; //被动归结文字选择策略
 
+    static bool IsAddRefleSymEquAxiom;//是否添加自反和对称等词
     static bool ADD_EQULITY; //whether add equlity axiom
     static bool ADD_CR;
 

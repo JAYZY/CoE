@@ -275,10 +275,7 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
     uint16_t modifyLimitCount = 0; //修改限制条件次数
     //不能作为起步子句集合--A.单元子句,B等词公理不能作为起步子句
     set<Clause*> notStartClaSet;
-    //1.选择起步子句 -- 目标子句
-
-    //int selClaInd = fol->GetNextGoalClauseIndex();
-    //list<Clause*>::iterator selClaIt = fol->getWorkClas()->begin();
+    //1.选择起步子句 -- 目标子句+非单元子句
     if (fol->getWorkClas()->empty())
         return res;
     fol->IniStartClaInfo();
@@ -365,9 +362,8 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
                 if (newCla->isLemmaCla()) {
                     assert(RESULT::NOLits == res);
                     nextStarCla = newCla;
-
                     fol->AddStartClaInfo(newCla);
-                    cout << "newCla:" << newCla->ident << "# === 演绎次数:" << iterNum << endl;
+                    // cout << "newCla:" << newCla->ident << "# === 演绎次数:" << iterNum << endl;
                 }
             }
 

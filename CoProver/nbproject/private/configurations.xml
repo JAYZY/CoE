@@ -28,8 +28,6 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/myprob/originSample/baseSample/DL8_1.tptp
-</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/myprob/originSample/baseSample/程序验证1.TPTP
 </runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/2019/FNE/CSR029+3.p -f=fof</runcommandpicklistitem>
@@ -40,8 +38,9 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.9/	LCL638+1.015.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/2019/FNE/CSR029+3.p -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT007+2.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT007+2.p -f=fof</runcommand>
+        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
