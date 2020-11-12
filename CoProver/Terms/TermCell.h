@@ -23,7 +23,6 @@
 #include "HEURISTICS/StrategyParam.h"
 
 enum class DerefType : uint8_t {
-     
     TRUECODE = 1,
     FLASECODE = 2,
     NILCODE = 3,
@@ -211,11 +210,12 @@ public:
         }
         this->uTermWeight = w;
     }
+
     inline void AddTermWeight(uint16_t w) {
-        
-//        if ((this->uTermWeight + w) > UINT16_MAX - 1) {
-//             Out::Error("Error:项的字符权重超过最大限制(2^16=65536)!", ErrorCodes::SYNTAX_ERROR);
-//        }
+
+        //        if ((this->uTermWeight + w) > UINT16_MAX - 1) {
+        //             Out::Error("Error:项的字符权重超过最大限制(2^16=65536)!", ErrorCodes::SYNTAX_ERROR);
+        //        }
         this->uTermWeight += w;
     }
 
@@ -302,7 +302,7 @@ public:
     //    }
 
     inline long ComputeTermStandardWeight() {
-        return   ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
+        return ComputeTermWeight(DEFAULT_VWEIGHT, DEFAULT_FWEIGHT);
     }
 
     inline const char* getVarName(string &termName, string splitCh = "") {
@@ -332,7 +332,7 @@ public:
 
 #ifndef NDEBUG
         if (flag)
-             assert(0 == this->GetVarCount());
+            assert(0 == this->GetVarCount());
 #endif
         return flag;
     }
@@ -360,7 +360,7 @@ public:
     /// \return 
     uint8_t ComputeMaxFuncDepth();
     uint16_t TermDepth();
-    uint16_t CheckTermDepthLimit();
+    int16_t CheckTermDepthLimit();
 
     long ComputeTermWeight(long vweight, long fweight);
     long TermFsumWeight(long vweight, long flimit, vector<long>&fweights, long default_fweight);
@@ -422,11 +422,11 @@ public:
 
     /*拷贝子项中的内容　args--Return a copy of the argument array of source. */
     TermCell** TermArgListCopy();
-    TermCell* TermEquivCellAlloc(TermBank* tb,Literal* litptr);
+    TermCell* TermEquivCellAlloc(TermBank* tb, Literal* litptr);
     TermCell* RenameCopy(TermBank* tb, Literal* litptr, DerefType deref = DerefType::DEREF_ALWAYS);
-    
-    
-    TermCell* TermCopy(TermBank* tb,Literal* litptr, DerefType deref);
+
+
+    TermCell* TermCopy(TermBank* tb, Literal* litptr, DerefType deref);
     TermCell* TermCopyKeepVars(DerefType deref);
     TermCell* TermCheckConsistency(DerefType deref);
 

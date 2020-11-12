@@ -88,9 +88,18 @@ public:
     /*--------------------------------------------------------------------------
     / 被动归结文字排序（排序的文字在同一个谓词对应的文字列表中）                /
     /1.文字使用最少的;1.子句所在文字数最少;2.用weight(KBO)代替稳定度，由低到高，  【文字稳定度(默认由低到高)】
+     3.等词公理排后
     /-------------------------------------------------------------------------*/
     static bool PoslitCmp(Literal*litA, Literal*litB) {
-        //排序规则 : 优先选择结构相同的.再选择文字少的        
+        //排序规则 : 优先选择结构相同的.再选择文字少的     
+
+        if (litA->claPtr->isAxiom()) {
+            return false;
+        }
+        if (litB->claPtr->isAxiom()) {
+            return true;
+        }
+
         int32_t litNumDiff = litB->claPtr->LitsNumber() - litA->claPtr->LitsNumber();
         int litPostUseDiff = litB->pUsedCount - litA->pUsedCount; //因为存在回退问题,因此排序不考虑 使用次数问题
         int structLikeDiff = 0;
@@ -109,8 +118,19 @@ public:
         }
         return litPostUseDiff > 0;
     }
+    /// 被动候选文字的排序规则,等词公理排后
+    /// \param litA
+    /// \param litB
+    /// \return 
 
     static bool PoslitCmpByUCB(Literal*litA, Literal*litB) {
+        
+         if (litA->claPtr->isAxiom()) {
+            return false;
+        }
+        if (litB->claPtr->isAxiom()) {
+            return true;
+        }
         int litUCB = iParentNodeUseTimes == -1 ? 0
                 : litA->GetPasUCB(iParentNodeUseTimes) - litB->GetPasUCB(iParentNodeUseTimes); //选择值大的。
 

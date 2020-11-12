@@ -330,6 +330,16 @@ void Clause::bindingLits(Literal* litLst) {
 }
 
 void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
+    //检查是否存在等词 a=b
+//    for (Lit_p elem : vNewR) {
+//        if (elem->IsPositiveEqulit()) {//a=b
+//            elem->lterm = TermCell::TermDeref(elem->lterm, DerefType::DEREF_ALWAYS);
+//            elem->rterm = TermCell::TermDeref(elem->rterm, DerefType::DEREF_ALWAYS);
+//            if (!elem->IsOriented())
+//                elem->EqnOrient(); //交换顺序
+//            this->GetClaTB()->mpRewriteTerm[elem->lterm] = elem->rterm;
+//        }
+//    }
     //插入新子句
     Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
 
@@ -342,12 +352,35 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
     Literal* *eqn_append = &eqn_lits;
     Literal* next = nullptr;
     uint16_t iLitPos = 0;
-    auto litTmpPtr = vNewR.begin();
+    vector<Literal*>::const_iterator litTmpPtr = vNewR.begin();
+    vector<Lit_p> vCopyLits;
     while (litTmpPtr != vNewR.end()) {
 
+        //        if ((*litTmpPtr)->IsPositiveEqulit()) {//正等词 跳过
+        //            ++litTmpPtr;
+        //            continue;
+        //        }
+        
         Literal* newLitP = (*litTmpPtr)->RenameCopy(this);
 
+        
         assert(newLitP->EqnQueryProp(EqnProp::EPIsHold));
+
+        // <editor-fold defaultstate="collapsed" desc="判断文字是否用重复-删除">
+        bool isDuplicates = false;
+        for (int i = 0; i < vCopyLits.size(); i++) {
+            Lit_p l = vCopyLits[i];
+            if (newLitP->isSameProps(l) && newLitP->EqualInSameCla(l)) {
+                isDuplicates = true;
+                break;
+            }
+        }
+        if (isDuplicates) {
+            ++litTmpPtr;
+            continue;
+        }
+        // </editor-fold>
+
 
         newLitP->claPtr = this; /*指定当前文字所在子句*/
         newLitP->pos = ++iLitPos;
@@ -371,6 +404,7 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
                 neg_append = &((*neg_append)->next);
             }
         }
+
         // <editor-fold defaultstate="collapsed" desc="相关属性计算">
         uint32_t w = newLitP->StandardWeight(true);
         this->claWeight += w; //直接读取文字的标准权重
@@ -385,7 +419,7 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
             isGroundCla = false;
         }
         // </editor-fold>
-
+        vCopyLits.push_back(newLitP);
         ++litTmpPtr;
     }
     //    *neg_append = eqn_lits;
@@ -410,6 +444,127 @@ void Clause::bindingAndRecopyLits(const vector<Literal*>&vNewR) {
         this->maxFuncLayer = maxLitFuncLayer;
         this->minFuncLayer = minLitFuncLayer;
     }
+
+    //计算文字的变元共享性
+    this->SetEqnListVarState();
+}
+
+void Clause::bindingAndRecopyLits(Literal** lits, int litSize) {
+    //检查是否存在等词 a=b
+    for (int i = 0; i < litSize; i++) {
+        Literal* elem = lits[i];
+        if (elem->IsPositiveEqulit()) {//a=b
+            elem->lterm = TermCell::TermDeref(elem->lterm, DerefType::DEREF_ALWAYS);
+            elem->rterm = TermCell::TermDeref(elem->rterm, DerefType::DEREF_ALWAYS);
+            if (!elem->IsOriented())
+                elem->EqnOrient(); //交换顺序
+            this->GetClaTB()->mpRewriteTerm[elem->lterm] = elem->rterm;
+        }
+    }
+    //插入新子句
+    Literal *pos_lits = nullptr, *neg_lits = nullptr, *eqn_lits = nullptr;
+
+    uint32_t maxLitWeight = 0, minLitWeight = UINT_MAX;
+    uint16_t maxLitFuncLayer = 0, minLitFuncLayer = UINT16_MAX;
+    bool isGroundCla = true;
+
+    Literal* *pos_append = &pos_lits;
+    Literal* *neg_append = &neg_lits;
+    Literal* *eqn_append = &eqn_lits;
+    Literal* next = nullptr;
+    uint16_t iLitPos = 0;
+    //vector<Literal*>::const_iterator litTmpPtr = vNewR.begin();
+    vector<Lit_p> vCopyLits;
+
+    //while (litTmpPtr != vNewR.end()) {
+    for (int i = 0; i < litSize; i++) {
+        Literal* litTmpPtr = lits[i];
+        Literal* newLitP = litTmpPtr->RenameCopy(this);
+
+        //        if (litTmpPtr->IsPositiveEqulit()) {//正等词 跳过
+        //            ++litTmpPtr;
+        //            continue;
+        //        }
+        assert(newLitP->EqnQueryProp(EqnProp::EPIsHold));
+
+        // <editor-fold defaultstate="collapsed" desc="判断文字是否用重复-删除">
+        bool isDuplicates = false;
+        for (int i = 0; i < vCopyLits.size(); i++) {
+            Lit_p l = vCopyLits[i];
+            if (newLitP->isSameProps(l) && newLitP->EqualInSameCla(l)) {
+                isDuplicates = true;
+                break;
+            }
+        }
+        if (isDuplicates) {
+            continue;
+        }
+        // </editor-fold>
+
+
+        newLitP->claPtr = this; /*指定当前文字所在子句*/
+        newLitP->pos = ++iLitPos;
+        // newLitP->EqnSetProp(EqnProp::EPIsHold);
+        if (newLitP->IsPositive()) {
+            posLitNo++;
+            if (newLitP->EqnIsEquLit()) {
+                *eqn_append = newLitP;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *pos_append = newLitP;
+                pos_append = &((*pos_append)->next);
+            }
+        } else {
+            negLitNo++;
+            if (newLitP->EqnIsEquLit()) {
+                *eqn_append = newLitP;
+                eqn_append = &((*eqn_append)->next);
+            } else {
+                *neg_append = newLitP;
+                neg_append = &((*neg_append)->next);
+            }
+        }
+
+        // <editor-fold defaultstate="collapsed" desc="相关属性计算">
+        uint32_t w = newLitP->StandardWeight(true);
+        this->claWeight += w; //直接读取文字的标准权重
+        maxLitWeight = MAX(maxLitWeight, w); //记录最大文字权重
+        minLitWeight = MIN(minLitWeight, w); //记录最小文字权重
+
+        uint16_t depth = newLitP->GetMaxFuncDepth(false);
+        maxLitFuncLayer = MAX(maxLitFuncLayer, depth); //记录最大函数嵌套层
+        minLitFuncLayer = MIN(minLitFuncLayer, depth); //记录最小函数嵌套层
+
+        if (!newLitP->IsGround(false)) { //检查文字是否为基文字
+            isGroundCla = false;
+        }
+        // </editor-fold>
+        vCopyLits.push_back(newLitP);
+
+    }
+    //    *neg_append = eqn_lits;
+    //    *pos_append = neg_lits;
+    //    *eqn_append = nullptr;
+    //    literals = pos_lits;
+    *neg_append = nullptr;
+    *pos_append = neg_lits;
+    *eqn_append = pos_lits;
+    literals = eqn_lits;
+
+    //
+    //设置基子句属性
+    if (isGroundCla) {
+        this->ClauseSetProp(ClauseProp::CPGroundCla);
+    } else {
+        this->ClauseDelProp(ClauseProp::CPGroundCla);
+    }
+    if (this->literals) {
+        this->claMaxWeight = maxLitWeight;
+        this->claMinWeight = minLitWeight;
+        this->maxFuncLayer = maxLitFuncLayer;
+        this->minFuncLayer = minLitFuncLayer;
+    }
+
     //计算文字的变元共享性
     this->SetEqnListVarState();
 }
@@ -794,7 +949,7 @@ void Clause::SetEqnListVarState() {
             //根据文字查找变元
             set<TermCell*>&setVarTerms = this->mapLitposToVarTerm[lit];
             lit->varState = VarState::freeVar;
-            
+
             for (TermCell* varT : setVarTerms) {
                 //根据变元项查找文字
                 set<Lit_p>&setLits = this->mapVarTermToLitpos[varT];

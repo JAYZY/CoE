@@ -25,14 +25,14 @@ public:
     static map<TermCell*, int> termcmp;
 
     //检查子句是否为恒真
-    static bool isTautology(Clause* cla);
+    static bool IsTautology(Clause* cla);
     //检查子句是否为恒真     static bool IsTautology(vector<Lit_p> vlits);
-    
+
     // <editor-fold defaultstate="collapsed" desc="Factor Rule Check">
     static Clause* FactorOnce(Clause* cla);
 
     static Clause* Factor(Clause* cla);
-    
+
     static Clause* FactorOnce(Clause* actCla, vector<Literal*>vR);
     // </editor-fold>
 
@@ -65,7 +65,9 @@ public:
     /// \param subst
     /// \return   if (LitListSubsume(candVarCla->Lits(), candVarLit, genCla->Lits(), indexing->subst, nullptr)) {
     static bool LitListSubsume(Literal* subsumVarLst, Literal* exceptLit, Literal* subsumConLst, Subst*subst, int8_t* pickLst);
-
+    
+    ///等词约减
+    static bool ClauseRewrite(Cla_p clause);
 private:
 
 

@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 
     
     //全局索引排序
-    //fol.PredIndexSort();
+     fol.PredIndexSort();
     
     //输出预处理后子句 
     // fol->printProcessedClaSet(stdout);

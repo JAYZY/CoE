@@ -325,7 +325,14 @@ private:
     ResRule CheckTriLitsByReverse(Lit_p actLit, vector<ALit_p>&vAlits);
     ResRule CheckTriLits(Lit_p actLit, vector<ALit_p>&vAlits);
     ResRule CheckRuleOfR(Lit_p checkLit, vector<Lit_p>&R, bool isTriLit);
-    ResRule CheckRInvaild(Lit_p lit, vector<Lit_p>&vDelLit, Lit_p *holdLits, uint16_t&holdLitSize);
+    /// 对子句中剩余检查与R之间的有效性
+    /// \param lit
+    /// \param vDelLit
+    /// \param holdLits
+    /// \param holdLitSize
+    /// \param hasPosEqual
+    /// \return 
+    ResRule CheckRInvaild(Lit_p lit, vector<Lit_p>&vDelLit, Lit_p *holdLits, uint16_t&holdLitSize,bool&hasPosEqual);
 
     //对主动归结子句进行处理 并添加到剩余子句集
     RESULT ActClaGenNewR(Lit_p actLit);

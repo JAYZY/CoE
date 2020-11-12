@@ -176,8 +176,8 @@ uint16_t TermCell::TermDepth() {
 /// 检查最大函数嵌套层限制. 包括了 变元绑定
 /// \return >0 -- 函数嵌套层数 -1 -- 不符合限制
 
-uint16_t TermCell::CheckTermDepthLimit() {
-    uint16_t maxdepth = 0, ldepth = 0;
+int16_t TermCell::CheckTermDepthLimit() {
+    int16_t maxdepth = 0, ldepth = 0;
     //debug
     if (this->arity == 0) {
         maxdepth = 0;
@@ -349,7 +349,16 @@ TermCell** TermCell::TermArgListCopy() {
 
 TermCell* TermCell::RenameCopy(TermBank* tb, Lit_p litptr, DerefType deref) {
 
+    //debug    if (this->fCode == -4) {        cout << "debug" << endl;    }
     TermCell* source = TermDeref(this, deref);
+    //测试zj 变元替换-重写
+    //    TermCell*replaceTerm = tb->FindRewriteTerm(source);
+    //    if (replaceTerm != nullptr) {
+    //
+    //        //存在替换
+    //        source = replaceTerm;
+    //        tb->isRewrite = true;
+    //    }
     if (source->TBTermIsGround())//若为全局共享基项,则直接返回GTermBank中的全局共享基项
         return source;
     Term_p t;

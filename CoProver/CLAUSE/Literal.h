@@ -170,9 +170,9 @@ public:
     /// \return (-1)-恒假 a!=a (1)-恒真  (0)-非恒假恒真
 
     inline int8_t IsTrueOrFalse() {
-        int8_t res=0;
-        if(this->EqnIsEquLit()&&(this->lterm->equalStruct(this->rterm)) ){
-            res=this->IsPositive()?1:-1;
+        int8_t res = 0;
+        if (this->EqnIsEquLit()&&(this->lterm->equalStruct(this->rterm))) {
+            res = this->IsPositive() ? 1 : -1;
         }
         return res;
     }
@@ -215,6 +215,17 @@ public:
 
     inline bool EqnIsEquLit() {
         return EqnQueryProp(EqnProp::EPIsEquLiteral);
+    }
+
+    //是否为 正等词  a=b
+
+    inline bool IsPositiveEqulit() {
+        return this->IsPositive() && this->EqnIsEquLit();
+    }
+    //是否为 负等词  a!=b
+
+    inline bool IsNegativeEqulit() {
+        return this->IsNegative() && this->EqnIsEquLit();
     }
 
     inline bool IsGround(bool isReCla = false) {

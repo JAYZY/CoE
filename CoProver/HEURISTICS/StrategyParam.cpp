@@ -33,6 +33,8 @@ int8_t StrategyParam::ClaRedundancyWeight = -3; //子句归结中发现冗余,�
 int8_t StrategyParam::LitRedunancyWeight = -2; //文字归结中发现冗余,改变的优先级 
 int8_t StrategyParam::LitOverFuncLayer = -2; //文字超过限制,改变的优先级
 //初始化参数==================================	
+
+bool StrategyParam::IsRollBack=true; //是否采用回退策略
 bool StrategyParam::IsAddRefleSymEquAxiom = true;
 bool StrategyParam::ADD_EQULITY = true;
 bool StrategyParam::ADD_CR = true;
@@ -47,6 +49,9 @@ bool StrategyParam::ISSplitUnitCalIndex=true;
 ClaSelStrategy StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //Num_Weight_Prio;
 PasLitSteady StrategyParam::SEL_POSLIT_STEADY = PasLitSteady::NumDesc;
 ActLitSteady StrategyParam::Weight_Sort = ActLitSteady::DESC;
+
+//工作子句集类型--起步子句
+ClsType StrategyParam::WorksetClsType=ClsType::OnlyGoalClas;
 
 
 ALimit StrategyParam::ALIT_LIMIT = ALimit::NoLimit;

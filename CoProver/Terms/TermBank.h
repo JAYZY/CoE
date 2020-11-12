@@ -18,6 +18,8 @@
 #define TERMBANK_H
 //#include <bits/stdint-uintn.h>
 
+#include <map>
+
 #include "VarBank.h"
 #include "TermCellStore.h"
 #include "INOUT/Scanner.h"
@@ -47,7 +49,8 @@ public:
 			   layers have to take care of this if they want to both access terms via references and do replacing! */
 
     TermCellStore* termStore; /*存放Term的hash结构 -- Here are the terms */
-
+    map<TermCell*, TermCell*> mpRewriteTerm; //重写项
+    bool isRewrite;
 public:
     /*---------------------------------------------------------------------*/
     /*                    Constructed Function                             */
@@ -107,6 +110,18 @@ public:
 
 
     // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="#项重写相关方法">
+
+    inline Term_p FindRewriteTerm(Term_p term) {
+
+        map<TermCell*, TermCell*>::iterator mpIt = mpRewriteTerm.find(term);
+        if (mpIt == mpRewriteTerm.end())return nullptr;
+        return mpIt->second;
+    }
+    // </editor-fold>
+
+
 
     /// 记录变元项与文字位置的相互对应关系
     /// \param litPos

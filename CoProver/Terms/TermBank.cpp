@@ -33,6 +33,7 @@ TermBank::TermBank(Clause* claptr) : pCla(claptr) {
     garbageState = TermProp::TPIgnoreProps;
     shareVars = nullptr; //若是全局基项bank 则不占内存空间 ； new VarBank();    
     termStore = nullptr; //new TermCellStore(8);  //初始化 TermCellStore -- 用于存储含变元的项
+    isRewrite=false;
 }
 
 TermBank::~TermBank() {

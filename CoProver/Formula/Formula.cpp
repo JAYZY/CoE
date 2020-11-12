@@ -76,7 +76,7 @@ void Formula::GenerateEqulitAxiom() {
         claReflex->ClauseSetProp(ClauseProp::CPTypeAxiom);
         claReflex->ClauseSetProp(ClauseProp::CPType1);
         //claReflex->info->name = "reflexivity";
-        this->insertNewCla(claReflex, true);
+        this->InsertOriginalCla(claReflex, true);
 
         //(2) Symmetry: X1~=X2 | X2 =X1
         Clause* claSymmetry = new Clause();
@@ -98,7 +98,7 @@ void Formula::GenerateEqulitAxiom() {
         claSymmetry->ClauseSetProp(ClauseProp::CPTypeAxiom);
         claSymmetry->ClauseSetProp(ClauseProp::CPType1);
         //claSymmetry->info->name = "symmetry";    vEqulityAxiom.push_back(claSymmetry);
-        this->insertNewCla(claSymmetry, true);
+        this->InsertOriginalCla(claSymmetry, true);
     }
     //(3) Transitivity: X1~=X2 | X2 ~=X3 | X1 =X3
     Clause* claTrans = new Clause();
@@ -128,7 +128,7 @@ void Formula::GenerateEqulitAxiom() {
 
     //claTrans->info->name = "transitivity";
     // vEqulityAxiom.push_back(claTrans);
-    this->insertNewCla(claTrans, true);
+    this->InsertOriginalCla(claTrans, true);
     //(4) add function-substitution and predicate-substitution
     GenerateEqulitAxiomByFunction();
 }
@@ -213,7 +213,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 litA->next = litB;
 
                 c1->bindingLits(litA);
-                this->insertNewCla(c1, true);
+                this->InsertOriginalCla(c1, true);
                 // this->vEqulityAxiom.push_back(c1);
             }
         }//读取谓词符号
@@ -310,7 +310,7 @@ void Formula::GenerateEqulitAxiomByFunction() {
                 c1->bindingLits(litA);
 
                 //debug c1->ClausePrint(stdout,true);
-                this->insertNewCla(c1, true);
+                this->InsertOriginalCla(c1, true);
                 //this->vEqulityAxiom.push_back(c1);
             }
         }
@@ -397,7 +397,7 @@ RESULT Formula::preProcess(vector<Clause*>&factorClas) {
 
         //debug        if((*claIt)->ident==26)            cout<<"asdf"<<endl;
         //------ 检查子句是否为恒真 ------
-        if (Simplification::isTautology(*claIt)) {
+        if (Simplification::IsTautology(*claIt)) {
             ++uTautologyNum;
             (*claIt)->ClauseSetProp(ClauseProp::CPDeleteClause); //标注子句被删除
             (*claIt)->priority = 0; //修改优先级为最小值 排序永远最后
@@ -440,13 +440,17 @@ RESULT Formula::preProcess(vector<Clause*>&factorClas) {
         //插入到索引中    1.单元子句索引    2.全局索引
         factorCla->SetOrigin();
 
-        insertNewCla(factorCla);
+        InsertOriginalCla(factorCla);
+
+
         //debug 输出预处理后子句 : string oriCla;         factorCla->getStrOfClause(oriCla);         FileOp::getInstance()->outInfo(oriCla);
         //若为单元子句,检查是否有其他单元子句 合一
         if (factorCla->isUnit()&&(isUnsat(factorCla, true))) {
             return RESULT::UNSAT;
         }
     }
+
+    InitWorkCals(); //初始化工作子句集
     if (StrategyParam::MaxLitNumOfR > this->uMaxLitNumOfCla)
         StrategyParam::MaxLitNumOfR = this->uMaxLitNumOfCla + 2;
     if (StrategyParam::MaxFuncLayerOfR > this->uMaxFuncLayerOfCla + 1)
@@ -473,18 +477,20 @@ void Formula::SetStrategy() {
     //rule set
     StrategyParam::RuleALitsAllowEqual = false;
     StrategyParam::RuleALitsAllowEqualR = false;
-    StrategyParam::ISSplitUnitCalIndex = false; //谓词索引是否包含单元子句    
+    StrategyParam::ISSplitUnitCalIndex = false; //谓词索引是否包含单元子句  
+    StrategyParam::IsRollBack = false;
     //limited Set
-    StrategyParam::MaxLitNumOfR = 5; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
-    StrategyParam::MaxFuncLayerOfR = 15; //R 的最大函数嵌套层
+    StrategyParam::MaxLitNumOfR = 1; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
+    StrategyParam::MaxFuncLayerOfR = 5; //R 的最大函数嵌套层
     StrategyParam::MaxLitsNumOfTriNewCla = 3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
     StrategyParam::MaxLitNumOfNewCla = 3; //完成△中，新子句加入到子句集的文字数限制
 
     //select strategy
     StrategyParam::CLAUSE_SEL_STRATEGY = ClaSelStrategy::Num_Prio_Weight; //子句集排序规则
     //是否添加 相关等词
-    StrategyParam::IsAddRefleSymEquAxiom = false;
-    
+    StrategyParam::ADD_EQULITY = true;
+    StrategyParam::IsAddRefleSymEquAxiom =true;
+    StrategyParam::WorksetClsType = ClsType::OnlyGoalClas;
 }
 
 //检查单元子句是否存在互补合一 -- unsat
@@ -843,7 +849,7 @@ bool Formula::HoldLitsIsRundacy(Literal** arrayHoldLits, uint16_t arraySize, set
 
         //=== 如果是等词则且非单元子句则不参与索引树操作  ?????
         //        if (selConLit->EqnIsEquLit() && arraySize > 1) {
-        //            continue;
+        //            continue;GoalAndNonUnitClas
         //        }
 
         //=== 从索引树上获取,候选节点(项)
@@ -930,11 +936,44 @@ bool Formula::unitLitIsRundacy(Literal* unitLit) {
     return isRundacy;
 }
 
+void Formula::InitWorkCals() {
+    if (ClsType::OnlyGoalClas == StrategyParam::WorksetClsType
+            || (ClsType::GoalAndNonUnitClas == StrategyParam::WorksetClsType)) {
+        for (int i = 0; i < this->vgoalClas.size(); i++) {
+            Cla_p cla = vgoalClas[i];
+            this->workClaSet->InsertCla(cla, false); //工作集合 目标子句
+            this->AddStartClaInfo(cla);
+        }
+        if (this->vgoalClas.empty()) {
+            for (int i = 0; i < this->vNegClas.size(); i++) {
+                Cla_p cla = vNegClas[i];
+                this->workClaSet->InsertCla(cla, false); //工作集合 负文字子句
+                this->AddStartClaInfo(cla);
+            }
+        }
+        if (ClsType::GoalAndNonUnitClas == StrategyParam::WorksetClsType) {
+            for (int i = 0; i < this->vNonUnitClas.size(); i++) {
+                Cla_p cla = vNonUnitClas[i];
+                this->workClaSet->InsertCla(cla, false); //工作集合 非单元子句; 
+                this->AddStartClaInfo(cla);
+            }
+        }
+    } else if (ClsType::OnlyNonUnitClas == StrategyParam::WorksetClsType) {
+        for (int i = 0; i < this->vNonUnitClas.size(); i++) {
+            Cla_p cla = this->vNonUnitClas[i];
+            this->workClaSet->InsertCla(cla, false); //工作集合 非单元子句; 
+            this->AddStartClaInfo(cla);
+        }
+    }
 
 
-//将子句添加到公式集中
 
-void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
+}
+/// 将预处理后的原始子句添加到公式集中
+/// \param cla
+/// \param isEquAxiom
+
+void Formula::InsertOriginalCla(Cla_p cla, bool isEquAxiom) {
     //插入到索引中    1.单元子句索引    2.全局索引
     Literal * lit = cla->Lits();
     uint32_t posLitNum = 0;
@@ -992,18 +1031,121 @@ void Formula::insertNewCla(Cla_p cla, bool isEquAxiom) {
         this->vHornClas.push_back(cla);
     }
 
-    /* 目标子句或非单元子句 添加到 workClaSet 中 */
+    /* 目标子句或非单元子句 分类存储 */
+
     bool isGoalCla = cla->isGoal();
-    if (isGoalCla || !cla->isUnit() || cla->isNoPos()) {
-        if (isGoalCla || cla->isNoPos()) { //添加目标子句 -- //认为全部负文字也为目标子句
-            this->addGoalClas(cla); /* 处理目标子句 添加到目标子句列表 -- vgoalClas */
+    if (isGoalCla) {//添加目标子句
+        this->vgoalClas.push_back(cla);
+    } else if (cla->isNoPos()) {
+        this->vNegClas.push_back(cla); //负文字子句集-不包括目标子句
+    } else if (!cla->isUnit()) {//非单元子句非目标子句添加到非单元子句集
+        this->vNonUnitClas.push_back(cla);
+    }
+
+    //输出 .tp  -- 结合证明时,输出结果给 其它证明器使用  [是否输出手动添加的等词公理?- 暂时不输出]
+    if (StrategyParam::isOutTPTP) {
+        string sCla = "";
+        cla->getStrOfClause(sCla);
+        FileOp::getInstance()->OutTPTP(sCla);
+    }
+}
+
+/// 将演绎后的新子句添加到公式集中
+/// \param cla
+/// \param isEquAxiom
+
+void Formula::InsertNewCla(Cla_p cla) {
+    //插入到索引中    1.单元子句索引    2.全局索引
+    Literal * lit = cla->Lits();
+    uint32_t posLitNum = 0;
+    bool isUnitCla = cla->isUnit();
+
+    //将每个文字-添加到总索引中
+    while (lit) {
+        //
+        if (lit->EqnIsEquLit()) {
+            //对等词进行排序
+            if (!lit->IsOriented()) {
+                lit->EqnOrient();
+            }
+            ++(this->uEquLitNum);
         }
-        //if(!cla->isUnit()&&cla->isNoPos())
-        //添加到工作子句集中  
-        this->workClaSet->InsertCla(cla, isGoalCla); //工作集合1.非单元子句;2.目标子句
+        if (lit->IsPositive()) {
+            ++posLitNum;
+        }
+        //添加到总Term-indexing 索引中 用于查找归入冗余子句 
+        allTermIndex->Insert(lit);
+
+        //添加到全局谓词索引中FP0 用于查找合一文字 
+        if (StrategyParam::ISSplitUnitCalIndex)
+            AddPredIndex(lit, isUnitCla);
+        else
+            AddPredIndexNoUnit(lit, isUnitCla);
+        lit = lit->next;
+    }
+
+    //添加到单元子句列表中 vPosUnitClas -- 正单元子句  vNegUnitClas -- 负单元子句 
+    //添加到单元子句索引中  unitClaIndex
+    if (cla->isUnit()) {
+        if (cla->IsUnitPos()) {
+            this->vPosUnitClas.push_back(cla);
+        } else {
+            assert(cla->isUnitNeg());
+            this->vNegUnitClas.push_back(cla);
+        }
+        this->unitClaIndex->Insert(cla->literals);
+    }
+
+    /* 统计 Horn/NoHorn 子句数量 -- 添加horn子句列表 -- vHornClas*/
+    if (posLitNum > 1) {
+        ++(this->uNonHornClaNum);
+    } else { //则为Horn子句
+        this->vHornClas.push_back(cla);
     }
 
 
+    /* 目标子句或非单元子句 添加到 workClaSet 中 */
+    //工作子句集只目标子句
+    if (ClsType::OnlyGoalClas == StrategyParam::WorksetClsType) {
+        if (cla->isLemmaCla()) { //暂时不添加负文字
+            this->workClaSet->InsertCla(cla,false); //工作集合1.NoLits演绎的新子句
+            this->AddStartClaInfo(cla);
+        }
+        if (cla->isNoPos()) {
+            this->workClaSet->InsertCla(cla, false); //工作集合1.非单元子句;2.NoLits演绎的新子句
+            this->AddStartClaInfo(cla);
+        }
+    } else if (ClsType::OnlyNonUnitClas == StrategyParam::WorksetClsType) {
+        if (cla->isLemmaCla()) {
+            this->AddStartClaInfo(cla);
+            this->AddStartClaInfo(cla);
+        }
+        else if (!cla->isUnit()) {
+            this->workClaSet->InsertCla(cla, false); //工作集合1.非单元子句;2.NoLits演绎的新子句
+            this->AddStartClaInfo(cla);
+        }
+    } else if (ClsType::GoalAndNonUnitClas == StrategyParam::WorksetClsType) {
+        if (cla->isLemmaCla()) {
+            this->AddStartClaInfo(cla);
+        }
+        if (!cla->isUnit()) {
+
+            this->workClaSet->InsertCla(cla, false); //工作集合1.非单元子句;2.NoLits演绎的新子句
+            this->AddStartClaInfo(cla);
+        }
+    }
+
+    //
+    //    if (isGoalCla || cla->isLemmaCla() || !cla->isUnit()) {
+    //        if (isGoalCla || cla->isNoPos()) { //添加目标子句 -- //认为全部负文字也为目标子句
+    //            this->addGoalClas(cla); /* 处理目标子句 添加到目标子句列表 -- vgoalClas */
+    //        } else {
+    //            this->vNonUnitClas.push_back(cla);
+    //        }
+    //        //if(!cla->isUnit()&&cla->isNoPos())
+    //        //添加到工作子句集中  
+    //
+    //    }
 
     //输出 .tp  -- 结合证明时,输出结果给 其它证明器使用  [是否输出手动添加的等词公理?- 暂时不输出]
     if (StrategyParam::isOutTPTP) {
@@ -1161,13 +1303,6 @@ list<Clause*>::iterator Formula::getNextStartClause() {
 
 }
 
-void Formula::IniStartClaInfo() {
-    //添加所有的原始子句
-    for (Cla_p cla : * this->workClaSet->getClaSet()) {
-        mapStartClaInfo[cla] = new StartClaInfo{0, 1.0f};
-    }
-}
-
 void Formula::AddStartClaInfo(Cla_p cla) {
     //添加新子句
 
@@ -1175,19 +1310,21 @@ void Formula::AddStartClaInfo(Cla_p cla) {
 
 }
 
-Cla_p Formula::GetNextStartClaByUCB(long item) {
+Cla_p Formula::GetNextStartClaByUCB(long itemNum) {
     float maxUCB = 0.0f;
-    Cla_p retClaPtr = mapStartClaInfo.begin()->first;
-    for (auto &elem : mapStartClaInfo) {
-        float claUCB = SortRule::ComputeUBC(elem.second->claQulity, elem.second->claUseCount, item);
+    Cla_p retClaPtr = nullptr;
+    for (Cla_p cla : * this->workClaSet->getClaSet()) {
+
+        float claUCB = SortRule::ComputeUBC(mapStartClaInfo[cla]->claQulity, mapStartClaInfo[cla]->claUseCount, itemNum);
         if (abs(claUCB - INT_MAX) < 0.000001) {
-            retClaPtr = elem.first;
+            retClaPtr = cla;
             break;
         }
         if (claUCB > maxUCB) {
             maxUCB = claUCB;
-            retClaPtr = elem.first;
+            retClaPtr = cla;
         }
+
     }
     return retClaPtr;
 

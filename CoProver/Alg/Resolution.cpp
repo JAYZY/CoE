@@ -59,7 +59,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
 
     StrategyParam::IS_RollBackGoalPath = false;
     int iGoalInd = 0;
-    bool isGoal = false;
+
     while (StrategyParam::IterCount_LIMIT > iterNum) {
 
         if (!StrategyParam::IS_RollBackGoalPath && CPUTime() - startTime > 36) { //30秒
@@ -170,7 +170,7 @@ RESULT Resolution::BaseAlg(Formula* fol) {
                     //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
                     newCla->priority = pri / (int) (newCla->LitsNumber());
                 }
-                fol->insertNewCla(newCla);
+                fol->InsertNewCla(newCla);
 
             }
         }
@@ -275,17 +275,38 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
     uint16_t modifyLimitCount = 0; //修改限制条件次数
     //不能作为起步子句集合--A.单元子句,B等词公理不能作为起步子句
     set<Clause*> notStartClaSet;
+
+    //---策略1. 只从目标子句起步
+    // fol->InitWorkCals()
     //1.选择起步子句 -- 目标子句+非单元子句
     if (fol->getWorkClas()->empty())
         return res;
-    fol->IniStartClaInfo();
+    // fol->IniStartClaInfo();
     TriAlg triAlg(fol);
     double startTimeResolute = CPUTime();
     uint32_t iterNum = 0;
 
     Clause* selCla = fol->GetNextStartClaByUCB(iterNum); //*selClaIt;
-    //int ind = distance(fol->vgoalClas.begin(), itSelCla);
+
+    double begTime = CPUTime();
+
+    bool isChgStrategy = true, isForceChg = false;
+
     while (true) {
+        //记录时间
+        if (isForceChg || (isChgStrategy && CPUTime() - begTime > 60)) { //60秒后换策略
+            StrategyParam::WorksetClsType = ClsType::GoalAndNonUnitClas;
+            cout << "chg Strategy#2" << endl;
+            fol->workClaSet->getClaSet()->clear(); //清除重新添加起步子句
+            fol->InitWorkCals();
+            StrategyParam::MaxLitNumOfR = 1; //R 的最大文字数限制 决定了延拓进行的限制; △完成后，产生的新子句文字数限制
+            StrategyParam::MaxFuncLayerOfR = 5; //R 的最大函数嵌套层
+            StrategyParam::MaxLitsNumOfTriNewCla = 3; //△演绎过程中,剩余文字数小于该限制则允许生成演绎过程新子句;
+            StrategyParam::MaxLitNumOfNewCla = 3; //完成△中，新子句加入到子句集的文字数限制
+            isChgStrategy = false;
+            isForceChg = false;
+        }
+
         if (StrategyParam::IterCount_LIMIT < ++iterNum) {
             res = RESULT::UNKNOWN;
             string strInfo = "# 到达最大演绎次数:" + to_string(StrategyParam::IterCount_LIMIT);
@@ -321,23 +342,29 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
             if (notStartClaSet.size() == fol->getWorkClas()->size()) {
                 if (++modifyLimitCount > MaxModifyCount) {/*记录修改次数*/
                     res = RESULT::UNKNOWN;
-                    string strInfo = "# 到达最大限制修改次数:" + to_string(MaxModifyCount);
+                    string strInfo = "# 到达最大限制修改次数:" + std::to_string(MaxModifyCount);
                     FileOp::getInstance()->outLog(strInfo);
                     cout << strInfo << endl;
                     break;
                 } else { /*说明限制条件需要调整*/
                     if (StrategyParam::MaxLitNumOfR < (fol->uMaxLitNumOfCla + OverMaxLitNumOfCla)) {
                         ++StrategyParam::MaxLitNumOfR; //调整剩余文字数(R)的限制
+                    } else if (StrategyParam::MaxFuncLayerOfR < fol->uMaxFuncLayerOfCla) {
+                        ++StrategyParam::MaxFuncLayerOfR; //调整剩余文字数(R)的限制
+                    } else if (isChgStrategy) {
+                        isForceChg = true;
+                        continue;
                     }
-                    ++StrategyParam::MaxFuncLayerOfR; //函数嵌套层限制
+                    //++StrategyParam::MaxFuncLayerOfR; //函数嵌套层限制
                     string strInfo = "[修改限制]最大文字数:" + to_string(StrategyParam::MaxLitNumOfR)
                             + " 最大函数嵌套层:" + to_string(StrategyParam::MaxFuncLayerOfR);
                     FileOp::getInstance()->outLog(strInfo);
                     FileOp::getInstance()->outRun("\n" + strInfo);
+                    cout << "#======" << strInfo << endl;
                     notStartClaSet.clear();
                 }
             }
-            selCla = fol->GetNextStartClaByUCB(iterNum); //根据策略选择起步子句
+            selCla = fol->GetNextStartClaByUCB(iterNum); //fol->getWorkClas()->front();  //根据策略选择起步子句
         }/* 3.3 多元演绎构建成功*/
         else {//if (RESULT::SUCCES == res) {
             triAlg.subst->Clear();
@@ -356,13 +383,13 @@ RESULT Resolution::BaseAlgByLearn(Formula * fol) {
                 /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
                 //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
                 newCla->priority = pri / newCla->LitsNumber();
-                fol->insertNewCla(newCla);
+                fol->InsertNewCla(newCla);
                 //新子句为演绎最后一个子句文字全部下拉，则设置为下次起步子句;
                 //考虑 即是单元子句，又是文字全部下拉怎么处理 -- 从该单元子句起步 加入起步子句集合 （若后面充分后退情况下 可以不加入）
                 if (newCla->isLemmaCla()) {
                     assert(RESULT::NOLits == res);
                     nextStarCla = newCla;
-                    fol->AddStartClaInfo(newCla);
+                    //fol->AddStartClaInfo(newCla);
                     // cout << "newCla:" << newCla->ident << "# === 演绎次数:" << iterNum << endl;
                 }
             }

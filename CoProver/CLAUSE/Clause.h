@@ -440,8 +440,9 @@ public:
     void RecomputeLitCounts();
     //重新绑定文字列表,并重新计算
     void bindingLits(Literal * lit);
+    //拷贝文字并绑定到子句文字列表中
     void bindingAndRecopyLits(const vector<Literal*>&vNewR);
-
+    void bindingAndRecopyLits(Literal** lits, int litSize);
 
     void ClausePrint(FILE* out, bool fullterms);
     void getStrOfClause(string&outStr, bool complete = true);

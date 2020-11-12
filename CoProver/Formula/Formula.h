@@ -66,10 +66,12 @@ public:
     TermIndexing* unitClaIndex; //正单元子句索引
     TermIndexing *allTermIndex; //Discrimation Indexing 主要用于forward subsume
 
-    vector<Clause*> vHornClas; //horn子句
-    vector<Clause*> vgoalClas; //目标子句集--注意,包括单元子句,也包括其他子句
-    vector<Clause*> vNegUnitClas; //负单元子句,只有一个 负文字
-    vector<Clause*> vPosUnitClas; //正单元子句
+    vector<Cla_p> vHornClas; //horn子句
+    vector<Cla_p> vgoalClas; //目标子句集--注意,包括单元子句,也包括其他子句
+    vector<Cla_p> vNegClas; //负文字子句
+    vector<Cla_p> vNonUnitClas; //非单元子句且不包含目标子句
+    vector<Cla_p> vNegUnitClas; //负单元子句,只有一个 负文字
+    vector<Cla_p> vPosUnitClas; //正单元子句
 
     vector<Clause*> vEqulityAxiom; //等词公理
     Formula();
@@ -122,6 +124,8 @@ public:
     inline void addGoalClas(Clause* goalCla) {
         vgoalClas.push_back(goalCla);
     }
+
+
 
     //    inline void ClauseSetInsert(Clause* cla) {
     //        assert(cla);
@@ -213,9 +217,12 @@ public:
 
     //检查单元子句是否存在互补合一 -- unsat
     bool isUnsat(Clause* unitCal, bool isOutTip = false);
+    //初始化工作子句集--起步子句集
+    void InitWorkCals();
+    //插入原始子句
+    void InsertOriginalCla(Cla_p cla, bool isEquAxiom = false);
+    void InsertNewCla(Cla_p cla);
 
-    //插入新子句到
-    void insertNewCla(Cla_p cla, bool isEquAxiom = false);
     //删除子句
     void removeWorkCla(Cla_p cal);
 
@@ -242,8 +249,7 @@ public:
     void printOrigalClasInfo(FILE * out);
 
 
-    void IniStartClaInfo();
-    void AddStartClaInfo(Cla_p cla) ;
+    void AddStartClaInfo(Cla_p cla);
     //根据策略，得到下一次演绎起步子句
     list<Clause*>::iterator getNextStartClause();
     Cla_p GetNextStartClaByUCB(long item);

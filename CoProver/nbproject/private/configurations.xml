@@ -28,19 +28,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/myprob/originSample/baseSample/程序验证1.TPTP
-</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/2019/FNE/CSR029+3.p -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/zj/Documents/Problems/2019/FEQ/REL016+3.p -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.2/AGT003+1.p  -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.9/LCL638+1.015.p  -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/SET043-5.p  -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.9/	LCL638+1.015.p  -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/2019/FNE/CSR029+3.p -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT007+2.p -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/ALG210+1.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/2018/Orignal/FEQ/ALG210+1.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/ALG176+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT001+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT011+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/ALG001-1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT011+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.2/AGT003+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/ALG001+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/AGT001+1.p -f=fof</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommand>
+        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/AGT001+1.p -f=fof</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -60,8 +59,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="gdb_source_dirs" value="."/>
@@ -74,18 +71,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/SWC144-1.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/2019/FEQ/SWV480+1.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/SWV480+1.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/GRP280-1.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT007+1.p -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT007+2.p -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT011+1.p -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/FOF/SET043-5.p  -f=fof</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/SET043-5.p  -f=fof</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/CSR114+16.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.1/SET043-5.p  -f=fof</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT011+1.p -f=fof</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT010+1.p -f=fof</runcommand>
+        <runcommand>"${OUTPUT_PATH}"   /home/icdc/Documents/Problems/TPTP/Rating0.8/AGT011+1.p -f=fof</runcommand>
         <rundir>/home/icdc/Documents/myProg/CoE/CoProver</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

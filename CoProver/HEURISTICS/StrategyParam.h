@@ -16,6 +16,13 @@
 
 #include <cstdint>
 #include "Global/IncDefine.h"
+
+//workClas策略
+enum class ClsType:uint8_t{
+    OnlyGoalClas,//只有目标子句
+    OnlyNonUnitClas,//只有非单元子句
+    GoalAndNonUnitClas,//目标子句+非单元子句
+};
 //排序策略--被动文字稳定度 由低到高，由高到低
 
 enum class PasLitSteady : uint8_t {
@@ -61,6 +68,7 @@ enum class ClaSelStrategy : uint8_t {
     Num_Prio_Weight_Post
 
 };
+
 
 /* 枚举型输入格式*/
 enum class InFormat {
@@ -130,6 +138,8 @@ public:
     //static INT32 SEL_POSLIT_STRATEGY; //被动归结文字选择策略
 
     static bool IsAddRefleSymEquAxiom;//是否添加自反和对称等词
+    static bool IsRollBack; //是否回退
+    
     static bool ADD_EQULITY; //whether add equlity axiom
     static bool ADD_CR;
 
@@ -141,7 +151,8 @@ public:
 
     static bool ISSplitUnitCalIndex; //单独分割单元子句索引
 
-
+    
+    static ClsType WorksetClsType;
 };
 
 #endif /* STRATEGYPARAM_H */

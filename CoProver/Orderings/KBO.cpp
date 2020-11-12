@@ -36,9 +36,57 @@ CompareResult KBO::KBO6Compare(TermCell* t1, TermCell* t2, DerefType deref_t1, D
     return kbo6CMP(t1, t2, deref_t1, deref_t2);
 }
 
-
+CompareResult KBO::KBOCompare(Term_p t1, Term_p t2, DerefType derefT1, DerefType derefT2) {
+    CompareResult res = CompareResult::toUncomparable;
+    t1 = TermCell::TermDeref(t1, derefT1);
+    t2 = TermCell::TermDeref(t2, derefT2);
+    if (t1->IsVar() || t2->IsVar()) {
+        return KBOCompareVars(t1, t2, derefT1, derefT2);
+    }
+    long weightT1 = t1->ComputeTermStandardWeight();
+    long weightT2 = t2->ComputeTermStandardWeight();
+    if (weightT1 > weightT2) {
+        switch (KBOVarCompare(t1, t2, derefT1, derefT2)) {
+            case CompareResult::toGreater:
+            case CompareResult::toEqual:
+                return CompareResult::toGreater;
+            case CompareResult::toUncomparable:
+            case CompareResult::toLesser:
+                return CompareResult::toUncomparable;
+            default:
+                assert(false);
+                return CompareResult::toUncomparable;
+        }
+    }
+}
 /*---------------------------------------------------------------------*/
-/*                 Member Function[private]                            */
+/*               KBO Member Function[private]                          */
+/*---------------------------------------------------------------------*/
+//
+
+CompareResult KBO::KBOCompareVars(Term_p s, Term_p t, DerefType derefS, DerefType derefT) {
+    if (t->IsVar()) {
+        if (s == t) {
+            return CompareResult::toEqual;
+        } else {
+            if (s->TermIsSubterm(t, derefS, TermEqulType::PtrEquel)) {
+                return CompareResult::toGreater;
+            }
+        }
+    } else { /* Note that in this case, s is a variable. */
+        assert(TermIsVar(s));
+        if (t->TermIsSubterm(s, derefT, TermEqulType::PtrEquel)) {
+            return CompareResult::toLesser;
+        }
+    }
+    return CompareResult::toUncomparable;
+}
+
+CompareResult KBO::KBOVarCompare(Term_p t1, Term_p t2, DerefType derefT1, DerefType derefT2) {
+
+}
+/*---------------------------------------------------------------------*/
+/*              KBO6 Member Function[private]                          */
 /*---------------------------------------------------------------------*/
 //
 
@@ -114,7 +162,7 @@ void KBO::resizeVB(uint32_t index) {
     uint32_t oldSize = vbSize;
     int *oldArrayPtr = globalVB;
     while (vbSize < index) {
-        assert(vbSize>0);
+        assert(vbSize > 0);
         vbSize *= 2;
     }
     globalVB = new int[vbSize];

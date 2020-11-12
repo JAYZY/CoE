@@ -25,9 +25,12 @@ Simplification::Simplification(const Simplification& orig) {
 Simplification::~Simplification() {
 }
 
-bool Simplification::isTautology(Clause* cla) {
+bool Simplification::IsTautology(Clause* cla) {
 
     for (Literal* litA = cla->literals; litA; litA = litA->next) {
+        if (litA->IsTrivial()) { //a=a 恒真
+            return true;
+        }
         for (Literal* litB = litA->next; litB; litB = litB->next) {
             if (litA->isComplementProps(litB) && litA->EqualsStuct(litB)) {
                 return true;
@@ -37,7 +40,7 @@ bool Simplification::isTautology(Clause* cla) {
     return false;
 }
 
- 
+
 
 
 
@@ -112,6 +115,8 @@ bool Simplification::ForwardSubsumption(Clause* genCla, TermIndexing* indexing) 
                     //找到匹配的冗余子句--说明候选子句中的所有文字均可以通过替换与 剩余文字 匹配.
                     //fprintf(stdout, "\n# [FS]C%u invalid by c%d\n", selConLit->claPtr->ident, candVarCla->GetClaId());
                     string tmpstr = "\n# [FS]R invalid by c" + to_string(candVarCla->GetClaId()) + "\n";
+                    //debug:
+                    cout<<tmpstr<<endl;
                     //FileOp::getInstance()->outRun(tmpstr);
                     FileOp::getInstance()->outLog("[FS]c" + to_string(genCla->GetClaId()) + " by c" + to_string(candVarCla->GetClaId()) + "\n");
                     ++Env::backword_Finded_counter;
@@ -670,6 +675,8 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                     tmpLit->GetLitInfoWithParent(sOut);
                 }
                 factorSubSt.SubstBacktrack();
+                //检查是否恒真
+
                 //检查包含冗余                if(cla->ident==1257)                    cout<<"DEbug";
                 if (ClauseSubsumeClause(cla, newCla)) {
 
@@ -694,9 +701,6 @@ Clause* Simplification::FactorOnce(Clause* cla) {
                     //FileOp::getInstance()->OutTPTP(sOut+" ).\n");
                     sOut += ",inference(" + InferenceInfo::getStrInfoType(newCla->infereType) + ",[status(thm)],[c" + to_string(cla->ident) + "]) ).\n";
                     FileOp::getInstance()->outInfo(sOut);
-
-
-
                     //暂时不删除原始子句 -- 由调用来控制是否删除
                     //DelPtr(cla);
                     break;
@@ -760,5 +764,25 @@ Clause* Simplification::FactorOnce(Clause* actCla, vector<Literal*> vR) {
         }
     }
     return newCla;
+
+}
+
+/// 等词子句简化
+/// x1=a1 | P(f(x1,a2)) => P(f(a1,a2))
+/// \param 
+/// \return 
+
+bool Simplification::ClauseRewrite(Cla_p clause) {
+    for (Lit_p lit = clause->literals; lit; lit = lit->next) {
+        if (lit->EqnIsEquLit()) {//若为等词
+            if (lit->IsPositive()) {
+                //注意从右边替换左边
+                //查找左边的文字项目
+                TermCell* term = clause->GetClaTB()->TBFind(lit->lterm);
+
+
+            }
+        }
+    }
 
 }

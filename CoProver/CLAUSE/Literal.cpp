@@ -423,9 +423,10 @@ void Literal::EqnTSTPPrint(FILE* out, bool fullterms, DerefType deref) {
 void Literal::getStrOfEqnTSTP(string&outStr, DerefType deref) {
     if (IsPropFalse()) {
         outStr += "$false";
-    } else if (IsTrivial()) {
-        outStr += "$true";
-    } else {
+    }//    else if (IsTrivial()) {
+        //        outStr += "$true";
+        //    } 
+    else {
         if (EqnIsEquLit()) {
             lterm->getStrOfTerm(outStr, deref);
             outStr += IsNegative() ? "!=" : "=";
@@ -484,21 +485,23 @@ bool Literal::EqnOrient() {
     CompareResult relation = CompareResult::toUncomparable;
     bool res = false;
 
-    if (this->EqnQueryProp(EqnProp::EPMaxIsUpToDate)) {
-        return false;
-    }
+    //    if (this->EqnQueryProp(EqnProp::EPMaxIsUpToDate)) {
+    //        return false;
+    //    }
     if (this->lterm == this->rterm) {
         relation = CompareResult::toEqual;
     } else if (this->lterm == Env::getGTbank()->trueTerm) {
         relation = CompareResult::toLesser;
     } else if (this->rterm == Env::getGTbank()->trueTerm) {
         relation = CompareResult::toGreater;
+    } else if (this->rterm->IsVar()&&!this->lterm->IsVar()) {
+        relation = CompareResult::toLesser;
     } else {
         /* printf("EqnOrient: ");
-        TermPrint(stdout, eq->lterm, eq->bank->sig, DEREF_ALWAYS);
+        TermPrint(stdout, this->lterm, this->bank->sig, DEREF_ALWAYS);
         printf(" # ");
-        TermPrint(stdout, eq->rterm, eq->bank->sig, DEREF_ALWAYS);
-        printf("\n");*/
+        TermPrint(stdout, this->rterm, this->bank->sig, DEREF_ALWAYS);
+        printf("\n"); */
         relation = Ordering::Tocompare(this->lterm, this->rterm, DerefType::DEREF_ALWAYS, DerefType::DEREF_ALWAYS);
     }
     switch (relation) {
@@ -518,7 +521,7 @@ bool Literal::EqnOrient() {
             assert(false);
             break;
     }
-    this->EqnSetProp(EqnProp::EPMaxIsUpToDate);
+    //this->EqnSetProp(EqnProp::EPMaxIsUpToDate);
     return res;
 }
 
@@ -571,7 +574,11 @@ Literal* Literal::RenameCopy(Clause* newCla, DerefType deref) {
     newLit->claPtr = newCla;
     newLit->parentLitPtr = this;
     // newLit->properties = this->properties;
-
+    //等词 比较左右项顺序
+    if(newLit->EqnIsEquLit() && (!newLit->IsOriented())){
+               newLit->EqnOrient(); //交换顺序
+    }
+        
     return newLit;
 }
 

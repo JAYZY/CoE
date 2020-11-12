@@ -231,7 +231,7 @@ RESULT TriAlgExt::ExtendTri() {
         /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
         //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
         vNewClas[i]->priority = pri / (int) (vNewClas[i]->LitsNumber());
-        fol->insertNewCla(vNewClas[i]);
+        fol->InsertNewCla(vNewClas[i]);
 
     }
     //--- 删除拷贝的单元子句
@@ -319,7 +319,7 @@ RESULT TriAlgExt::ExtendTriByFull() {
         /*改变新子句的权重R的权重为文字权重的平均--遍历第一个△路径除外 取整*/
         //注意:由于目标子句初始化权重为100 因此 平均值后 若新子句中有目标子句参与自然权重会较高
         vNewClas[i]->priority = pri / (int) (vNewClas[i]->LitsNumber());
-        fol->insertNewCla(vNewClas[i]);
+        fol->InsertNewCla(vNewClas[i]);
     }
 
     //--- 删除拷贝的单元子句
